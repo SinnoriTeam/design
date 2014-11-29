@@ -1,0 +1,22 @@
+JFDML JFormDesigner: "5.2.0.3.124" Java: "1.7.0_60" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+			"$columnSpecs": "default"
+			"$rowSpecs": "default"
+		} ) {
+			name: "this"
+			add( new FormComponent( "kr.pe.sinnori.gui.screen.FirstScreen" ) {
+				name: "firstScreenPanel"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 1
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 735, 155 )
+		} )
+	}
+}
