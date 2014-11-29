@@ -8,6 +8,9 @@ new FormModel {
 			"$rowSpecs": "default, linegap, default"
 		} ) {
 			name: "this"
+			auxiliary() {
+				"JavaCodeGenerator.variableGetter": true
+			}
 			add( new FormComponent( "kr.pe.sinnori.gui.screen.FirstScreen" ) {
 				name: "firstScreenPanel"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {

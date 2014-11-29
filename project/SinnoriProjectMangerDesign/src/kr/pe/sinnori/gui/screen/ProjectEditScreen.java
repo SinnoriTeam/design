@@ -4,6 +4,8 @@
 
 package kr.pe.sinnori.gui.screen;
 
+import java.awt.*;
+import java.awt.event.*;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -16,6 +18,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import com.jgoodies.forms.layout.*;
+
+import kr.pe.sinnori.gui.lib.WindowManger;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -27,6 +32,16 @@ import com.jgoodies.forms.layout.FormLayout;
 public class ProjectEditScreen extends JPanel {	
 	public ProjectEditScreen() {
 		initComponents();
+	}
+
+	private void prevButtonActionPerformed(ActionEvent e) {
+		WindowManger.getInstance().changeProjectEditScreenToFirstScreen();
+	}
+
+	private void subProjectEditButtonActionPerformed(ActionEvent e) {
+		// TODO add your code here
+		SubProjectConfigPopup popup = new SubProjectConfigPopup(WindowManger.getInstance().getMainWindow());
+		popup.setVisible(true);
 	}
 
 	private void initComponents() {
@@ -51,6 +66,7 @@ public class ProjectEditScreen extends JPanel {
 		hSpacer1 = new JPanel(null);
 		projectWorkSaveLinePanel = new JPanel();
 		projectWorkSaveButton = new JButton();
+		prevButton = new JButton();
 		subProjectNameInputLinePanel = new JPanel();
 		subProjectNameInputLabel = new JLabel();
 		subProjectNameInputTextField = new JTextField();
@@ -108,7 +124,7 @@ public class ProjectEditScreen extends JPanel {
 			mainProjectNameLinePanel.add(mainProjectNameTitleLabel, CC.xy(1, 1));
 
 			//---- mainProjectNameValueLabel ----
-			mainProjectNameValueLabel.setText("d:\\gitsinnori\\sinnori");
+			mainProjectNameValueLabel.setText("sample_test");
 			mainProjectNameLinePanel.add(mainProjectNameValueLabel, CC.xy(3, 1));
 		}
 		add(mainProjectNameLinePanel, CC.xy(1, 3));
@@ -129,19 +145,17 @@ public class ProjectEditScreen extends JPanel {
 
 				//---- serverCheckBox ----
 				serverCheckBox.setText("\uc11c\ubc84");
-				serverCheckBox.setEnabled(false);
 				serverCheckBox.setSelected(true);
+				serverCheckBox.setEnabled(false);
 				projectStructFuncPanel.add(serverCheckBox);
 
 				//---- appClientCheckBox ----
 				appClientCheckBox.setText("\uc751\uc6a9 \ud074\ub77c\uc774\uc5b8\ud2b8");
-				appClientCheckBox.setEnabled(false);
 				appClientCheckBox.setSelected(true);
 				projectStructFuncPanel.add(appClientCheckBox);
 
 				//---- webClientCheckBox ----
 				webClientCheckBox.setText("\uc6f9 \ud074\ub77c\uc774\uc5b8\ud2b8");
-				webClientCheckBox.setEnabled(false);
 				webClientCheckBox.setSelected(true);
 				projectStructFuncPanel.add(webClientCheckBox);
 			}
@@ -158,9 +172,6 @@ public class ProjectEditScreen extends JPanel {
 			//---- servletEnginLibinaryPathLabel ----
 			servletEnginLibinaryPathLabel.setText("\uc11c\ube14\ub9bf \uc5d4\uc9c4 \ub77c\uc774\ube0c\ub7ec\ub9ac \uacbd\ub85c :");
 			servletEnginLibinaryPathLinePanel.add(servletEnginLibinaryPathLabel, CC.xy(1, 1));
-
-			//---- servletEnginLibinaryPathTextField ----
-			servletEnginLibinaryPathTextField.setEditable(false);
 			servletEnginLibinaryPathLinePanel.add(servletEnginLibinaryPathTextField, CC.xy(3, 1));
 
 			//---- servletEnginLibinaryPathButton ----
@@ -175,11 +186,22 @@ public class ProjectEditScreen extends JPanel {
 
 		//======== projectWorkSaveLinePanel ========
 		{
-			projectWorkSaveLinePanel.setLayout(new BoxLayout(projectWorkSaveLinePanel, BoxLayout.X_AXIS));
+			projectWorkSaveLinePanel.setAlignmentX(1.0F);
+			projectWorkSaveLinePanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
 			//---- projectWorkSaveButton ----
 			projectWorkSaveButton.setText("\ubcc0\uacbd \ub0b4\uc5ed \uc800\uc7a5");
 			projectWorkSaveLinePanel.add(projectWorkSaveButton);
+
+			//---- prevButton ----
+			prevButton.setText("\uba54\uc778 \ud654\uba74\uc73c\ub85c \ub3cc\uc544\uac00\uae30");
+			prevButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					prevButtonActionPerformed(e);
+				}
+			});
+			projectWorkSaveLinePanel.add(prevButton);
 		}
 		add(projectWorkSaveLinePanel, CC.xy(1, 11));
 
@@ -207,23 +229,29 @@ public class ProjectEditScreen extends JPanel {
 				"default"));
 
 			//---- subProjectListLabel ----
-			subProjectListLabel.setText("\uc0dd\uc131\ub41c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
+			subProjectListLabel.setText("\uc0dd\uc131\ub41c \uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
 			subProjectListLinePanel.add(subProjectListLabel, CC.xy(1, 1));
 
 			//---- subProjectListComboBox ----
 			subProjectListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
-				"- \ud504\ub85c\uc81d\ud2b8 \uc120\ud0dd -",
-				"sample_fileupdown",
-				"sample_test"
+				"- \uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \uc120\ud0dd -",
+				"sample_test_sub1",
+				"sample_test_sub2"
 			}));
 			subProjectListLinePanel.add(subProjectListComboBox, CC.xy(3, 1));
 
 			//======== subProjectListFuncPanel ========
 			{
-				subProjectListFuncPanel.setLayout(new BoxLayout(subProjectListFuncPanel, BoxLayout.X_AXIS));
+				subProjectListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
 				//---- subProjectEditButton ----
 				subProjectEditButton.setText("\ud3b8\uc9d1");
+				subProjectEditButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						subProjectEditButtonActionPerformed(e);
+					}
+				});
 				subProjectListFuncPanel.add(subProjectEditButton);
 
 				//---- subProjectDeleteButton ----
@@ -316,6 +344,7 @@ public class ProjectEditScreen extends JPanel {
 	private JPanel hSpacer1;
 	private JPanel projectWorkSaveLinePanel;
 	private JButton projectWorkSaveButton;
+	private JButton prevButton;
 	private JPanel subProjectNameInputLinePanel;
 	private JLabel subProjectNameInputLabel;
 	private JTextField subProjectNameInputTextField;

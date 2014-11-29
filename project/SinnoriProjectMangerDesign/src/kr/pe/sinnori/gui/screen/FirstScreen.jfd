@@ -132,8 +132,9 @@ new FormModel {
 					"gridX": 3
 					"gridY": 1
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-					"axis": 0
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+					"vgap": 2
+					"alignment": 0
 				} ) {
 					name: "projectListFuncPanel"
 					add( new FormComponent( "javax.swing.JButton" ) {
@@ -225,7 +226,7 @@ new FormModel {
 				"gridY": 19
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-				"$columnSpecs": "default, labelcompgap, growbutton, labelcompgap, default"
+				"$columnSpecs": "default, labelcompgap, growbutton"
 				"$rowSpecs": "default"
 			} ) {
 				name: "servletEnginLibinaryPathLinePanel"
@@ -241,13 +242,6 @@ new FormModel {
 					"editable": false
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
-					"gridY": 1
-				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "servletEnginLibinaryPathButton"
-					"text": "경로 선택"
-				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-					"gridX": 5
 					"gridY": 1
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {

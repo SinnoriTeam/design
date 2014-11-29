@@ -4,6 +4,7 @@
 
 package kr.pe.sinnori.gui.screen;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
@@ -18,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import main.SinnoriProjectMangerMain;
+import kr.pe.sinnori.gui.lib.WindowManger;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -33,9 +34,7 @@ public class FirstScreen extends JPanel {
 	}
 
 	private void projectEditButtonActionPerformed(ActionEvent e) {
-		this.getParent().getComponent(0).setVisible(false);
-		this.getParent().getComponent(1).setVisible(true);
-		SinnoriProjectMangerMain.pack();
+		WindowManger.getInstance().changeFirstScreenToProjectEditScreen();
 	}
 
 	private void initComponents() {
@@ -76,7 +75,6 @@ public class FirstScreen extends JPanel {
 		servletEnginLibinaryPathLinePanel = new JPanel();
 		servletEnginLibinaryPathLabel = new JLabel();
 		servletEnginLibinaryPathTextField = new JTextField();
-		servletEnginLibinaryPathButton = new JButton();
 		projectConfigVeiwLinePanel = new JPanel();
 		projectConfigVeiwButton = new JButton();
 
@@ -187,7 +185,7 @@ public class FirstScreen extends JPanel {
 
 			//======== projectListFuncPanel ========
 			{
-				projectListFuncPanel.setLayout(new BoxLayout(projectListFuncPanel, BoxLayout.X_AXIS));
+				projectListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
 				//---- projectEditButton ----
 				projectEditButton.setText("\ud3b8\uc9d1");
@@ -266,7 +264,7 @@ public class FirstScreen extends JPanel {
 		//======== servletEnginLibinaryPathLinePanel ========
 		{
 			servletEnginLibinaryPathLinePanel.setLayout(new FormLayout(
-				"default, $lcgap, ${growing-button}, $lcgap, default",
+				"default, $lcgap, ${growing-button}",
 				"default"));
 
 			//---- servletEnginLibinaryPathLabel ----
@@ -276,10 +274,6 @@ public class FirstScreen extends JPanel {
 			//---- servletEnginLibinaryPathTextField ----
 			servletEnginLibinaryPathTextField.setEditable(false);
 			servletEnginLibinaryPathLinePanel.add(servletEnginLibinaryPathTextField, CC.xy(3, 1));
-
-			//---- servletEnginLibinaryPathButton ----
-			servletEnginLibinaryPathButton.setText("\uacbd\ub85c \uc120\ud0dd");
-			servletEnginLibinaryPathLinePanel.add(servletEnginLibinaryPathButton, CC.xy(5, 1));
 		}
 		add(servletEnginLibinaryPathLinePanel, CC.xy(1, 21));
 
@@ -334,7 +328,6 @@ public class FirstScreen extends JPanel {
 	private JPanel servletEnginLibinaryPathLinePanel;
 	private JLabel servletEnginLibinaryPathLabel;
 	private JTextField servletEnginLibinaryPathTextField;
-	private JButton servletEnginLibinaryPathButton;
 	private JPanel projectConfigVeiwLinePanel;
 	private JButton projectConfigVeiwButton;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables

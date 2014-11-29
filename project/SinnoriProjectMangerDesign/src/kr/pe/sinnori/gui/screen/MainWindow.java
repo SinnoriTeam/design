@@ -5,7 +5,6 @@
 package kr.pe.sinnori.gui.screen;
 
 import java.awt.Container;
-import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
@@ -40,8 +39,6 @@ public class MainWindow extends JFrame {
 		pack();
 		setLocationRelativeTo(getOwner());
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
-				
-		Logger.getGlobal().info("call");
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -49,4 +46,13 @@ public class MainWindow extends JFrame {
 	private FirstScreen firstScreenPanel;
 	private ProjectEditScreen projectEditScreenPanel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables	
+	public FirstScreen getFirstScreenPanel() {
+		return firstScreenPanel;
+	}
+
+	public ProjectEditScreen getProjectEditScreenPanel() {
+		return projectEditScreenPanel;
+	}
+	
+	
 }

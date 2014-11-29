@@ -45,7 +45,7 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "mainProjectNameValueLabel"
-					"text": "d:\\gitsinnori\\sinnori"
+					"text": "sample_test"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 					"gridY": 1
@@ -72,19 +72,17 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "serverCheckBox"
 						"text": "서버"
-						"enabled": false
 						"selected": true
+						"enabled": false
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "appClientCheckBox"
 						"text": "응용 클라이언트"
-						"enabled": false
 						"selected": true
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "webClientCheckBox"
 						"text": "웹 클라이언트"
-						"enabled": false
 						"selected": true
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
@@ -108,7 +106,6 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "servletEnginLibinaryPathTextField"
-					"editable": false
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 					"gridY": 1
@@ -129,11 +126,20 @@ new FormModel {
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridY": 9
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+				"alignment": 0
+				"vgap": 2
+			} ) {
 				name: "projectWorkSaveLinePanel"
+				"alignmentX": 1.0f
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "projectWorkSaveButton"
 					"text": "변경 내역 저장"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "prevButton"
+					"text": "메인 화면으로 돌아가기"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "prevButtonActionPerformed", true ) )
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridY": 11
@@ -172,7 +178,7 @@ new FormModel {
 				name: "subProjectListLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "subProjectListLabel"
-					"text": "생성된 프로젝트 목록"
+					"text": "생성된 서브 프로젝트 목록"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
@@ -180,22 +186,24 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JComboBox" ) {
 					name: "subProjectListComboBox"
 					"model": new javax.swing.DefaultComboBoxModel {
-						selectedItem: "- 프로젝트 선택 -"
-						addElement( "- 프로젝트 선택 -" )
-						addElement( "sample_fileupdown" )
-						addElement( "sample_test" )
+						selectedItem: "- 서브 프로젝트 선택 -"
+						addElement( "- 서브 프로젝트 선택 -" )
+						addElement( "sample_test_sub1" )
+						addElement( "sample_test_sub2" )
 					}
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 					"gridY": 1
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
-					"axis": 0
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+					"alignment": 0
+					"vgap": 2
 				} ) {
 					name: "subProjectListFuncPanel"
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "subProjectEditButton"
 						"text": "편집"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "subProjectEditButtonActionPerformed", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "subProjectDeleteButton"
