@@ -4,18 +4,38 @@
 
 package kr.pe.sinnori.gui.screen;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import com.jgoodies.forms.factories.*;
-import com.jgoodies.forms.layout.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
+
+import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
+
+import main.SinnoriProjectMangerMain;
+
+import com.jgoodies.forms.factories.CC;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * @author Jonghoon Won
  */
 @SuppressWarnings("serial")
-public class FirstScreen extends JPanel {
+public class FirstScreen extends JPanel {	
 	public FirstScreen() {
 		initComponents();
+	}
+
+	private void projectEditButtonActionPerformed(ActionEvent e) {
+		this.getParent().getComponent(0).setVisible(false);
+		this.getParent().getComponent(1).setVisible(true);
+		SinnoriProjectMangerMain.pack();
 	}
 
 	private void initComponents() {
@@ -70,13 +90,13 @@ public class FirstScreen extends JPanel {
 				java.awt.Color.red), getBorder())); addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
 
 		setLayout(new FormLayout(
-			"default",
+			"${growing-button}",
 			"18dlu, 2*($lgap, default), $lgap, 13dlu, 8*($lgap, default)"));
 
 		//======== sinnoriInstalledPathInputLinePanel ========
 		{
 			sinnoriInstalledPathInputLinePanel.setLayout(new FormLayout(
-				"55dlu, $lcgap, 273dlu, $lcgap, 52dlu",
+				"55dlu, $lcgap, ${growing-button}, $lcgap, 52dlu",
 				"default"));
 
 			//---- sinnoriInstalledPathInputLabel ----
@@ -133,7 +153,7 @@ public class FirstScreen extends JPanel {
 		//======== projectNameInputLinePanel ========
 		{
 			projectNameInputLinePanel.setLayout(new FormLayout(
-				"default, $lcgap, 221dlu, $lcgap, 37dlu",
+				"default, $lcgap, ${growing-button}, $lcgap, 37dlu",
 				"default"));
 
 			//---- projectNameInputLabel ----
@@ -171,6 +191,12 @@ public class FirstScreen extends JPanel {
 
 				//---- projectEditButton ----
 				projectEditButton.setText("\ud3b8\uc9d1");
+				projectEditButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						projectEditButtonActionPerformed(e);
+					}
+				});
 				projectListFuncPanel.add(projectEditButton);
 
 				//---- projectDeleteButton ----
@@ -267,6 +293,8 @@ public class FirstScreen extends JPanel {
 		}
 		add(projectConfigVeiwLinePanel, CC.xy(1, 23));
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
+		
+		Logger.getGlobal().info("call");
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables

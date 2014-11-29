@@ -4,12 +4,12 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-			"$columnSpecs": "default"
+			"$columnSpecs": "growbutton"
 			"$rowSpecs": "18dlu, linegap, default, linegap, default, linegap, 13dlu, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default"
 		} ) {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-				"$columnSpecs": "55dlu, labelcompgap, 273dlu, labelcompgap, 52dlu"
+				"$columnSpecs": "55dlu, labelcompgap, growbutton, labelcompgap, 52dlu"
 				"$rowSpecs": "default"
 			} ) {
 				name: "sinnoriInstalledPathInputLinePanel"
@@ -82,7 +82,7 @@ new FormModel {
 				"gridY": 9
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-				"$columnSpecs": "default, labelcompgap, 221dlu, labelcompgap, 37dlu"
+				"$columnSpecs": "default, labelcompgap, growbutton, labelcompgap, 37dlu"
 				"$rowSpecs": "default"
 			} ) {
 				name: "projectNameInputLinePanel"
@@ -139,6 +139,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "projectEditButton"
 						"text": "편집"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "projectEditButtonActionPerformed", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "projectDeleteButton"

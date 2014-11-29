@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 			"$columnSpecs": "default"
-			"$rowSpecs": "default"
+			"$rowSpecs": "default, linegap, default"
 		} ) {
 			name: "this"
 			add( new FormComponent( "kr.pe.sinnori.gui.screen.FirstScreen" ) {
@@ -14,9 +14,15 @@ new FormModel {
 				"gridX": 1
 				"gridY": 1
 			} )
+			add( new FormComponent( "kr.pe.sinnori.gui.screen.ProjectEditScreen" ) {
+				name: "projectEditScreenPanel"
+				"visible": false
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 3
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 735, 350 )
+			"size": new java.awt.Dimension( 715, 350 )
 		} )
 	}
 }

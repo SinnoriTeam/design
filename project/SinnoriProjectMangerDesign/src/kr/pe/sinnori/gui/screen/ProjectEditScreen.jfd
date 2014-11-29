@@ -1,0 +1,296 @@
+JFDML JFormDesigner: "5.2.0.3.124" Java: "1.7.0_60" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+			"$columnSpecs": "max(pref;300dlu):grow"
+			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, 104dlu, linegap, default, linegap, 116dlu"
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, default:grow"
+				"$rowSpecs": "default"
+			} ) {
+				name: "sinnoriInstalledPathLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "sinnoriInstalledPathTitleLabel"
+					"text": "신놀이 설치 경로 :"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "sinnoriInstalledPathValueLabel"
+					"text": "d:\\gitsinnori\\sinnori"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 1
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, default:grow"
+				"$rowSpecs": "default"
+			} ) {
+				name: "mainProjectNameLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "mainProjectNameTitleLabel"
+					"text": "주 프로젝트 이름 :"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "mainProjectNameValueLabel"
+					"text": "d:\\gitsinnori\\sinnori"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 3
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, growbutton"
+				"$rowSpecs": "default"
+			} ) {
+				name: "projectStructLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "projectStructLabel"
+					"text": "프로젝트 구성 :"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+					"axis": 0
+				} ) {
+					name: "projectStructFuncPanel"
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "serverCheckBox"
+						"text": "서버"
+						"enabled": false
+						"selected": true
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "appClientCheckBox"
+						"text": "응용 클라이언트"
+						"enabled": false
+						"selected": true
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "webClientCheckBox"
+						"text": "웹 클라이언트"
+						"enabled": false
+						"selected": true
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 5
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, growbutton, labelcompgap, default"
+				"$rowSpecs": "default"
+			} ) {
+				name: "servletEnginLibinaryPathLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "servletEnginLibinaryPathLabel"
+					"text": "서블릿 엔진 라이브러리 경로 :"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "servletEnginLibinaryPathTextField"
+					"editable": false
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "servletEnginLibinaryPathButton"
+					"text": "경로 선택"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 5
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 7
+			} )
+			add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+				name: "hSpacer1"
+				"border": new javax.swing.border.LineBorder( sfield java.awt.Color black, 1, false )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 9
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+				name: "projectWorkSaveLinePanel"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "projectWorkSaveButton"
+					"text": "변경 내역 저장"
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 11
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, growbutton, labelcompgap, 37dlu"
+				"$rowSpecs": "default"
+			} ) {
+				name: "subProjectNameInputLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "subProjectNameInputLabel"
+					"text": "서브 프로젝트 이름 :"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "subProjectNameInputTextField"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "subProjectNameInputButton"
+					"text": "추가"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 5
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 13
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
+				"$columnSpecs": "default, labelcompgap, default, labelcompgap, default"
+				"$rowSpecs": "default"
+			} ) {
+				name: "subProjectListLinePanel"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "subProjectListLabel"
+					"text": "생성된 프로젝트 목록"
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 1
+					"gridY": 1
+				} )
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "subProjectListComboBox"
+					"model": new javax.swing.DefaultComboBoxModel {
+						selectedItem: "- 프로젝트 선택 -"
+						addElement( "- 프로젝트 선택 -" )
+						addElement( "sample_fileupdown" )
+						addElement( "sample_test" )
+					}
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 3
+					"gridY": 1
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) {
+					"axis": 0
+				} ) {
+					name: "subProjectListFuncPanel"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "subProjectEditButton"
+						"text": "편집"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "subProjectDeleteButton"
+						"text": "삭제"
+					} )
+				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+					"gridX": 5
+					"gridY": 1
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridY": 15
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "commonConfigLabel"
+				"text": "공통 설정"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 17
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "commonConfigScrollPane"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "commonConfigTable"
+					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+						} )
+					}, new java.util.Vector {
+						add( "키" )
+						add( "값" )
+					}, new java.util.Vector {
+						add( class java.lang.String )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+					} )
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 19
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "projectConfigLabel"
+				"text": "주 프로젝트 설정"
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 21
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "projectConfigScrollPane"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "projectConfigTable"
+					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+						} )
+						add( new java.util.Vector {
+							add( null )
+							add( null )
+						} )
+					}, new java.util.Vector {
+						add( "키" )
+						add( "값" )
+					}, new java.util.Vector {
+						add( class java.lang.String )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+					} )
+				} )
+			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+				"gridX": 1
+				"gridY": 23
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 545, 730 )
+		} )
+	}
+}
