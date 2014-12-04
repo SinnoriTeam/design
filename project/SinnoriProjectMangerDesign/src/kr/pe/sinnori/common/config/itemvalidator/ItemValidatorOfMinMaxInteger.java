@@ -1,39 +1,36 @@
-package kr.pe.sinnori.common.config.common;
+package kr.pe.sinnori.common.config.itemvalidator;
 
-import kr.pe.sinnori.common.config.ItemValidator;
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.config.AbstractItemValidator;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
-public class ItemValidatorOfMinMaxInteger extends ItemValidator {
+public class ItemValidatorOfMinMaxInteger extends AbstractItemValidator {
 	private int min;
 	private int max;
 	
-	public ItemValidatorOfMinMaxInteger(String defaultValue, int min, int max)
-			throws ConfigException {
-		super(defaultValue);
-	
+	public ItemValidatorOfMinMaxInteger(int min, int max)
+			throws ConfigValueInvalidException {	
 		if (min > max) {
 			String errorMessage = new StringBuilder("parameter min[")
 			.append(min)
 			.append("] is greater than parameter max[")
 			.append(max)
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
-		}
-		
+			throw new ConfigValueInvalidException(errorMessage);
+		}		
 		this.min = min;
-		this.max = max;
+		this.max = max;		
 	}
 
 	@Override
-	public Object validateItem(String value) throws ConfigException {
+	public Object validateItem(String value) throws ConfigValueInvalidException {
 		if (null == value) {
 			String errorMessage = "parameter value is null";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("")) {
 			String errorMessage = "parameter value is empty";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		int nativeValue;
@@ -43,7 +40,7 @@ public class ItemValidatorOfMinMaxInteger extends ItemValidator {
 			String errorMessage = new StringBuilder("parameter value[")
 			.append(value)
 			.append("] is not integer type").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (nativeValue < min) {
@@ -52,7 +49,7 @@ public class ItemValidatorOfMinMaxInteger extends ItemValidator {
 			.append("] is less than min[")
 			.append(min)
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (nativeValue > max) {
@@ -61,9 +58,14 @@ public class ItemValidatorOfMinMaxInteger extends ItemValidator {
 			.append("] is greater than max[")
 			.append(max)
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		return nativeValue;	
+	}
+
+	@Override
+	public String toDescription() {
+		return new StringBuilder("min[").append(min).append("], max[").append(max).append("]").toString();
 	}
 }

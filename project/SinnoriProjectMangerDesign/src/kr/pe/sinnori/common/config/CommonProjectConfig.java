@@ -7,7 +7,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Properties;
 
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType;
 
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class CommonProjectConfig {
 	
 	/************* common 변수 종료 ******************/
 	
-	public CommonProjectConfig(String projectName, Properties configFileProperties) throws ConfigException {
+	public CommonProjectConfig(String projectName, Properties configFileProperties) throws ConfigValueInvalidException {
 		this.projectName = projectName;
 		this.configFileProperties = configFileProperties;
 		
@@ -69,7 +69,7 @@ public class CommonProjectConfig {
 	 * 프로젝트의 공통 환경 변수를 읽어와서 저장한다.
 	 * @param configFileProperties
 	 */
-	private void configCommon(Properties configFileProperties) throws ConfigException {
+	private void configCommon(Properties configFileProperties) throws ConfigValueInvalidException {
 		String propKey = null;
 		String propValue = null;
 		
@@ -78,19 +78,19 @@ public class CommonProjectConfig {
 		propValue = configFileProperties.getProperty(propKey);
 		if (null == propValue) {
 			String errorMessage = String.format("project[%s]::메시지 정보 파일 경로[%s][%s]를 지정해 주세요", projectName, propKey, propValue);
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		} else {
 			messageInfoPath = new File(propValue);
 		}
 		
 		if (!messageInfoPath.exists()) {
 			String errorMessage = String.format("project[%s]::메시지 정보 파일 경로[%s][%s]가 존재하지 않습니다", projectName, propKey, propValue);
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (!messageInfoPath.isDirectory() || !messageInfoPath.canRead()) {
 			String errorMessage = String.format("project[%s]::메시지 정보 파일 경로[%s][%s][%s]가 잘못 되었습니다.", projectName, propKey, propValue, messageInfoPath.getAbsolutePath());
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, messageInfoPath.getAbsolutePath());
 		/******** 메시지 정보 파일이 위치한 경로 종료 **********/
@@ -113,7 +113,7 @@ public class CommonProjectConfig {
 				serverPort = Integer.parseInt(propValue);
 			} catch(NumberFormatException e) {
 				String errorMessage = String.format("project[%s]::key[%s] integer but value[%s]", projectName, propKey, propValue);
-				throw new ConfigException(errorMessage);
+				throw new ConfigValueInvalidException(errorMessage);
 			}
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, serverPort);
@@ -176,7 +176,7 @@ public class CommonProjectConfig {
 				if ((dataPacketBufferSize % 1024) != 0) {
 					String errorMessage = String.format("project[%s]::데이터 패킷 버퍼 크기[%s][%s]는 1024byte 의 배수이어야 합니다.", 
 							projectName, propKey, propValue);
-					throw new ConfigException(errorMessage);
+					throw new ConfigValueInvalidException(errorMessage);
 				}
 				if (dataPacketBufferSize < 1024) dataPacketBufferSize = 1024;
 			} catch(NumberFormatException nfe) {
@@ -215,7 +215,7 @@ public class CommonProjectConfig {
 			} else {
 				String errorMessage = String.format("project[%s]::알 수 없는 메시지 프로토콜[%s][%s] 입니다.", 
 						projectName, propKey, propValue);
-				throw new ConfigException(errorMessage);
+				throw new ConfigValueInvalidException(errorMessage);
 			}
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, messageProtocol.toString());

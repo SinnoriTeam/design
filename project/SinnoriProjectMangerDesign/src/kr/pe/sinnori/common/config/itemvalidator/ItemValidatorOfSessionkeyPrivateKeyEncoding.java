@@ -1,34 +1,32 @@
-package kr.pe.sinnori.common.config.common;
+package kr.pe.sinnori.common.config.itemvalidator;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import kr.pe.sinnori.common.config.ItemValidator;
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.config.AbstractItemValidator;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType;
 
-public class ItemValidatorOfSessionkeyPrivateKeyEncoding extends ItemValidator {
+public class ItemValidatorOfSessionkeyPrivateKeyEncoding extends AbstractItemValidator {
 	private Set<String> stringValueSet = new HashSet<String>();
 
-	public ItemValidatorOfSessionkeyPrivateKeyEncoding(String defaultValue)
-			throws ConfigException {
-		super(defaultValue);
-		
+	public ItemValidatorOfSessionkeyPrivateKeyEncoding()
+			throws ConfigValueInvalidException {		
 		stringValueSet.add("NONE");
 		stringValueSet.add("BASE64");
 	}
 
 	@Override
-	public Object validateItem(String value) throws ConfigException {
+	public Object validateItem(String value) throws ConfigValueInvalidException {
 		if (null == value) {
 			String errorMessage = "parameter value is null";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("")) {
 			String errorMessage = "parameter value is empty";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (! stringValueSet.contains(value)) {
@@ -37,7 +35,7 @@ public class ItemValidatorOfSessionkeyPrivateKeyEncoding extends ItemValidator {
 			.append("] is not a element of set[")
 			.append(stringValueSet.toString())
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("NONE")) {
@@ -59,6 +57,19 @@ public class ItemValidatorOfSessionkeyPrivateKeyEncoding extends ItemValidator {
 			strBuilder.append(iter.next());
 		}
 		return strBuilder.toString();
+	}
+
+	@Override
+	public String toDescription() {
+		StringBuilder descriptionBuilder = new StringBuilder("single set {");
+		Iterator<String> iter =  stringValueSet.iterator();
+		if (iter.hasNext()) descriptionBuilder.append(iter.next());
+		while (iter.hasNext()) {
+			descriptionBuilder.append(", ");
+			descriptionBuilder.append(iter.next());
+		}
+		descriptionBuilder.append("}");
+		return descriptionBuilder.toString();
 	}
 
 }

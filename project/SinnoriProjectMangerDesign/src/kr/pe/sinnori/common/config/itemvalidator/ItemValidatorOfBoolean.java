@@ -1,30 +1,28 @@
-package kr.pe.sinnori.common.config.common;
+package kr.pe.sinnori.common.config.itemvalidator;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import kr.pe.sinnori.common.config.ItemValidator;
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.config.AbstractItemValidator;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
-public class ItemValidatorOfJDFServletTrace extends ItemValidator {
+public class ItemValidatorOfBoolean extends AbstractItemValidator {	
 	private Set<String> stringValueSet = new HashSet<String>();
-	public ItemValidatorOfJDFServletTrace(String defaultValue) throws ConfigException {
-		super(defaultValue);
-
+	public ItemValidatorOfBoolean() throws ConfigValueInvalidException {
 		stringValueSet.add("true");
 		stringValueSet.add("false");
 	}
-
+	
 	@Override
-	public Object validateItem(String value) throws ConfigException {
+	public Object validateItem(String value) throws ConfigValueInvalidException {
 		if (null == value) {
 			String errorMessage = "parameter value is null";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("")) {
 			String errorMessage = "parameter value is empty";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		value = value.toLowerCase();
@@ -35,7 +33,7 @@ public class ItemValidatorOfJDFServletTrace extends ItemValidator {
 			.append("] is not a element of set[")
 			.append(stringValueSet.toString())
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("true")) {
@@ -43,5 +41,10 @@ public class ItemValidatorOfJDFServletTrace extends ItemValidator {
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public String toDescription() {
+		return "single set {true, false}";
 	}
 }

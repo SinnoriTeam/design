@@ -2,7 +2,7 @@ package kr.pe.sinnori.common.config;
 
 import java.util.Properties;
 
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType.CONNECTION_TYPE;
 
 import org.slf4j.Logger;
@@ -60,10 +60,10 @@ public class ClientProjectConfig {
 	private long clientRequestTimeout = 0L;
 	/***** 모니터 환경 변수 종료 *****/
 	/************* client 변수 종료 
-	 * @throws ConfigException ******************/
+	 * @throws ConfigValueInvalidException ******************/
 	
 	public ClientProjectConfig(String projectName,
-			Properties configFileProperties) throws ConfigException {
+			Properties configFileProperties) throws ConfigValueInvalidException {
 		this.projectName = projectName;
 		this.configFileProperties = configFileProperties;
 		
@@ -89,9 +89,9 @@ public class ClientProjectConfig {
 	/**
 	 * 프로젝트의 클라이언트 환경 변수를 읽어와서 저장한다.
 	 * @param configFileProperties
-	 * @throws ConfigException 
+	 * @throws ConfigValueInvalidException 
 	 */
-	private void configClientProject(Properties configFileProperties) throws ConfigException {		
+	private void configClientProject(Properties configFileProperties) throws ConfigValueInvalidException {		
 		String propKey = null;
 		String propValue = null;
 		String startIndexKey = null;
@@ -109,7 +109,7 @@ public class ClientProjectConfig {
 				connectionType = CONNECTION_TYPE.NoShareSync;
 			} else {
 				String errorMessage = String.format("project[%s]::알 수 없는 연결 타입[%s][%s] 입니다.", projectName, propKey, propValue);
-				throw new ConfigException(errorMessage);
+				throw new ConfigValueInvalidException(errorMessage);
 			}
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, connectionType);
@@ -123,11 +123,11 @@ public class ClientProjectConfig {
 				clientConnectionCount = Integer.parseInt(propValue);
 				if (clientConnectionCount < 1) {
 					String errorMessage = String.format("project[%s]::연결 갯수[%s][%s]는 1보다 크거나 같아야 합니다.", projectName, propKey, propValue);
-					throw new ConfigException(errorMessage);
+					throw new ConfigValueInvalidException(errorMessage);
 				}
 			} catch(NumberFormatException nfe) {
 				String errorMessage = String.format("project[%s]::연결 갯수[%s][%s]의 값 java.Lang.Integer 변환 실패", projectName, propKey, propValue);
-				throw new ConfigException(errorMessage);
+				throw new ConfigValueInvalidException(errorMessage);
 			}
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, clientConnectionCount);
@@ -143,7 +143,7 @@ public class ClientProjectConfig {
 				clientWhetherToAutoConnect = false;
 			} else {
 				String errorMessage = String.format("project[%s]::알 수 없는 서버 자동 연결 여부[%s][%s]의 값입니다.", projectName, propKey, propValue);
-				throw new ConfigException(errorMessage);
+				throw new ConfigValueInvalidException(errorMessage);
 			}
 		}
 		log.info("{}::prop value[{}], new value[{}]", propKey, propValue, clientWhetherToAutoConnect);

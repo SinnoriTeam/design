@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Logger;
 
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.exception.ConfigErrorException;
+import kr.pe.sinnori.common.util.SequencedProperties;
 
 
 public class ProjectManger {
@@ -92,38 +92,38 @@ public class ProjectManger {
 				
 		for (File f : projectPath.listFiles()) {
 			if (f.isDirectory()) {
-				String projectPathStr = f.getAbsolutePath();
+				String projectPathString = f.getAbsolutePath();
 				
 				if (!f.canRead()) {
-					String errorMessage = String.format("can not read the sub project path[%s]", projectPathStr); 
+					String errorMessage = String.format("can not read the sub project path[%s]", projectPathString); 
 					log.info(errorMessage);
 					throw new RuntimeException(errorMessage);
 				}
 				
 				if (!f.canWrite()) {
-					String errorMessage = String.format("can not write the sub project path[%s]", projectPathStr); 
+					String errorMessage = String.format("can not write the sub project path[%s]", projectPathString); 
 					log.info(errorMessage);
 					throw new RuntimeException(errorMessage);
 				}
 				
-				String projectConfigFileStr = new StringBuilder(projectPathStr)
+				String projectConfigFileString = new StringBuilder(projectPathString)
 				.append(File.separator)
 				.append("config")
 				.append(File.separator)
 				.append("sinnori.properties")
 				.toString();
 				
-				Properties projectProperteis = new Properties();
+				SequencedProperties projectProperteis = new SequencedProperties();
 				FileInputStream fis = null;
 				try {
-					fis = new FileInputStream(projectConfigFileStr);
+					fis = new FileInputStream(projectConfigFileString);
 					projectProperteis.load(fis);
 				} catch (FileNotFoundException e) {
-					String errorMessage = String.format("project config file[%s] not found", projectConfigFileStr); 
+					String errorMessage = String.format("project config file[%s] not found", projectConfigFileString); 
 					log.info(errorMessage);
 					throw new RuntimeException(errorMessage);
 				} catch (IOException e) {
-					String errorMessage = String.format("IOException[%s]::project config file[%s]", e.getMessage(), projectConfigFileStr); 
+					String errorMessage = String.format("IOException[%s]::project config file[%s]", e.getMessage(), projectConfigFileString); 
 					log.info(errorMessage);
 					throw new RuntimeException(errorMessage);
 				} finally {
@@ -139,8 +139,8 @@ public class ProjectManger {
 				String projectName = f.getName();
 				Project project = null;
 				try {
-					project = new Project(projectName, projectPathStr, projectProperteis);
-				} catch(ConfigException e) {
+					project = new Project(projectName, projectPathString, projectProperteis);
+				} catch(ConfigErrorException e) {
 					e.printStackTrace();
 					throw new RuntimeException(e.getMessage());
 				}

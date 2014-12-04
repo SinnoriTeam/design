@@ -1,35 +1,43 @@
 package kr.pe.sinnori.gui.lib;
 
-import java.util.Properties;
-
-import kr.pe.sinnori.common.config.SinnoriConfig;
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.config.SinnoriProjectConfig;
+import kr.pe.sinnori.common.exception.ConfigErrorException;
+import kr.pe.sinnori.common.util.SequencedProperties;
 
 public class Project {
+	// private Logger log = LoggerFactory.getLogger(Project.class);
+	
 	private String projectName;
-	private String projectPathStr;
-	private Properties projectProperteis;
+	private String projectPathString;
+	private SequencedProperties sourceSequencedProperties;
 	
-	private SinnoriConfig projectConfig = null;
-	
-	
-	public Project(String projectName, String projectPathStr, Properties projectProperteis) throws ConfigException {
-		this.projectName = projectName;
-		this.projectPathStr = projectPathStr;
-		this.projectProperteis = projectProperteis;
+	private SinnoriProjectConfig sinnoriProjectConfig = null;
 		
-		projectConfig = new SinnoriConfig(projectName, projectPathStr);
+	public Project(String projectName, String projectPathString, SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
+		this.projectName = projectName;
+		this.projectPathString = projectPathString;
+		this.sourceSequencedProperties = sourceSequencedProperties;
+		
+		sinnoriProjectConfig = new SinnoriProjectConfig(projectName, projectPathString, sourceSequencedProperties);
 	}
 	
-	public void validCheck() throws ConfigException {
-		projectConfig.validCheck(projectProperteis); 
-	}
-
 	public String getProjectName() {
 		return projectName;
 	}
 
 	public String getProjectPathStr() {
-		return projectPathStr;
+		return projectPathString;
+	}
+
+	public String getProjectPathString() {
+		return projectPathString;
+	}
+
+	public SequencedProperties getSourceSequencedProperties() {
+		return sourceSequencedProperties;
+	}
+
+	public SinnoriProjectConfig getSinnoriProjectConfig() {
+		return sinnoriProjectConfig;
 	}	
 }

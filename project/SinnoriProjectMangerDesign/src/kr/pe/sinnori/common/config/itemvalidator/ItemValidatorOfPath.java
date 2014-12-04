@@ -1,26 +1,21 @@
-package kr.pe.sinnori.common.config.common;
+package kr.pe.sinnori.common.config.itemvalidator;
 
 import java.io.File;
 
-import kr.pe.sinnori.common.config.ItemValidator;
-import kr.pe.sinnori.common.exception.ConfigException;
+import kr.pe.sinnori.common.config.AbstractItemValidator;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
-public class ItemValidatorOfSessionKeyRSAKeypairPath extends ItemValidator {	
-
-	public ItemValidatorOfSessionKeyRSAKeypairPath(String defaultValue) throws ConfigException {
-		super(defaultValue);
-	}
-
+public class ItemValidatorOfPath extends AbstractItemValidator {	
 	@Override
-	public Object validateItem(String value) throws ConfigException {
+	public Object validateItem(String value) throws ConfigValueInvalidException {
 		if (null == value) {
 			String errorMessage = "parameter value is null";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (value.equals("")) {
 			String errorMessage = "parameter value is empty";
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		File f = new File(value);
@@ -29,24 +24,28 @@ public class ItemValidatorOfSessionKeyRSAKeypairPath extends ItemValidator {
 			String errorMessage = new StringBuilder("file[")
 			.append(value)
 			.append("] not exist").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (!f.isDirectory()) {
 			String errorMessage = new StringBuilder("file[")
 			.append(value)
 			.append("] is not directory").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		if (!f.canRead()) {
 			String errorMessage = new StringBuilder("can't read direcotry[")
 			.append(value)
 			.append("]").toString();
-			throw new ConfigException(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
 		return f;
 	}
 
+	@Override
+	public String toDescription() {
+		return null;
+	}
 }
