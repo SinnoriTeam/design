@@ -13,15 +13,20 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
+import kr.pe.sinnori.gui.lib.Project;
 import kr.pe.sinnori.gui.lib.WindowManger;
+import kr.pe.sinnori.gui.util.PathSwingAction;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -30,9 +35,27 @@ import com.jgoodies.forms.layout.FormLayout;
  * @author Jonghoon Won
  */
 @SuppressWarnings("serial")
-public class ProjectEditScreen extends JPanel {	
-	public ProjectEditScreen() {
+public class ProjectEditScreen extends JPanel {
+	private JFrame mainFrame = null;
+	private JFileChooser chooser = null;
+	private Project project = null;
+	
+	public ProjectEditScreen(JFrame mainFrame) {
+		this.mainFrame = mainFrame;
 		initComponents();
+	}
+	
+	public void setProject(Project selectedProject) {
+		this.project = selectedProject;
+		
+		sinnoriInstalledPathValueLabel.setText(selectedProject.getProjectPathString());
+		mainProjectNameValueLabel.setText(selectedProject.getProjectName());
+		// serverCheckBox.setSelected(selectedProject.get);
+		appClientCheckBox.setSelected(selectedProject.isAppClient());
+		webClientCheckBox.setSelected(selectedProject.isWebClient());
+		servletEnginLibinaryPathTextField.setEditable(selectedProject.isWebClient());
+		servletEnginLibinaryPathButton.setEnabled(selectedProject.isWebClient());
+		servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
@@ -40,7 +63,6 @@ public class ProjectEditScreen extends JPanel {
 	}
 
 	private void subProjectEditButtonActionPerformed(ActionEvent e) {
-		// TODO add your code here
 		SubProjectConfigPopup popup = new SubProjectConfigPopup(WindowManger.getInstance().getMainWindow());
 		popup.setVisible(true);
 	}
@@ -97,6 +119,14 @@ public class ProjectEditScreen extends JPanel {
 		setLayout(new FormLayout(
 			"[300dlu,pref]:grow",
 			"9*(default, $lgap), 104dlu, $lgap, default, $lgap, 116dlu"));
+		/** Post-initialization Code start */
+		UIManager.put("FileChooser.readOnly", Boolean.TRUE); 
+		chooser = new JFileChooser();
+		chooser.setMultiSelectionEnabled(true);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		PathSwingAction pathAction = new PathSwingAction(mainFrame, chooser, servletEnginLibinaryPathTextField);
+		servletEnginLibinaryPathButton.setAction(pathAction);
+		/** Post-initialization Code end */
 
 		//======== sinnoriInstalledPathLinePanel ========
 		{

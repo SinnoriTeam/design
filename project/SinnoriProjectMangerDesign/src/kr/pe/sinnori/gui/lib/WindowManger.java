@@ -48,8 +48,9 @@ public class WindowManger {
 		}
 	}
 
-	public void changeFirstScreenToProjectEditScreen() {
+	public void changeFirstScreenToProjectEditScreen(Project project) {
 		firstScreenPanel.setVisible(false);
+		projectEditScreenPanel.setProject(project);
 		projectEditScreenPanel.setVisible(true);
 		mainWindow.pack();
 	}

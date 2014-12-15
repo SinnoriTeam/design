@@ -4,22 +4,34 @@
 
 package kr.pe.sinnori.gui.screen;
 
-import java.awt.*;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Logger;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
+import kr.pe.sinnori.common.exception.ConfigErrorException;
+import kr.pe.sinnori.gui.lib.Project;
+import kr.pe.sinnori.gui.lib.ProjectManger;
 import kr.pe.sinnori.gui.lib.WindowManger;
+import kr.pe.sinnori.gui.util.PathSwingAction;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -28,14 +40,150 @@ import com.jgoodies.forms.layout.FormLayout;
  * @author Jonghoon Won
  */
 @SuppressWarnings("serial")
-public class FirstScreen extends JPanel {	
-	public FirstScreen() {
+public class FirstScreen extends JPanel {
+	// private Logger log = LoggerFactory.getLogger(FirstScreen.class);
+	private JFrame mainFrame = null;
+	private JFileChooser chooser = null;
+	private ProjectManger projectManger = null;
+	// private List<String> projectNameList = new ArrayList<String>();
+	// private HashMap<String, Project> projectHash = new HashMap<String, Project>();
+	
+	public FirstScreen(JFrame mainFrame) {
+		this.mainFrame =mainFrame;
 		initComponents();
 	}
 
 	private void projectEditButtonActionPerformed(ActionEvent e) {
-		WindowManger.getInstance().changeFirstScreenToProjectEditScreen();
+		// FIXME!
+		if (projectListComboBox.getSelectedIndex() > 0) {
+			String projectName = (String)projectListComboBox.getSelectedItem();
+			Project selectedProject = projectManger.getProject(projectName);
+			if (null == selectedProject) {
+				JOptionPane.showMessageDialog(mainFrame, "프로젝트를 얻는데 실패하였습니다.");
+				sinnoriInstalledPathInputTextField.requestFocusInWindow();
+				return;
+			}
+			
+			projectNameValueLabel.setText(selectedProject.getProjectName());
+			// serverCheckBox.setSelected(selectedProject.get);
+			appClientCheckBox.setSelected(selectedProject.isAppClient());
+			webClientCheckBox.setSelected(selectedProject.isWebClient());
+			
+			WindowManger.getInstance().changeFirstScreenToProjectEditScreen(selectedProject);
+		}
 	}
+
+	private void sinnoriInstalledPathAnalysisButtonActionPerformed(ActionEvent e) {
+		// TODO add your code here
+		String sinnoriInstalledPathString = sinnoriInstalledPathInputTextField.getText();
+		if ( null == sinnoriInstalledPathString) {
+			JOptionPane.showMessageDialog(mainFrame, "신놀이 설치 경로를 입력해 주세요.");
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		sinnoriInstalledPathString = sinnoriInstalledPathString.trim();
+		sinnoriInstalledPathInputTextField.setText(sinnoriInstalledPathString);
+		
+		if (sinnoriInstalledPathString.equals("")) {
+			JOptionPane.showMessageDialog(mainFrame, "신놀이 설치 경로를 다시 입력해 주세요.");
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		File sinnoriInstalledPath = new File(sinnoriInstalledPathString);
+		if (!sinnoriInstalledPath.exists()) {
+			String errorMessage = String.format("신놀이 설치 경로[%s] 가 존재하지 않습니다.", sinnoriInstalledPathString);
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		if (!sinnoriInstalledPath.isDirectory()) {
+			String errorMessage = String.format("신놀이 설치 경로[%s] 가 디렉토리가 아닙니다.", sinnoriInstalledPathString);
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		if (!sinnoriInstalledPath.canRead()) {
+			String errorMessage = String.format("신놀이 설치 경로[%s] 에 대한 읽기 권한이 없습니다.", sinnoriInstalledPathString);
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		if (!sinnoriInstalledPath.canWrite()) {
+			String errorMessage = String.format("신놀이 설치 경로[%s] 에 대한 쓰기 권한이 없습니다.", sinnoriInstalledPathString);
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		try {
+			sinnoriInstalledPathString = sinnoriInstalledPath.getCanonicalFile().getAbsolutePath();			
+			sinnoriInstalledPathInputTextField.setText(sinnoriInstalledPathString);
+		} catch (IOException e1) {
+			String errorMessage = String.format("신놀이 설치 경로[%s]를 시스템 절대 경로로 변경하는데 실패하였습니다.", sinnoriInstalledPathString);
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}
+		
+		String projectBasePathString = new StringBuilder(sinnoriInstalledPathString)
+		.append(File.separator).append("project").toString();
+		
+		try {
+			projectManger = new ProjectManger(projectBasePathString);
+		} catch (ConfigErrorException e2) {
+			JOptionPane.showMessageDialog(mainFrame, e2.getMessage());
+			sinnoriInstalledPathInputTextField.requestFocusInWindow();
+			return;
+		}		
+		
+		projectListComboBox.removeAllItems();
+		projectListComboBox.addItem("- project -");
+		
+		List<Project> projectList = projectManger.getProjectList();
+		for (Project project : projectList) {
+			projectListComboBox.addItem(project.getProjectName());
+		}
+		
+		
+		sinnoriInstalledPathInfoValueLabel.setText(sinnoriInstalledPathString);
+		allProjectWorkSaveButton.setEnabled(true);
+		projectNameInputTextField.setEnabled(true);
+		projectNameInputButton.setEnabled(true);
+		
+		projectListComboBox.setEnabled(true);
+		projectEditButton.setEnabled(true);
+		projectDeleteButton.setEnabled(true);
+	}
+
+	private void projectListComboBoxItemStateChanged(ItemEvent e) {
+		// TODO add your code here
+		
+		if (ItemEvent.SELECTED == e.getStateChange()) {
+			
+			if (projectListComboBox.getSelectedIndex() > 0) {
+				String projectName = (String)e.getItem();
+				Project selectedProject = projectManger.getProject(projectName);
+				if (null == selectedProject) {
+					JOptionPane.showMessageDialog(mainFrame, "selectedProject is null");
+					sinnoriInstalledPathInputTextField.requestFocusInWindow();
+					return;
+				}
+				
+				projectNameValueLabel.setText(selectedProject.getProjectName());
+				appClientCheckBox.setSelected(selectedProject.isAppClient());
+				webClientCheckBox.setSelected(selectedProject.isWebClient());
+				servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
+			} else {
+				projectNameValueLabel.setText("");
+				servletEnginLibinaryPathTextField.setText("");
+			}
+		}
+	}
+	
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -58,8 +206,8 @@ public class FirstScreen extends JPanel {
 		projectNameInputButton = new JButton();
 		projectListLinePanel = new JPanel();
 		projectListLabel = new JLabel();
-		projectListComboBox = new JComboBox<>();
 		projectListFuncPanel = new JPanel();
+		projectListComboBox = new JComboBox<>();
 		projectEditButton = new JButton();
 		projectDeleteButton = new JButton();
 		hSpacer2 = new JPanel(null);
@@ -90,6 +238,14 @@ public class FirstScreen extends JPanel {
 		setLayout(new FormLayout(
 			"${growing-button}",
 			"18dlu, 2*($lgap, default), $lgap, 13dlu, 8*($lgap, default)"));
+		/** Post-initialization Code start */
+		UIManager.put("FileChooser.readOnly", Boolean.TRUE); 
+		chooser = new JFileChooser();
+		chooser.setMultiSelectionEnabled(true);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		PathSwingAction pathAction = new PathSwingAction(mainFrame, chooser, sinnoriInstalledPathInputTextField);
+		sinnoriInstalledPathInputButton.setAction(pathAction);
+		/** Post-initialization Code end */
 
 		//======== sinnoriInstalledPathInputLinePanel ========
 		{
@@ -114,6 +270,12 @@ public class FirstScreen extends JPanel {
 
 			//---- sinnoriInstalledPathAnalysisButton ----
 			sinnoriInstalledPathAnalysisButton.setText("\ud504\ub85c\uc81d\ud2b8 \uc815\ubcf4 \ucd94\ucd9c\ud558\uae30");
+			sinnoriInstalledPathAnalysisButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					sinnoriInstalledPathAnalysisButtonActionPerformed(e);
+				}
+			});
 			sinnoriInstalledPathAnalysisLinePanel.add(sinnoriInstalledPathAnalysisButton);
 		}
 		add(sinnoriInstalledPathAnalysisLinePanel, CC.xy(1, 3));
@@ -131,9 +293,6 @@ public class FirstScreen extends JPanel {
 			//---- sinnoriInstalledPathInfoTitleLabel ----
 			sinnoriInstalledPathInfoTitleLabel.setText("\uc2e0\ub180\uc774 \uc124\uce58 \uacbd\ub85c :");
 			sinnoriInstalledPathInfoLinePanel.add(sinnoriInstalledPathInfoTitleLabel, CC.xy(1, 1));
-
-			//---- sinnoriInstalledPathInfoValueLabel ----
-			sinnoriInstalledPathInfoValueLabel.setText("d:\\gitsinnori\\sinnori");
 			sinnoriInstalledPathInfoLinePanel.add(sinnoriInstalledPathInfoValueLabel, CC.xy(3, 1));
 		}
 		add(sinnoriInstalledPathInfoLinePanel, CC.xy(1, 7));
@@ -144,6 +303,7 @@ public class FirstScreen extends JPanel {
 
 			//---- allProjectWorkSaveButton ----
 			allProjectWorkSaveButton.setText("\uc804\uccb4 \ud504\ub85c\uc81d\ud2b8 \ubcc0\uacbd \ub0b4\uc5ed \uc800\uc7a5");
+			allProjectWorkSaveButton.setEnabled(false);
 			allProjectWorkSaveLinePanel.add(allProjectWorkSaveButton);
 		}
 		add(allProjectWorkSaveLinePanel, CC.xy(1, 9));
@@ -157,10 +317,14 @@ public class FirstScreen extends JPanel {
 			//---- projectNameInputLabel ----
 			projectNameInputLabel.setText("\ud504\ub85c\uc81d\ud2b8 \uc774\ub984 :");
 			projectNameInputLinePanel.add(projectNameInputLabel, CC.xy(1, 1));
+
+			//---- projectNameInputTextField ----
+			projectNameInputTextField.setEnabled(false);
 			projectNameInputLinePanel.add(projectNameInputTextField, CC.xy(3, 1));
 
 			//---- projectNameInputButton ----
 			projectNameInputButton.setText("\ucd94\uac00");
+			projectNameInputButton.setEnabled(false);
 			projectNameInputLinePanel.add(projectNameInputButton, CC.xy(5, 1));
 		}
 		add(projectNameInputLinePanel, CC.xy(1, 11));
@@ -168,27 +332,33 @@ public class FirstScreen extends JPanel {
 		//======== projectListLinePanel ========
 		{
 			projectListLinePanel.setLayout(new FormLayout(
-				"2*(default, $lcgap), default",
+				"default, $lcgap, default",
 				"default"));
 
 			//---- projectListLabel ----
 			projectListLabel.setText("\uc0dd\uc131\ub41c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
 			projectListLinePanel.add(projectListLabel, CC.xy(1, 1));
 
-			//---- projectListComboBox ----
-			projectListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
-				"- \ud504\ub85c\uc81d\ud2b8 \uc120\ud0dd -",
-				"sample_fileupdown",
-				"sample_test"
-			}));
-			projectListLinePanel.add(projectListComboBox, CC.xy(3, 1));
-
 			//======== projectListFuncPanel ========
 			{
 				projectListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
+				//---- projectListComboBox ----
+				projectListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
+					"- project -"
+				}));
+				projectListComboBox.setEnabled(false);
+				projectListComboBox.addItemListener(new ItemListener() {
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						projectListComboBoxItemStateChanged(e);
+					}
+				});
+				projectListFuncPanel.add(projectListComboBox);
+
 				//---- projectEditButton ----
 				projectEditButton.setText("\ud3b8\uc9d1");
+				projectEditButton.setEnabled(false);
 				projectEditButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -199,9 +369,10 @@ public class FirstScreen extends JPanel {
 
 				//---- projectDeleteButton ----
 				projectDeleteButton.setText("\uc0ad\uc81c");
+				projectDeleteButton.setEnabled(false);
 				projectListFuncPanel.add(projectDeleteButton);
 			}
-			projectListLinePanel.add(projectListFuncPanel, CC.xy(5, 1));
+			projectListLinePanel.add(projectListFuncPanel, CC.xy(3, 1));
 		}
 		add(projectListLinePanel, CC.xy(1, 13));
 
@@ -218,9 +389,6 @@ public class FirstScreen extends JPanel {
 			//---- projectNameTitleLabel ----
 			projectNameTitleLabel.setText("\ud504\ub85c\uc81d\ud2b8 \uc774\ub984 :");
 			projectNameLinePanel.add(projectNameTitleLabel, CC.xy(1, 1));
-
-			//---- projectNameValueLabel ----
-			projectNameValueLabel.setText("sample_test");
 			projectNameLinePanel.add(projectNameValueLabel, CC.xy(3, 1));
 		}
 		add(projectNameLinePanel, CC.xy(1, 17));
@@ -283,12 +451,15 @@ public class FirstScreen extends JPanel {
 
 			//---- projectConfigVeiwButton ----
 			projectConfigVeiwButton.setText("\uc124\uc815 \ud30c\uc77c \ub0b4\uc6a9 \ubcf4\uae30");
+			projectConfigVeiwButton.setEnabled(false);
 			projectConfigVeiwLinePanel.add(projectConfigVeiwButton);
 		}
 		add(projectConfigVeiwLinePanel, CC.xy(1, 23));
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 		
-		Logger.getGlobal().info("call");
+		// Logger.getGlobal().info("call");
+		
+		
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
@@ -311,8 +482,8 @@ public class FirstScreen extends JPanel {
 	private JButton projectNameInputButton;
 	private JPanel projectListLinePanel;
 	private JLabel projectListLabel;
-	private JComboBox<String> projectListComboBox;
 	private JPanel projectListFuncPanel;
+	private JComboBox<String> projectListComboBox;
 	private JButton projectEditButton;
 	private JButton projectDeleteButton;
 	private JPanel hSpacer2;

@@ -17,7 +17,7 @@ import com.jgoodies.forms.layout.*;
 @SuppressWarnings("serial")
 public class SubProjectConfigPopup extends JDialog {
 	public SubProjectConfigPopup(Frame owner) {
-		super(owner);
+		super(owner, true);
 		initComponents();
 	}
 
@@ -27,7 +27,6 @@ public class SubProjectConfigPopup extends JDialog {
 	}
 
 	private void okButtonActionPerformed(ActionEvent e) {
-		// TODO add your code here
 		this.dispose();
 	}
 

@@ -54,10 +54,10 @@ public class ConfigItem {
 			throw new IllegalArgumentException(errorMessage);
 		}
 		
-		if (defaultValue.equals("")) {
+		/*if (defaultValue.equals("")) {
 			String errorMessage = "parameter defaultValue is empty";
 			throw new IllegalArgumentException(errorMessage);
-		}
+		}*/
 		
 		
 		this.key = key;		

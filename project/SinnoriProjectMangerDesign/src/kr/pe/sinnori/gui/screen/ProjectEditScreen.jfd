@@ -8,6 +8,10 @@ new FormModel {
 			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, 104dlu, linegap, default, linegap, 116dlu"
 		} ) {
 			name: "this"
+			auxiliary() {
+				"JavaCodeGenerator.customCreate": true
+				"JavaCodeGenerator.postInitCode": "/** Post-initialization Code start */\nUIManager.put(\"FileChooser.readOnly\", Boolean.TRUE); \nchooser = new JFileChooser();\nchooser.setMultiSelectionEnabled(true);\nchooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);\nPathSwingAction pathAction = new PathSwingAction(mainFrame, chooser, servletEnginLibinaryPathTextField);\nservletEnginLibinaryPathButton.setAction(pathAction);\n/** Post-initialization Code end */"
+			}
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
 				"$columnSpecs": "default, labelcompgap, default:grow"
 				"$rowSpecs": "default"

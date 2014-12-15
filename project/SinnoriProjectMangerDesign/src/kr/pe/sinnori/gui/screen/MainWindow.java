@@ -23,8 +23,8 @@ public class MainWindow extends JFrame {
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		// Generated using JFormDesigner Evaluation license - Jonghoon Won
-		firstScreenPanel = new FirstScreen();
-		projectEditScreenPanel = new ProjectEditScreen();
+		firstScreenPanel = new FirstScreen(this);
+		projectEditScreenPanel = new ProjectEditScreen(this);
 
 		//======== this ========
 		Container contentPane = getContentPane();

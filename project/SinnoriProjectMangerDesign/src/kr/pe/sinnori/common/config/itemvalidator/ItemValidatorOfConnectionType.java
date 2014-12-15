@@ -37,7 +37,7 @@ public class ItemValidatorOfConnectionType extends AbstractItemValidator {
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		value = value.toLowerCase();
+		// value = value.toLowerCase();
 		
 		if (! stringValueSet.contains(value)) {
 			String errorMessage = new StringBuilder("parameter value[")
