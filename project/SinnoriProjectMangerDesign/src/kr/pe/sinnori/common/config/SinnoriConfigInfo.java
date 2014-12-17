@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import kr.pe.sinnori.common.config.dependitem.ClassLoaderResourceFileBreakChecker;
 import kr.pe.sinnori.common.config.dependitem.MinMaxBreakChecker;
 import kr.pe.sinnori.common.config.dependitem.ValueEqualConditionChecker;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfBoolean;
@@ -23,7 +22,6 @@ import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageInfoXML
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageProtocol;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxInteger;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxLong;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoCheck;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoNullAndEmptyString;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfPath;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSessionKeyRSAKeypairPath;
@@ -39,8 +37,11 @@ import kr.pe.sinnori.common.util.SequencedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SinnoriProjectConfig {
-	private Logger log = LoggerFactory.getLogger(SinnoriProjectConfig.class);
+public class SinnoriConfigInfo {
+	private Logger log = LoggerFactory.getLogger(SinnoriConfigInfo.class);
+	
+	public final static String DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING = "dbcp.connection_pool_name_list.value";
+	public final static String PROJECT_NAME_LIST_KEY_STRING = "project.name_list.value";
 	
 	private String projectName;
 	private String projectPathString;
@@ -56,25 +57,16 @@ public class SinnoriProjectConfig {
 	private Hashtable<String, AbstractConditionChecker> conditionCheckerHash = new Hashtable<String, AbstractConditionChecker>();
 	private Hashtable<String, AbstractBreakChecker> breakCheckerHash = new Hashtable<String, AbstractBreakChecker>();
 	
-	
-	
-	private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
-	// private List<ConfigItem> dbcpPartItemList = new ArrayList<ConfigItem>();
-	// private Hashtable<String, ConfigItem> dbcpPartconfigItemHash = new Hashtable<String, ConfigItem>();
-	
-	// private Hashtable<String, AbstractConditionChecker> beforeDependenceDBCPPartconfigItemHash = new Hashtable<String, AbstractConditionChecker>();	
-	// private Hashtable<String, AbstractAfterDependenceItem> afterDependenceDBCPPartconfigItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
-	
-	
-	// private List<ConfigItem> projectPartItemList = new ArrayList<ConfigItem>();
-	// private Hashtable<String, ConfigItem> projectPartconfigItemHash = new Hashtable<String, ConfigItem>();
 		
-	// private Hashtable<String, AbstractConditionChecker> beforeDependenceProjectPartconfigItemHash = new Hashtable<String, AbstractConditionChecker>();	
-	// private Hashtable<String, AbstractAfterDependenceItem> afterDependenceProjectPartconfigItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
+	private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
 
 	private List<String> projectNameList = new LinkedList<String>();
 	
-	public SinnoriProjectConfig(String projectName, String projectPathString) throws ConfigErrorException {
+	private List<ConfigItem> dbcpPartConfigItemList = new ArrayList<ConfigItem>();
+	private List<ConfigItem> commonPartConfigItemList = new ArrayList<ConfigItem>();
+	private List<ConfigItem> projectPartConfigItemList = new ArrayList<ConfigItem>();
+	
+	public SinnoriConfigInfo(String projectName, String projectPathString) throws ConfigErrorException {
 		this.projectName = projectName;
 		this.projectPathString = projectPathString;		
 		// this.sourceSequencedProperties = sourceSequencedProperties;		
@@ -83,6 +75,8 @@ public class SinnoriProjectConfig {
 		projectConfigFilePathString = getProjectConfigFilePathString();
 		
 		projectNameList.add(projectName);
+		
+		log.info("projectName={}", projectName);
 		
 		initCommonPart();
 		
@@ -96,6 +90,17 @@ public class SinnoriProjectConfig {
 			*//** 알 수 없는 키가 존재할 경우 *//*
 			throw new ConfigErrorException(e.getMessage());
 		}*/
+		
+		for (ConfigItem configItem : configItemList) {
+			ConfigItem.ConfigPart itemConfigPart = configItem.getConfigPart();
+			if (ConfigItem.ConfigPart.DBCP == itemConfigPart) {				
+				dbcpPartConfigItemList.add(configItem);
+			} else if (ConfigItem.ConfigPart.COMMON == itemConfigPart) {
+				commonPartConfigItemList.add(configItem);
+			} else {
+				projectPartConfigItemList.add(configItem);
+			}
+		}
 	}
 	
 	private void dbcpPart() throws IllegalArgumentException, ConfigErrorException {
@@ -103,14 +108,13 @@ public class SinnoriProjectConfig {
 		// String keyOfDepenceItem = null;
 		String dbcpID = null;		
 		try {
-			/** DBCP start */
-			
-			dbcpID = "connection_pool_name_list.value";
+			/** DBCP start */			
+			/*dbcpID = "connection_pool_name_list.value";
 			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
 					"dbcp 연결 폴 이름 목록, 구분자 콤마",
 					"", false, 
 					new ItemValueGetterOfNoCheck());
-			addConfigItem(item);
+			addConfigItem(item);*/
 			
 			dbcpID = "confige_file.value";
 			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
@@ -184,7 +188,7 @@ public class SinnoriProjectConfig {
 			
 			conditionCheckerHash.put(targetItemID, 
 					new ValueEqualConditionChecker(targetItemID, 
-							depenceItemID, "File", this));			
+							depenceItemID, "File", this));
 			
 			
 			targetItemID = "sessionkey.rsa_keysize.value";
@@ -251,12 +255,12 @@ public class SinnoriProjectConfig {
 			addConfigItem(item);
 			
 			// common.projectlist.value
-			targetItemID = "common.projectlist.value";
+			/*targetItemID = "common.projectlist.value";
 			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"프로젝트 목록, 프로젝트 구분은 콤마",
 					"", false, 
 					new ItemValueGetterOfNoCheck());
-			addConfigItem(item);
+			addConfigItem(item);*/
 			
 			/*ItemValueGetterHash.put("jdbc.connection_uri.value", new ItemValueGetterOfJdbcConnectionURI("jdbc:mysql://localhost:3306/sinnori"));
 			ItemValueGetterHash.put("jdbc.db_user_name.value", new ItemValueGetterOfJdbcDBUserName("dbmadangse"));*/
@@ -671,23 +675,16 @@ public class SinnoriProjectConfig {
 					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));
 						
 			
-			depenceItemID = getProjectServerPartSubKeyName("classloader.appinf.path");
-			targetItemID = getProjectServerPartSubKeyName("mybatis.config_file");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
+			targetItemID = getProjectServerPartSubKeyName("classloader.appinf.path");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"서버 동적 클래스 APP-INF 경로",
 					getAPPINFPathString(), false, 
 					new ItemValueGetterOfPath());
-			addConfigItem(configItem);	
-			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
-					"mybatis 설정 파일 이름. SinnoriClassLoader.getResourceAsStream 통해서 접근된다.",
-					"kr/pe/sinnori/impl/mybatis/mybatisConfig.xml", false, 
-					new ItemValueGetterOfNoCheck());
-			addConfigItem(configItem);	
-			
+			addConfigItem(configItem);		
+			/*
 			breakCheckerHash.put(targetItemID, 
 					new  ClassLoaderResourceFileBreakChecker(targetItemID, 
-							depenceItemID, this));
+							depenceItemID, this));*/
 			
 		} catch(ConfigValueInvalidException | IllegalArgumentException e) {
 			String errorMessage = new StringBuilder("project config file[")
@@ -795,7 +792,7 @@ public class SinnoriProjectConfig {
 		makeProjectNameSetFromSourceProperties(sourceProperties);
 		
 		try {
-			checkOnlyValidationForAllKeys(sourceProperties);
+			checkOnlyAllKeyValidation(sourceProperties);
 		} catch (ConfigKeyNotFoundException e) {
 			String errorMessage = e.getMessage();
 			log.warn(errorMessage);
@@ -804,7 +801,7 @@ public class SinnoriProjectConfig {
 	}
 	
 	private void makeDBCPCOnnectionPoolNameSetFromSourceProperties(Properties sourceProperties) throws ConfigErrorException {
-		String dbcpConnectionPoolNameListValue = sourceProperties.getProperty("dbcp.connection_pool_name_list.value");
+		String dbcpConnectionPoolNameListValue = sourceProperties.getProperty(DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING);
 		
 		if (null == dbcpConnectionPoolNameListValue) {
 			/** DBCP 연결 폴 이름 목록을 지정하는 키가 없을 경우 */
@@ -815,33 +812,38 @@ public class SinnoriProjectConfig {
 		}
 		
 		String[] dbcpConnectionPoolNameArrray = dbcpConnectionPoolNameListValue.split(",");
-		if (0 == dbcpConnectionPoolNameArrray.length) {
-			dbcpConnectionPoolNameList.clear();
-			return;
-		}
+		
+		dbcpConnectionPoolNameList.clear();
 		
 		Set<String> tempNameSet = new HashSet<String>();
 		
 		for (String dbcpConnectionPoolNameOfList : dbcpConnectionPoolNameArrray) {
 			dbcpConnectionPoolNameOfList = dbcpConnectionPoolNameOfList.trim();
 			
+			if (dbcpConnectionPoolNameOfList.equals("")) continue;
+			
 			tempNameSet.add(dbcpConnectionPoolNameOfList);
+			dbcpConnectionPoolNameList.add(dbcpConnectionPoolNameOfList);
 		}		
 		
-		if (tempNameSet.size() != dbcpConnectionPoolNameArrray.length) {
+		if (tempNameSet.size() != dbcpConnectionPoolNameList.size()) {
 			/** DBCP 연결 폴 이름 목록의 이름들중 중복된 것이 있는 경우 */
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
-			.append("]:: the project list has no main project").toString();
+			.append("]::dbcp connection pool name list has one more same thing").toString();
+			
+			log.warn(errorMessage);
+			
 			throw new ConfigErrorException(errorMessage);
 		}
 		
-		dbcpConnectionPoolNameList.clear();
-		dbcpConnectionPoolNameList.addAll(tempNameSet);
 	}
 		
 	private void makeProjectNameSetFromSourceProperties(Properties sourceProperties) throws ConfigErrorException {
-		String projectNameListValue = sourceProperties.getProperty("common.projectlist.value");
+		String projectNameListValue = sourceProperties.getProperty(PROJECT_NAME_LIST_KEY_STRING);
+		
+		log.info("projectName={}, projectNameListValue={}", 
+				projectName, projectNameListValue);
 		
 		
 		if (null == projectNameListValue) {
@@ -858,39 +860,45 @@ public class SinnoriProjectConfig {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
 			.append("]:: the project list is empty").toString();
+			
+			log.warn(errorMessage);
+			
 			throw new ConfigErrorException(errorMessage);
 		}
 
+		projectNameList.clear();
 		Set<String> tempNameSet = new HashSet<String>();
 		
-		boolean isMainProject = false;
+		
 		for (String projectNameOfList : projectNameArrray) {
 			projectNameOfList = projectNameOfList.trim();
 			
-			if (projectNameOfList.equals(projectName)) {
-				isMainProject = true;
-			}
+			if (projectNameOfList.equals("")) continue;
+			
+			
 			tempNameSet.add(projectNameOfList);
+			projectNameList.add(projectNameOfList);
 		}
 		
-		if (!isMainProject) {
+		if (! tempNameSet.contains(projectName)) {
 			/** 프로젝트 목록에 지정된 메인 프로젝트에 대한 정보가 없는 경우 */
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("]:: the project list has no main project").toString();
+			
+			log.warn(errorMessage);
 			throw new ConfigErrorException(errorMessage);
 		}
 		
-		if (tempNameSet.size() != projectNameArrray.length) {
+		if (tempNameSet.size() != projectNameList.size()) {
 			/** 프로젝트 목록의 이름들중 중복된 것이 있는 경우 */
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
-			.append("]:: the project list has no main project").toString();
+			.append("]::project name list has one more same thing").toString();
+			
+			log.warn(errorMessage);
 			throw new ConfigErrorException(errorMessage);
-		}
-		
-		projectNameList.clear();
-		projectNameList.addAll(tempNameSet);
+		}		
 	}
 	
 	public void addSubProjectName(String subProjectName) throws ConfigErrorException {
@@ -937,68 +945,54 @@ public class SinnoriProjectConfig {
 		projectNameList.remove(subProjectName);
 	}
 	
-	public List<String> getProjectNameIterator() {
+	public List<String> getProjectNameList() {
 		return projectNameList;
 	}	
 	
 	public SequencedProperties getSequencedProperties() {
-		SequencedProperties sequencedProperties = new SequencedProperties();		
-		
-		List<ConfigItem> dbcpPartConfigItemList = new ArrayList<ConfigItem>();
-		List<ConfigItem> commonPartConfigItemList = new ArrayList<ConfigItem>();
-		List<ConfigItem> projectPartConfigItemList = new ArrayList<ConfigItem>();		
-		
-		for (ConfigItem configItem : configItemList) {
-			ConfigItem.ConfigPart itemConfigPart = configItem.getConfigPart();
-			if (ConfigItem.ConfigPart.DBCP == itemConfigPart) {				
-				dbcpPartConfigItemList.add(configItem);
-			} else if (ConfigItem.ConfigPart.COMMON == itemConfigPart) {
-				commonPartConfigItemList.add(configItem);
-			} else {
-				projectPartConfigItemList.add(configItem);
-			}
-		}
+		SequencedProperties sequencedProperties = new SequencedProperties();
 		
 		String key = null;
 		
 		/** DBCP */
-		{
-			for (ConfigItem configItem : dbcpPartConfigItemList) {
-				String itemID = configItem.getItemID();
-				if (itemID.equals("connection_pool_name_list.value")) {
+		{			
+			List<String> dbcpConnectionPoolNameList = new ArrayList<String>();
+			
+			StringBuilder dbcpConnectionPoolNameListBuilder = new StringBuilder();
+			int dbcpConnectionPoolNameListSize = dbcpConnectionPoolNameList.size();
+			int i=0;
+			if (i < dbcpConnectionPoolNameListSize) {
+				String dbcpConnectionPoolName = dbcpConnectionPoolNameList.get(i);
+				dbcpConnectionPoolNameListBuilder.append(dbcpConnectionPoolName);
+				i++;
+			}
+			
+			for (; i < dbcpConnectionPoolNameListSize; i++) {	
+				String dbcpConnectionPoolName = dbcpConnectionPoolNameList.get(i);
+				dbcpConnectionPoolNameListBuilder.append(", ");
+				dbcpConnectionPoolNameListBuilder.append(dbcpConnectionPoolName);
+			}
+			
+			sequencedProperties.setProperty(DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING, dbcpConnectionPoolNameListBuilder.toString());
+			
+			for (String dbcpConnectionPoolName : dbcpConnectionPoolNameList) {				
+				for (ConfigItem configItem : dbcpPartConfigItemList) {
+					String itemID = configItem.getItemID();
+					
 					key = new StringBuilder("dbcp.")
+					.append(dbcpConnectionPoolName)
+					.append(".")
 					.append(itemID).toString();
 					
 					int len = key.length();
 					String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
 					
 					// FIXME!
-					log.info("descKey=[{}]", descKey);
+					log.info("key=[{}], descKey=[{}]", key, descKey);
 					
 					sequencedProperties.put(descKey, configItem.toDescription());
 					sequencedProperties.put(key, configItem.getDefaultValue());
-				}
-			}			
-			
-			for (String dbcpConnectionPoolName : dbcpConnectionPoolNameList) {				
-				for (ConfigItem configItem : dbcpPartConfigItemList) {
-					String itemID = configItem.getItemID();
-					if (!itemID.equals("connection_pool_name_list.value")) {
-						key = new StringBuilder("dbcp.")
-						.append(dbcpConnectionPoolName)
-						.append(".")
-						.append(itemID).toString();
-						
-						int len = key.length();
-						String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
-						
-						// FIXME!
-						log.info("descKey=[{}]", descKey);
-						
-						sequencedProperties.put(descKey, configItem.toDescription());
-						sequencedProperties.put(key, configItem.getDefaultValue());
-					}
-				}				
+				}		
 			}
 		}
 		
@@ -1010,148 +1004,85 @@ public class SinnoriProjectConfig {
 			String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
 			
 			// FIXME!
-			log.info("descKey=[{}]", descKey);
+			log.info("key=[{}], descKey=[{}]", key, descKey);
 			
 			sequencedProperties.put(descKey, configItem.toDescription());
 			sequencedProperties.put(key, configItem.getDefaultValue());
 		}
 		
-		/** project */		
-		for (String projectName : projectNameList) {
-			for (ConfigItem configItem : projectPartConfigItemList) {
-				key = new StringBuilder(projectName)
-				.append(".")
-				.append(configItem.getItemID()).toString();
-				
-				int len = key.length();
-				String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
-				
-				// FIXME!
-				log.info("descKey=[{}]", descKey);
-				
-				sequencedProperties.put(descKey, configItem.toDescription());
-				sequencedProperties.put(key, configItem.getDefaultValue());
+		/** project */
+		{
+			List<String> projectNameList = new ArrayList<String>();
+			projectNameList.add(this.projectName);
+			
+			StringBuilder projectNameListBuilder = new StringBuilder();
+			int projectNameListSize = projectNameList.size();
+			int i=0;
+			if (i < projectNameListSize) {
+				String projectName = projectNameList.get(i);
+				projectNameListBuilder.append(projectName);
+				i++;
 			}
-		}
+			
+			for (; i < projectNameListSize; i++) {	
+				String projectName = projectNameList.get(i);
+				projectNameListBuilder.append(", ");
+				projectNameListBuilder.append(projectName);
+			}
+			
+			sequencedProperties.setProperty(PROJECT_NAME_LIST_KEY_STRING, projectNameListBuilder.toString());
+			
+			for (String projectName : projectNameList) {
+				for (ConfigItem configItem : projectPartConfigItemList) {
+					key = new StringBuilder("project.")
+					.append(projectName)
+					.append(".")
+					.append(configItem.getItemID()).toString();
+					
+					int len = key.length();
+					String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
+					
+					// FIXME!
+					log.info("key=[{}], descKey=[{}]", key, descKey);
+					
+					sequencedProperties.put(descKey, configItem.toDescription());
+					sequencedProperties.put(key, configItem.getDefaultValue());
+				}
+			}
+		}		
 		
 		return sequencedProperties;
 	}
 	
 	// FIXME!
-	public boolean isValidate(String key, Properties sourceProperties) throws ConfigValueInvalidException {
+	public boolean isValidate(String targetKey, Properties sourceProperties) throws ConfigValueInvalidException {
 		boolean isValidation= true;
-		AbstractConditionChecker beforeDependenceItem = null;
-		
-		StringTokenizer tokens = new StringTokenizer(key, "."); 
-		if (tokens.hasMoreTokens()) {
-			String firstToken = tokens.nextToken();
-			if (firstToken.equals("dbcp")) {
-				if (tokens.hasMoreTokens()) {
-					String secondToken = tokens.nextToken();
-					
-					StringBuilder subKeyBuilder = new StringBuilder();
-					
-					if (dbcpConnectionPoolNameList.contains(secondToken)) {
-						if (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(tokens.nextToken());
-						}
-						while (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(".");
-							subKeyBuilder.append(tokens.nextToken());
-						}
-					} else {								
-						subKeyBuilder.append(secondToken);
-						
-						while (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(".");
-							subKeyBuilder.append(tokens.nextToken());
-						}
-					}
-					
-					// FIXME!
-					log.info("dbcp subkey={}", subKeyBuilder.toString());
-					beforeDependenceItem = conditionCheckerHash.get(subKeyBuilder.toString());
-				}
-			} else if (projectNameList.contains(firstToken)) {
-				StringBuilder subKeyBuilder = new StringBuilder();
-				if (tokens.hasMoreTokens()) {
-					subKeyBuilder.append(tokens.nextToken());
-				}
-				
-				while (tokens.hasMoreTokens()) {
-					subKeyBuilder.append(".");
-					subKeyBuilder.append(tokens.nextToken());
-				}
-				
-				String subKey = subKeyBuilder.toString();					
-				beforeDependenceItem = conditionCheckerHash.get(subKey);			
-			} else {
-				beforeDependenceItem = conditionCheckerHash.get(key);
-			}
-		}
-		
-		
-		if (null != beforeDependenceItem) {
-			isValidation = beforeDependenceItem.isValidation(sourceProperties, key);
-		}
-		return isValidation;
-	}
-	
-	
-	/*public Object getNativeValue(String key, Properties sourceProperties) throws ConfigValueInvalidException, ConfigKeyNotFoundException {
-		ConfigItem itemConfig = null;
-		Object nativeValue = null;
-		int inx = key.indexOf(".");
-		if (inx > 0) {
-			int len = key.length();
-			if (inx+1 < len) {
-				String firstToken = key.substring(0, inx);
-				
-				if (projectNameSet.contains(firstToken)) {
-					// String projectNameOfConfig = firstToken;				
-					String subKey = key.substring(inx+1);
-					
-					itemConfig = projectPartconfigItemHash.get(subKey);
-					
-				} else {
-					itemConfig = configItemHash.get(key);
-				}
-			} else {
-				itemConfig = configItemHash.get(key);
-			}
-		} else {
-			itemConfig = configItemHash.get(key);
-		}
-		
-		if (null == itemConfig) {
-			String errorMessage = new StringBuilder("project[")
-			.append(projectName)			
-			.append("]::parameter key[")
-			.append(key)
-			.append("] not exist").toString();
-			
-			log.warn(errorMessage);
-			
-			throw new ConfigKeyNotFoundException(errorMessage);
-		}
-		
-		try {
-			nativeValue = itemConfig.getItemValueGetter().validateItem(sourceProperties.getProperty(key));
-		} catch(ConfigValueInvalidException e) {
-			String errorMessage = new StringBuilder("project[")
-			.append(projectName)			
-			.append("]::key[")
-			.append(key)
-			.append("] errrorMessage=")
-			.append(e.getMessage()).toString();
+		String itemID = getItemIDFromKey(targetKey);
+		if (null == itemID) {
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)
+			.append("]::parameter targetKey[")
+			.append(targetKey)
+			.append("] is bad, itemID is null").toString();
 			
 			log.warn(errorMessage);
 			
 			throw new ConfigValueInvalidException(errorMessage);
-		}		
+		}
 		
-		return nativeValue;
-	}	*/
+		int inx = targetKey.indexOf(itemID);
+		String prefixOfDomain = targetKey.substring(0, inx);
+		// FIXME!
+		log.info("targetKey={}, itemID={}, inx={}, prefix={}", targetKey, itemID, inx, prefixOfDomain);
+		
+		AbstractConditionChecker conditionChecker = conditionCheckerHash.get(itemID);
+				
+		if (null != conditionChecker) {
+			isValidation = conditionChecker.isValidation(sourceProperties, prefixOfDomain);
+		}
+		return isValidation;
+	}
+	
 	
 	public String getItemIDFromKey(String key) {
 		StringTokenizer tokens = new StringTokenizer(key, "."); 
@@ -1184,156 +1115,76 @@ public class SinnoriProjectConfig {
 					// log.info("dbcp subkey={}", itemIDBuilder.toString());
 					return itemIDBuilder.toString();
 				}
-			} else if (projectNameList.contains(firstToken)) {
-				StringBuilder itemIDBuilder = new StringBuilder();
-				if (tokens.hasMoreTokens()) {
-					itemIDBuilder.append(tokens.nextToken());
-				}
-				
-				while (tokens.hasMoreTokens()) {
-					itemIDBuilder.append(".");
-					itemIDBuilder.append(tokens.nextToken());
-				}
-				
-				return itemIDBuilder.toString();
-			} else {
-				return key;
-			}
-		}
-		
-		return null;
-	}
-	
-	public String getKeyOfItemIDFromKey(String key, String itemID) {
-		StringTokenizer tokens = new StringTokenizer(key, "."); 
-		if (tokens.hasMoreTokens()) {
-			String firstToken = tokens.nextToken();
-			if (firstToken.equals("dbcp")) {
+			} else if (firstToken.equals("project")) {
 				if (tokens.hasMoreTokens()) {
 					String secondToken = tokens.nextToken();
-					
-					StringBuilder itemKeyBuilder = new StringBuilder(firstToken);
-					itemKeyBuilder.append(".");					
-					
-					if (dbcpConnectionPoolNameList.contains(secondToken)) {
-						itemKeyBuilder.append(secondToken);
-						itemKeyBuilder.append(".");
-						itemKeyBuilder.append(itemID);
-					} else {
-						itemKeyBuilder.append(itemID);
-					}
-					
-					// FIXME!
-					// log.info("dbcp subkey={}", itemIDBuilder.toString());
-					return itemKeyBuilder.toString();
-				}
-			} else if (projectNameList.contains(firstToken)) {
-				StringBuilder itemKeyBuilder = new StringBuilder(firstToken);
-				itemKeyBuilder.append(".");	
-				itemKeyBuilder.append(itemID);	
-				
-				return itemKeyBuilder.toString();
-			} else {
-				return key;
-			}
-		}
-		
-		return null;
-	}
-	
-	public Object getNativeValueWithAfterValidate(String key, Properties sourceProperties) throws ConfigValueInvalidException, ConfigKeyNotFoundException {
-		Object nativeValue = null;
-		ConfigItem itemConfig = null;
-		
-		AbstractBreakChecker afterDependenceItem = null;
-		StringTokenizer tokens = new StringTokenizer(key, "."); 
-		if (tokens.hasMoreTokens()) {
-			String firstToken = tokens.nextToken();
-			if (firstToken.equals("dbcp")) {
-				if (tokens.hasMoreTokens()) {
-					String secondToken = tokens.nextToken();
-					
-					StringBuilder subKeyBuilder = new StringBuilder();
-					
-					if (dbcpConnectionPoolNameList.contains(secondToken)) {
+					if (projectNameList.contains(secondToken)) {
+						StringBuilder itemIDBuilder = new StringBuilder();
 						if (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(tokens.nextToken());
+							itemIDBuilder.append(tokens.nextToken());
 						}
-						while (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(".");
-							subKeyBuilder.append(tokens.nextToken());
-						}
-					} else {								
-						subKeyBuilder.append(secondToken);
 						
 						while (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(".");
-							subKeyBuilder.append(tokens.nextToken());
+							itemIDBuilder.append(".");
+							itemIDBuilder.append(tokens.nextToken());
 						}
+						
+						return itemIDBuilder.toString();
 					}
-					
-					// FIXME!
-					log.info("dbcp subkey={}", subKeyBuilder.toString());
-					itemConfig = configItemHash.get(subKeyBuilder.toString());
-					afterDependenceItem = breakCheckerHash.get(subKeyBuilder.toString());
-				}
-			} else if (projectNameList.contains(firstToken)) {
-				StringBuilder subKeyBuilder = new StringBuilder();
-				if (tokens.hasMoreTokens()) {
-					subKeyBuilder.append(tokens.nextToken());
-				}
+				}			
 				
-				while (tokens.hasMoreTokens()) {
-					subKeyBuilder.append(".");
-					subKeyBuilder.append(tokens.nextToken());
-				}
-				
-				String subKey = subKeyBuilder.toString();					
-				itemConfig = configItemHash.get(subKey);
-				afterDependenceItem = breakCheckerHash.get(subKey);
 			} else {
-				itemConfig = configItemHash.get(key);
-				afterDependenceItem = breakCheckerHash.get(key);
+				return key;
 			}
 		}
 		
-		if (null == itemConfig) {
-			String errorMessage = new StringBuilder("1.project config file[")
-			.append(projectConfigFilePathString)			
-			.append("]::parameter key[")
-			.append(key)
-			.append("] not exist at SinnoriProjectConfig").toString();
-			
-			log.warn(errorMessage);
-			
-			throw new ConfigKeyNotFoundException(errorMessage);
-		}
-		
-		String value = sourceProperties.getProperty(key);
-		try {
-			nativeValue = itemConfig.getItemValueGetter().getItemValueWithValidation(value);
-		} catch(ConfigValueInvalidException e) {
+		return null;
+	}
+	
+	public Object getNativeValueAfterBreakChecker(String targetKey, Properties sourceProperties) throws ConfigValueInvalidException {		
+		String itemID = getItemIDFromKey(targetKey);
+		if (null == itemID) {
 			String errorMessage = new StringBuilder("project config file[")
-			.append(projectConfigFilePathString)			
-			.append("]::key[")
-			.append(key)
-			.append("] errrorMessage=")
-			.append(e.getMessage()).toString();
+			.append(projectConfigFilePathString)
+			.append("]::parameter targetKey[")
+			.append(targetKey)
+			.append("] is bad, itemID is null").toString();
 			
 			log.warn(errorMessage);
 			
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		if (null != afterDependenceItem) {
+		ConfigItem configItem = configItemHash.get(itemID);	
+		if (null == configItem) {
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)
+			.append("]::parameter targetKey[")
+			.append(targetKey)
+			.append("] is bad, itemConfig is null").toString();
+			
+			log.warn(errorMessage);
+			
+			throw new ConfigValueInvalidException(errorMessage);
+		}
+		
+		int inx = targetKey.indexOf(itemID);
+		String prefix = targetKey.substring(0, inx);
+		
+		// FIXME!
+		log.info("targetKey={}, itemID={}, inx={}, prefix={}", targetKey, itemID, inx, prefix);		
+		
+		AbstractBreakChecker breakChecker = breakCheckerHash.get(itemID);		
+
+		if (null != breakChecker) {
 			// String valueOfDependenceItem = sourceProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem());
 			try {
-				afterDependenceItem.validate(sourceProperties, key);
+				breakChecker.validate(sourceProperties, prefix);
 			} catch(ConfigValueInvalidException e) {
 				String errorMessage = new StringBuilder("project config file[")
 				.append(projectConfigFilePathString)			
-				.append("]::key[")
-				.append(key)
+				.append("]::targetKey[")
+				.append(targetKey)
 				.append("] errrorMessage=")
 				.append(e.getMessage()).toString();
 				
@@ -1343,35 +1194,26 @@ public class SinnoriProjectConfig {
 			}
 		}
 		
-		return nativeValue;
+		Object targetNativeValue = null;
+		String targetSourceValue = sourceProperties.getProperty(targetKey);
+		try {
+			targetNativeValue = configItem.getItemValueGetter().getItemValueWithValidation(targetSourceValue);
+		} catch(ConfigValueInvalidException e) {
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)			
+			.append("]::targetKey[")
+			.append(targetKey)
+			.append("] errrorMessage=")
+			.append(e.getMessage()).toString();
+			
+			log.warn(errorMessage);
+			
+			throw new ConfigValueInvalidException(errorMessage);
+		}
+		
+		return targetNativeValue;
 	}
 	
-	/*public void afterValidate(String key, Object nativeValue, Properties sourceProperties) throws ConfigValueInvalidException {
-		AbstractAfterDependenceItem afterDependenceItem = null;
-		int inx = key.indexOf(".");
-		if (inx > 0) {
-			int len = key.length();
-			if (inx+1 < len) {
-				String firstToken = key.substring(0, inx);				
-				if (projectNameSet.contains(firstToken)) {
-					// String projectNameOfConfig = firstToken;				
-					String subKey = key.substring(inx+1);
-					
-					afterDependenceItem = afterDependenceProjectPartconfigItemHash.get(subKey);
-				} else {				
-					afterDependenceItem = afterDependenceconfigItemHash.get(key);
-				}
-			} else {
-				afterDependenceItem = afterDependenceconfigItemHash.get(key);
-			}
-		} else {
-			afterDependenceItem = afterDependenceconfigItemHash.get(key);
-		}
-		if (null != afterDependenceItem) {
-			String valueOfDependenceItem = sourceProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem());
-			afterDependenceItem.validate(valueOfDependenceItem, nativeValue);
-		}
-	}*/
 	
 	/**
 	 * <pre>
@@ -1381,165 +1223,122 @@ public class SinnoriProjectConfig {
 	 * 
 	 * @throws ConfigKeyNotFoundException 환경 변수 값을 검사하기 위한 정보에 등록된 키가 없을 경우 던지는 예외
 	 */
-	private void checkOnlyValidationForAllKeys(Properties sourceProperties) throws ConfigKeyNotFoundException {
+	private void checkOnlyAllKeyValidation(Properties sourceProperties) throws ConfigKeyNotFoundException {
 		ConfigItem itemConfig = null;
 		
+		/**
+		 * 소스 프로퍼터티 키들이 설정 정보에 등록된 키인지 검사
+		 */
 		Enumeration<Object> enumKey = sourceProperties.keys();
 		while (enumKey.hasMoreElements()) {
 			String key = (String)enumKey.nextElement();
-			if (key.endsWith(".value")) {
-				StringTokenizer tokens = new StringTokenizer(key, "."); 
-				if (tokens.hasMoreTokens()) {
-					String firstToken = tokens.nextToken();
-					if (firstToken.equals("dbcp")) {
-						if (tokens.hasMoreTokens()) {
-							String secondToken = tokens.nextToken();
-							
-							StringBuilder subKeyBuilder = new StringBuilder();
-							
-							if (dbcpConnectionPoolNameList.contains(secondToken)) {
-								if (tokens.hasMoreTokens()) {
-									subKeyBuilder.append(tokens.nextToken());
-								}
-								while (tokens.hasMoreTokens()) {
-									subKeyBuilder.append(".");
-									subKeyBuilder.append(tokens.nextToken());
-								}
-							} else {								
-								subKeyBuilder.append(secondToken);
-								
-								while (tokens.hasMoreTokens()) {
-									subKeyBuilder.append(".");
-									subKeyBuilder.append(tokens.nextToken());
-								}
-							}
-							
-							// FIXME!
-							log.info("dbcp subkey={}", subKeyBuilder.toString());
-							itemConfig = configItemHash.get(subKeyBuilder.toString());
-						}
-					} else if (projectNameList.contains(firstToken)) {
-						StringBuilder subKeyBuilder = new StringBuilder();
-						if (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(tokens.nextToken());
-						}
-						
-						while (tokens.hasMoreTokens()) {
-							subKeyBuilder.append(".");
-							subKeyBuilder.append(tokens.nextToken());
-						}
-						
-						String subKey = subKeyBuilder.toString();					
-						itemConfig = configItemHash.get(subKey);
-					} else {
-						itemConfig = configItemHash.get(key);
-					}
+			
+			if (key.equals(DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING)) {
+				continue;
+			} else if (key.equals(PROJECT_NAME_LIST_KEY_STRING)) {
+				continue;
+			} else if (key.endsWith(".value")) {
+				String itemID = getItemIDFromKey(key);
+				
+				if (null == itemID) {
+					String errorMessage = new StringBuilder("project config file[")
+					.append(projectConfigFilePathString)
+					.append("]::source key[")
+					.append(key)
+					.append("] is bad, itemID is null").toString();
+					
+					log.warn(errorMessage);
+					
+					throw new ConfigKeyNotFoundException(errorMessage);
 				}
 				
-				if (null == itemConfig) {
-					String errorMessage = new StringBuilder("2.project config file[")
-					.append(projectConfigFilePathString)
-					.append("]::parameter key[")
-					.append(key)
-					.append("] not exist at SinnoriProjectConfig").toString();
+				itemConfig = configItemHash.get(itemID);			
 					
-					// log.warn(errorMessage);
+				if (null == itemConfig) {
+					String errorMessage = new StringBuilder("project config file[")
+					.append(projectConfigFilePathString)
+					.append("]::source key[")
+					.append(key)
+					.append("] is bad, itemConfig is null").toString();
+					
+					log.warn(errorMessage);
+					
+					throw new ConfigKeyNotFoundException(errorMessage);
+				}
+			}
+		}
+		
+		/**
+		 * 설정 정보에 등록된 키들이 소스 프로퍼티에 있는지 검사
+		 */
+		for (String dbcpConnectionPoolName : dbcpConnectionPoolNameList) {		
+			for (ConfigItem configItem : dbcpPartConfigItemList) {
+				String itemID = configItem.getItemID();
+				
+				String key = new StringBuilder("dbcp.")
+				.append(dbcpConnectionPoolName)
+				.append(".")
+				.append(itemID).toString();
+				
+				log.info("key=[{}]", key);
+				
+				Object value = sourceProperties.get(key);
+				if (null == value) {
+					String errorMessage = new StringBuilder("project config file[")
+					.append(projectConfigFilePathString)
+					.append("]::config key[")
+					.append(key)
+					.append("] is bad, value is null").toString();
+					
+					log.warn(errorMessage);
+					
+					throw new ConfigKeyNotFoundException(errorMessage);
+				}
+			}		
+		}
+		
+		for (ConfigItem configItem : commonPartConfigItemList) {
+			String key = configItem.getItemID();			
+			
+			log.info("key=[{}]", key);
+			
+			Object value = sourceProperties.get(key);
+			if (null == value) {
+				String errorMessage = new StringBuilder("project config file[")
+				.append(projectConfigFilePathString)
+				.append("]::config key[")
+				.append(key)
+				.append("] is bad, value is null").toString();
+				
+				log.warn(errorMessage);
+				
+				throw new ConfigKeyNotFoundException(errorMessage);
+			}
+		}
+		
+		for (String projectName : projectNameList) {
+			for (ConfigItem configItem : projectPartConfigItemList) {
+				String key = new StringBuilder("project.")
+				.append(projectName)
+				.append(".")
+				.append(configItem.getItemID()).toString();
+
+				// FIXME!
+				log.info("key=[{}]", key);
+				
+				Object value = sourceProperties.get(key);
+				if (null == value) {
+					String errorMessage = new StringBuilder("project config file[")
+					.append(projectConfigFilePathString)
+					.append("]::config key[")
+					.append(key)
+					.append("] is bad, value is null").toString();
+					
+					log.warn(errorMessage);
 					
 					throw new ConfigKeyNotFoundException(errorMessage);
 				}
 			}
 		}
 	}
-	
-	/*public void validAllCheck() throws ConfigException {		
-		@SuppressWarnings("unchecked")
-				
-		Enumeration<String> enumProject = sourceSequencedProperties.keys();
-		while (enumProject.hasMoreElements()) {
-			String key = enumProject.nextElement();
-			String projectNameOfList = isProjectPart(key);
-			if (null == projectNameOfList) {
-				if (key.endsWith(".value")) {
-					ItemOfConfig itemOfConfig = configItemHash.get(key);
-					if (null == itemOfConfig) {
-						String errorMessage = new StringBuilder("project[")
-						.append(projectName)
-						.append("] Config[")
-						.append(projectConfigFilePathString)
-						.append("]::undefined key[")
-						.append(key)
-						.append("]  error").toString();
-						
-						throw new ConfigException(errorMessage);
-					}
-					
-					ItemValueGetter ItemValueGetter = itemOfConfig.getItemValueGetter();
-					
-					AbstractBeforeDependenceItem beforeDependenceItem = beforeDependenceconfigItemHash.get(key);
-					boolean isValidation= true;
-					if (null != beforeDependenceItem) {
-						try {
-							isValidation = beforeDependenceItem.isValidation(sourceSequencedProperties.getProperty(beforeDependenceItem.getKeyOfDependenceItem()));
-						} catch(ConfigException e) {
-							String errorMessage = new StringBuilder("project[")
-							.append(projectName)
-							.append("] Config[")
-							.append(projectConfigFilePathString)
-							.append("]::key[")
-							.append(key)
-							.append("] before depencence errrorMessage=")
-							.append(e.getMessage()).toString();
-							
-							log.warn(errorMessage);
-							
-							throw new ConfigException(errorMessage);
-						}
-					}
-
-					if (isValidation) {
-						Object nativeValue = null;
-						try {
-							nativeValue = ItemValueGetter.validateItem(sourceSequencedProperties.getProperty(key));
-						} catch(ConfigException e) {
-							String errorMessage = new StringBuilder("project[")
-							.append(projectName)
-							.append("] Config[")
-							.append(projectConfigFilePathString)
-							.append("]::key[")
-							.append(key)
-							.append("] errrorMessage=")
-							.append(e.getMessage()).toString();
-							
-							log.warn(errorMessage);
-							
-							throw new ConfigException(errorMessage);
-						}
-						
-						AbstractAfterDependenceItem afterDependenceItem = afterDependenceconfigItemHash.get(key);
-						if (null != afterDependenceItem) {
-							try {
-								afterDependenceItem.validate(sourceSequencedProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem()), nativeValue);
-							} catch(ConfigException e) {
-								String errorMessage = new StringBuilder("project[")
-								.append(projectName)
-								.append("] Config[")
-								.append(projectConfigFilePathString)
-								.append("]::key[")
-								.append(key)
-								.append("] after dependence errrormessage=")
-								.append(e.getMessage()).toString();
-								
-								log.warn(errorMessage);
-								
-								throw new ConfigException(errorMessage);
-							}
-						}
-					}
-				}
-			} else {
-				ProjectPartConfig projectConfig = projectConfigHash.get(projectNameOfList);
-				projectConfig.validAllCheck();
-			}
-		}
-	}*/
 }

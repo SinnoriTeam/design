@@ -3,7 +3,7 @@ package kr.pe.sinnori.common.config.dependitem;
 import java.util.Properties;
 
 import kr.pe.sinnori.common.config.AbstractConditionChecker;
-import kr.pe.sinnori.common.config.SinnoriProjectConfig;
+import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
@@ -11,11 +11,11 @@ public class ValueEqualConditionChecker extends AbstractConditionChecker {
 	
 	public ValueEqualConditionChecker(String targetItemID, 			
 			String dependenceItemID, Object conditionValue,
-			SinnoriProjectConfig sinnoriProjectConfig) throws ConfigErrorException {
-		super(targetItemID, dependenceItemID, conditionValue, sinnoriProjectConfig);
+			SinnoriConfigInfo sinnoriConfigInfo) throws ConfigErrorException {
+		super(targetItemID, dependenceItemID, conditionValue, sinnoriConfigInfo);
 	}
 	
-	public boolean isValidation(Properties sourceProperties, String dependenceItemKey) throws ConfigValueInvalidException {
+	public boolean isValidation(Properties sourceProperties, String prefixOfDomain) throws ConfigValueInvalidException {
 		if (null == sourceProperties) {
 			String errorMessage = new StringBuilder("targetItemID[")
 			.append(targetItemID)
@@ -27,38 +27,24 @@ public class ValueEqualConditionChecker extends AbstractConditionChecker {
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		/*Object targetNativeValue = 
-				targetItemValueGetter.getItemValueWithValidation
-				(sourceProperties.getProperty(targetItemID));*/
-		
-		if (null == dependenceItemKey) {
+		if (null == prefixOfDomain) {
 			String errorMessage = new StringBuilder("targetItemID[")
 			.append(targetItemID)
 			.append("] dependenceItemID[")
 			.append(dependenceItemID)
-			.append("] errormessage=parameter dependenceItemKey is null").toString();
+			.append("] errormessage=parameter prefixOfDomain is null").toString();
 			
 			log.warn(errorMessage);
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		if (!dependenceItemKey.endsWith(dependenceItemID)) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(targetItemID)
-			.append("] dependenceItemID[")
-			.append(dependenceItemID)
-			.append("] errormessage=parameter dependenceItemKey[")
-			.append(dependenceItemKey)
-			.append("] is bad").toString();
-			
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}
+		String dependenceItemKey = new StringBuilder(prefixOfDomain).append(dependenceItemID).toString();
 		
-		String dependenceItemValue = 
+		
+		String dependenceSourceValue = 
 		sourceProperties.getProperty(dependenceItemKey);
 		
-		if (null == dependenceItemValue) {
+		/*if (null == dependenceSourceValue) {
 			String errorMessage = new StringBuilder("targetItemID[")
 			.append(targetItemID)
 			.append("] dependenceItemID[")
@@ -69,11 +55,11 @@ public class ValueEqualConditionChecker extends AbstractConditionChecker {
 			
 			log.warn(errorMessage);
 			throw new ConfigValueInvalidException(errorMessage);
-		}	
+		}	*/
 		
 		Object dependNativeValue = 
 				dependItemValueGetter.getItemValueWithValidation
-				(dependenceItemValue);
+				(dependenceSourceValue);
 		
 		
 		return dependNativeValue.equals(conditionValue);

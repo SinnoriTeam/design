@@ -1,9 +1,11 @@
 package kr.pe.sinnori.gui.lib;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
-import kr.pe.sinnori.common.config.SinnoriProjectConfig;
+import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.util.SequencedProperties;
 
@@ -13,15 +15,18 @@ import org.slf4j.LoggerFactory;
 public class Project {
 	private Logger log = LoggerFactory.getLogger(Project.class);
 	
-	private String projectName;
+	private String mainProjectName;
 	private String projectPathString;
 	private SequencedProperties sourceSequencedProperties;	
 	
 	
-	private SinnoriProjectConfig sinnoriProjectConfig = null;
+	private SinnoriConfigInfo sinnoriConfigInfo = null;
 	private boolean isAppClient = false;
 	private boolean isWebClient = false;
-	private String servletEnginLibPathString = null; 
+	private String servletEnginLibPathString = null;
+	
+	
+	private List<String> subProjectNameList = new ArrayList<String>();
 
 	/**
 	 * 기존 생성된 프로젝트 생성자
@@ -31,14 +36,14 @@ public class Project {
 	 * @throws ConfigErrorException
 	 */
 	public Project(String projectName, String projectPathString, SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
-		this.projectName = projectName;
+		this.mainProjectName = projectName;
 		this.projectPathString = projectPathString;
 		this.sourceSequencedProperties = sourceSequencedProperties;		
 		// projectConfigFilePathString = getProjectConfigFilePathString();
 		
-		sinnoriProjectConfig = new SinnoriProjectConfig(projectName, projectPathString);
+		sinnoriConfigInfo = new SinnoriConfigInfo(projectName, projectPathString);
 		
-		sinnoriProjectConfig.combind(sourceSequencedProperties);		
+		sinnoriConfigInfo.combind(sourceSequencedProperties);		
 		
 		String antPropertiesFilePathString = getAntPropertiesFilePath();
 		
@@ -50,6 +55,16 @@ public class Project {
 		
 		checkSeverBuild();		
 		checkClientBuild();
+		
+		subProjectNameList.add("- 서브 프로젝트 -");
+		
+		List<String> projectNameListOfConfig = sinnoriConfigInfo.getProjectNameList();
+		
+		for (String projectNameOfConfig : projectNameListOfConfig) {
+			if (!projectName.equals(projectNameOfConfig)) {
+				subProjectNameList.add(projectNameOfConfig);
+			}
+		}
 	}
 	
 	private void checkSeverBuild() throws ConfigErrorException {
@@ -253,8 +268,8 @@ public class Project {
 		return strBuilder.toString();
 	}
 	
-	public String getProjectName() {
-		return projectName;
+	public String getMainProjectName() {
+		return mainProjectName;
 	}
 
 	public String getProjectPathString() {
@@ -265,8 +280,8 @@ public class Project {
 		return sourceSequencedProperties;
 	}
 
-	public SinnoriProjectConfig getSinnoriProjectConfig() {
-		return sinnoriProjectConfig;
+	public SinnoriConfigInfo getSinnoriConfigInfo() {
+		return sinnoriConfigInfo;
 	}
 
 	public boolean isAppClient() {
@@ -279,6 +294,10 @@ public class Project {
 
 	public String getServletEnginLibPathString() {
 		return servletEnginLibPathString;
+	}
+
+	public List<String> getSubProjectNameList() {
+		return subProjectNameList;
 	}
 	
 	

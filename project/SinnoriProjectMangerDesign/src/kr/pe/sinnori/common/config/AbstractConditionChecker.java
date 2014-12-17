@@ -18,7 +18,7 @@ public abstract class AbstractConditionChecker {
 	protected Object conditionValue = null;
 	
 	
-	protected SinnoriProjectConfig sinnoriProjectConfig = null;
+	protected SinnoriConfigInfo sinnoriConfigInfo = null;
 	
 	// protected AbstractItemValueGetter targetItemValueGetter = null;
 	// protected ConfigItem dependConfigItem = null;
@@ -27,14 +27,14 @@ public abstract class AbstractConditionChecker {
 	
 	public AbstractConditionChecker(String targetItemID, 			
 			String dependenceItemID, Object conditionValue,
-			SinnoriProjectConfig sinnoriProjectConfig) throws ConfigErrorException {
+			SinnoriConfigInfo sinnoriConfigInfo) throws ConfigErrorException {
 		this.targetItemID = targetItemID;
 		// this.itemCheckerOfDependenceItem = itemCheckerOfDependenceItem;
 		// this.wantedNativeValue = wantedNativeValue;
 		
 		this.dependenceItemID = dependenceItemID;
 		this.conditionValue = conditionValue;
-		this.sinnoriProjectConfig = sinnoriProjectConfig;
+		this.sinnoriConfigInfo = sinnoriConfigInfo;
 		
 		/*ConfigItem targetConfigItem = configItemHash.get(targetItemID);
 		if (null == targetConfigItem) {
@@ -50,7 +50,7 @@ public abstract class AbstractConditionChecker {
 
 		targetItemValueGetter = targetConfigItem.getItemValueGetter();*/
 		
-		ConfigItem dependConfigItem = sinnoriProjectConfig.getConfigItem(dependenceItemID);
+		ConfigItem dependConfigItem = sinnoriConfigInfo.getConfigItem(dependenceItemID);
 				
 		if (null == dependConfigItem) {
 			String errorMessage = new StringBuilder("targetItemID[")
@@ -68,7 +68,7 @@ public abstract class AbstractConditionChecker {
 		
 	}
 	
-	public abstract boolean isValidation(Properties sourceProperties, String dependenceItemKey) throws ConfigValueInvalidException;
+	public abstract boolean isValidation(Properties sourceProperties, String prefixOfDomain) throws ConfigValueInvalidException;
 	
 	public String getTargetItemID() {
 		return targetItemID;

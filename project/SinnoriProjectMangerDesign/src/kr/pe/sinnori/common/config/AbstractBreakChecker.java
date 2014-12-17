@@ -15,22 +15,22 @@ public abstract class AbstractBreakChecker {
 	// protected AbstractItemValueGetter itemCheckerOfDependenceItem;
 	// protected Object wantedNativeValue;
 	protected String dependenceItemID = null;
-	protected SinnoriProjectConfig sinnoriProjectConfig = null;
+	protected SinnoriConfigInfo sinnoriConfigInfo = null;
 	
 	protected AbstractItemValueGetter targetItemValueGetter = null;
 	protected AbstractItemValueGetter dependenceItemValueGetter = null;
 	
 	public AbstractBreakChecker(String targetItemID, 			
 			String dependenceItemID,
-			SinnoriProjectConfig sinnoriProjectConfig) throws ConfigErrorException {
+			SinnoriConfigInfo sinnoriConfigInfo) throws ConfigErrorException {
 		this.targetItemID = targetItemID;
 		// this.itemCheckerOfDependenceItem = itemCheckerOfDependenceItem;
 		// this.wantedNativeValue = wantedNativeValue;
 		
 		this.dependenceItemID = dependenceItemID;
-		this.sinnoriProjectConfig = sinnoriProjectConfig;
+		this.sinnoriConfigInfo = sinnoriConfigInfo;
 		
-		ConfigItem targetConfigItem = sinnoriProjectConfig.getConfigItem(targetItemID);
+		ConfigItem targetConfigItem = sinnoriConfigInfo.getConfigItem(targetItemID);
 		
 		if (null == targetConfigItem) {
 			String errorMessage = new StringBuilder("targetItemID[")
@@ -46,7 +46,7 @@ public abstract class AbstractBreakChecker {
 		
 		targetItemValueGetter = targetConfigItem.getItemValueGetter();
 		
-		ConfigItem dependConfigItem = sinnoriProjectConfig.getConfigItem(dependenceItemID);
+		ConfigItem dependConfigItem = sinnoriConfigInfo.getConfigItem(dependenceItemID);
 		
 		if (null == dependConfigItem) {
 			String errorMessage = new StringBuilder("targetItemID[")
@@ -64,7 +64,7 @@ public abstract class AbstractBreakChecker {
 	}
 	
 	public abstract void validate(Properties sourceProperties, 
-			String targetItemKey) throws ConfigValueInvalidException;
+			String prefixOfDomain) throws ConfigValueInvalidException;
 	
 	public String getTargetItemID() {
 		return targetItemID;

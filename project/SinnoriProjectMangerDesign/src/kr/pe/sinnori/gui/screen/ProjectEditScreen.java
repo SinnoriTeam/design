@@ -7,8 +7,10 @@ package kr.pe.sinnori.gui.screen;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -38,7 +40,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class ProjectEditScreen extends JPanel {
 	private JFrame mainFrame = null;
 	private JFileChooser chooser = null;
-	// private Project project = null;
+	private Project project = null;
 	
 	public ProjectEditScreen(JFrame mainFrame) {
 		this.mainFrame = mainFrame;
@@ -46,16 +48,28 @@ public class ProjectEditScreen extends JPanel {
 	}
 	
 	public void setProject(Project selectedProject) {
-		//this.project = selectedProject;
+		this.project = selectedProject;
 		
 		sinnoriInstalledPathValueLabel.setText(selectedProject.getProjectPathString());
-		mainProjectNameValueLabel.setText(selectedProject.getProjectName());
+		mainProjectNameValueLabel.setText(selectedProject.getMainProjectName());
 		// serverCheckBox.setSelected(selectedProject.get);
 		appClientCheckBox.setSelected(selectedProject.isAppClient());
 		webClientCheckBox.setSelected(selectedProject.isWebClient());
 		servletEnginLibinaryPathTextField.setEditable(selectedProject.isWebClient());
 		servletEnginLibinaryPathButton.setEnabled(selectedProject.isWebClient());
 		servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
+		
+		
+		
+		List<String> subProjectList = project.getSubProjectNameList();
+		String[] subProjectArray = new String[subProjectList.size()];
+		for (int i=0; i < subProjectArray.length; i++) {
+			subProjectArray[i] = subProjectList.get(i);
+		}
+		
+		ComboBoxModel<String> subProjectComboBoxModel = new DefaultComboBoxModel<String>(subProjectArray);
+		
+		subProjectListComboBox.setModel(subProjectComboBoxModel);
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {

@@ -64,7 +64,7 @@ public class FirstScreen extends JPanel {
 				return;
 			}
 			
-			projectNameValueLabel.setText(selectedProject.getProjectName());
+			projectNameValueLabel.setText(selectedProject.getMainProjectName());
 			// serverCheckBox.setSelected(selectedProject.get);
 			appClientCheckBox.setSelected(selectedProject.isAppClient());
 			webClientCheckBox.setSelected(selectedProject.isWebClient());
@@ -145,7 +145,7 @@ public class FirstScreen extends JPanel {
 		
 		List<Project> projectList = projectManger.getProjectList();
 		for (Project project : projectList) {
-			projectListComboBox.addItem(project.getProjectName());
+			projectListComboBox.addItem(project.getMainProjectName());
 		}
 		
 		
@@ -173,7 +173,7 @@ public class FirstScreen extends JPanel {
 					return;
 				}
 				
-				projectNameValueLabel.setText(selectedProject.getProjectName());
+				projectNameValueLabel.setText(selectedProject.getMainProjectName());
 				appClientCheckBox.setSelected(selectedProject.isAppClient());
 				webClientCheckBox.setSelected(selectedProject.isWebClient());
 				servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());

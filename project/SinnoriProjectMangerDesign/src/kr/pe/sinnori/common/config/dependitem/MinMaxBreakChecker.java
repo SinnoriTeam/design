@@ -3,7 +3,7 @@ package kr.pe.sinnori.common.config.dependitem;
 import java.util.Properties;
 
 import kr.pe.sinnori.common.config.AbstractBreakChecker;
-import kr.pe.sinnori.common.config.SinnoriProjectConfig;
+import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
@@ -12,13 +12,13 @@ public class MinMaxBreakChecker extends AbstractBreakChecker {
 	public MinMaxBreakChecker(
 			String targetItemID, 			
 			String dependenceItemID,
-			SinnoriProjectConfig sinnoriProjectConfig) throws ConfigErrorException {
-		super(targetItemID, dependenceItemID, sinnoriProjectConfig);
+			SinnoriConfigInfo sinnoriConfigInfo) throws ConfigErrorException {
+		super(targetItemID, dependenceItemID, sinnoriConfigInfo);
 	}
 
 	@Override
 	public void validate(Properties sourceProperties, 
-			String targetItemKey) throws ConfigValueInvalidException {
+			String prefixOfDomain) throws ConfigValueInvalidException {
 			
 		if (null == sourceProperties) {
 			String errorMessage = new StringBuilder("targetItemID[")
@@ -29,85 +29,18 @@ public class MinMaxBreakChecker extends AbstractBreakChecker {
 			log.warn(errorMessage);			
 			throw new ConfigValueInvalidException(errorMessage);
 		}
-		if (null == targetItemKey) {
+		if (null == prefixOfDomain) {
 			String errorMessage = new StringBuilder("targetItemID[")
 			.append(targetItemID)
 			.append("] dependenceItemID=[")	
 			.append(dependenceItemID)	
-			.append("] errormessage=parameter targetItemKey is null").toString();
+			.append("] errormessage=parameter prefixOfDomain is null").toString();
 			log.warn(errorMessage);
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		/*if (null == dependenceItemKey) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(targetItemID)
-			.append("] dependenceItemID=[")	
-			.append(dependenceItemID)	
-			.append("] errormessage=parameter dependenceItemKey is null").toString();
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}*/
-		
-		String localTargetItemID = sinnoriProjectConfig.getItemIDFromKey(targetItemKey);
-		if (null == localTargetItemID) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(this.targetItemID)
-			.append("] dependenceItemID=[")	
-			.append(this.dependenceItemID)	
-			.append("] errormessage=parameter targetItemKey=[")
-			.append(targetItemKey)	
-			.append("] is a unknown key. localMinItemID is null")
-			.toString();
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}
-		
-		if (!localTargetItemID.equals(this.targetItemID)) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(this.targetItemID)
-			.append("] dependenceItemID=[")	
-			.append(dependenceItemID)	
-			.append("] errormessage=localTargetItemID[")
-			.append(targetItemKey)	
-			.append("][")
-			.append(localTargetItemID)
-			.append("] is not equals to targetItemID")
-			.toString();
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}
-		
-		String dependenceItemKey = sinnoriProjectConfig.getKeyOfItemIDFromKey(targetItemKey, dependenceItemID);
-		
-		String localDependenceItemID = sinnoriProjectConfig.getItemIDFromKey(dependenceItemKey);
-		if (null == localDependenceItemID) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(this.targetItemID)
-			.append("] dependenceItemID=[")	
-			.append(this.dependenceItemID)	
-			.append("] errormessage=parameter dependenceItemKey=[")
-			.append(dependenceItemKey)	
-			.append("] is a unknown key. localMaxItemID is null")
-			.toString();
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}
-		
-		if (!localDependenceItemID.equals(this.dependenceItemID)) {
-			String errorMessage = new StringBuilder("targetItemID[")
-			.append(this.targetItemID)
-			.append("] dependenceItemID=[")	
-			.append(dependenceItemID)	
-			.append("] errormessage=localDependenceItemID[")
-			.append(dependenceItemKey)	
-			.append("][")
-			.append(localDependenceItemID)
-			.append("] is not equals to dependenceItemID")
-			.toString();
-			log.warn(errorMessage);
-			throw new ConfigValueInvalidException(errorMessage);
-		}
+		String targetItemKey = new StringBuilder(prefixOfDomain).append(targetItemID).toString();
+		String dependenceItemKey = new StringBuilder(prefixOfDomain).append(dependenceItemID).toString();
 		
 		int min=Integer.MIN_VALUE;
 		try {
