@@ -38,7 +38,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class ProjectEditScreen extends JPanel {
 	private JFrame mainFrame = null;
 	private JFileChooser chooser = null;
-	private Project project = null;
+	// private Project project = null;
 	
 	public ProjectEditScreen(JFrame mainFrame) {
 		this.mainFrame = mainFrame;
@@ -46,7 +46,7 @@ public class ProjectEditScreen extends JPanel {
 	}
 	
 	public void setProject(Project selectedProject) {
-		this.project = selectedProject;
+		//this.project = selectedProject;
 		
 		sinnoriInstalledPathValueLabel.setText(selectedProject.getProjectPathString());
 		mainProjectNameValueLabel.setText(selectedProject.getProjectName());

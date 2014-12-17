@@ -8,15 +8,20 @@ import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
  *
  */
 public class ConfigItem {
-	private String key;	
+	public enum ConfigPart {DBCP, COMMON, PROJECT_COMMON, PROJECT_SERVER, PROJECT_CLIENT};
+	
+	private ConfigPart configPart;	
+	private String itemID;	
 	private String description;
 	private String defaultValue;
 	private boolean isDefaultValidation;
-	private AbstractItemValidator itemValidator;
+	private AbstractItemValueGetter itemValueGetter;
+	
+	
 	
 	/**
 	 * 환경 변수 값을 검사하기 위한 정보 클래스 생성자
-	 * @param key 환경 변수 키, 단 프로젝트 파트의 경우 프로젝트명이 생략된 형태의 서브 키이다.
+	 * @param itemID 환경 변수 키, 단 프로젝트 파트의 경우 프로젝트명이 생략된 형태의 서브 키이다.
 	 * @param description 환경 변수 설명
 	 * @param defaultValue 디폴트 값
 	 * @param isDefaultValidation 객체 생성시 디폴트 값 검사 수행 여부, 
@@ -24,18 +29,23 @@ public class ConfigItem {
 	 * @throws IllegalArgumentException 잘못된 파라미터 입력시 던지는 예외
 	 * @throws ConfigValueInvalidException 디폴트 값 검사 수행시 디폴트 값이 잘못된 경우 던지는 예외
 	 */
-	public ConfigItem(String key, 
+	public ConfigItem(ConfigPart configPart, String itemID, 
 			String description, 
 			String defaultValue,
 			boolean isDefaultValidation,
-			AbstractItemValidator itemValidator) throws IllegalArgumentException, ConfigValueInvalidException {
-		if (null == key) {
-			String errorMessage = "parameter key is null";
+			AbstractItemValueGetter itemValidator) throws IllegalArgumentException, ConfigValueInvalidException {
+		if (null == configPart) {
+			String errorMessage = "parameter configPart is null";
 			throw new IllegalArgumentException(errorMessage);
 		}
 		
-		if (key.equals("")) {
-			String errorMessage = "parameter key is empty";
+		if (null == itemID) {
+			String errorMessage = "parameter itemID is null";
+			throw new IllegalArgumentException(errorMessage);
+		}
+		
+		if (itemID.equals("")) {
+			String errorMessage = "parameter itemID is empty";
 			throw new IllegalArgumentException(errorMessage);
 		}
 		
@@ -59,28 +69,32 @@ public class ConfigItem {
 			throw new IllegalArgumentException(errorMessage);
 		}*/
 		
-		
-		this.key = key;		
+		this.configPart = configPart;
+		this.itemID = itemID;		
 		this.description = description;
 		this.defaultValue = defaultValue;
 		this.isDefaultValidation = isDefaultValidation;
-		this.itemValidator = itemValidator;
+		this.itemValueGetter = itemValidator;
 
 		if (isDefaultValidation) {			
-			itemValidator.validateItem(defaultValue);
+			itemValidator.getItemValueWithValidation(defaultValue);
 		}
 	}
 
-	public String getKey() {
-		return key;
+	public ConfigPart getConfigPart() {
+		return configPart;
+	}
+
+	public String getItemID() {
+		return itemID;
 	}
 
 	public String getDefaultValue() {
 		return defaultValue;
 	}
 
-	public AbstractItemValidator getItemValidator() {
-		return itemValidator;
+	public AbstractItemValueGetter getItemValueGetter() {
+		return itemValueGetter;
 	}
 
 	public String toDescription() {
@@ -90,7 +104,7 @@ public class ConfigItem {
 		descriptBuilder.append(defaultValue);
 		descriptBuilder.append("]");
 		
-		String descriptionOfItemValidator = itemValidator.toDescription();
+		String descriptionOfItemValidator = itemValueGetter.toDescription();
 		if (null != descriptionOfItemValidator && !descriptionOfItemValidator.equals("")) {
 			descriptBuilder.append(", ");
 			descriptBuilder.append(descriptionOfItemValidator);
@@ -102,8 +116,8 @@ public class ConfigItem {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ItemOfConfig [key=");
-		builder.append(key);
+		builder.append("ItemOfConfig [itemID=");
+		builder.append(itemID);
 		builder.append(", description=");
 		builder.append(description);
 		builder.append(", defaultValue=");
@@ -111,7 +125,7 @@ public class ConfigItem {
 		builder.append(", isDefaultValidation=");
 		builder.append(isDefaultValidation);
 		builder.append(", itemValidator=");
-		builder.append(itemValidator);
+		builder.append(itemValueGetter);
 		builder.append("]");
 		return builder.toString();
 	}

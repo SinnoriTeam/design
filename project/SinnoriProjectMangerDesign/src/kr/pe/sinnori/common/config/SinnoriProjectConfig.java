@@ -11,26 +11,26 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import kr.pe.sinnori.common.config.dependitem.AfterDependenceItemOfClassLoaderResourceFile;
-import kr.pe.sinnori.common.config.dependitem.AfterDependenceItemOfIntegerTypeMaxValue;
-import kr.pe.sinnori.common.config.dependitem.BeforeDependenceItemOfWantedMatchValue;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfBoolean;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfByteOrder;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfCharset;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfConnectionType;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfFile;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfMessageInfoXMLPath;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfMessageProtocol;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfMinMaxInteger;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfMinMaxLong;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfNoCheck;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfNoNullAndEmptyString;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfPath;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfSessionKeyRSAKeypairPath;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfSessionkeyPrivateKeyEncoding;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfSingleIntegerSet;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfSingleStringSet;
-import kr.pe.sinnori.common.config.itemvalidator.ItemValidatorOfUpDownFileBlockMaxSize;
+import kr.pe.sinnori.common.config.dependitem.ClassLoaderResourceFileBreakChecker;
+import kr.pe.sinnori.common.config.dependitem.MinMaxBreakChecker;
+import kr.pe.sinnori.common.config.dependitem.ValueEqualConditionChecker;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfBoolean;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfByteOrder;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfCharset;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfConnectionType;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfFile;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageInfoXMLPath;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageProtocol;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxInteger;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxLong;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoCheck;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoNullAndEmptyString;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfPath;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSessionKeyRSAKeypairPath;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSessionkeyPrivateKeyEncoding;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSingleIntegerSet;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSingleStringSet;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfUpDownFileBlockMaxSize;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.exception.ConfigKeyNotFoundException;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
@@ -48,26 +48,29 @@ public class SinnoriProjectConfig {
 	// private SequencedProperties sourceSequencedProperties;
 
 	private String projectConfigFilePathString;
-	private List<ConfigItem> itemList = new ArrayList<ConfigItem>();
-	private Hashtable<String, ConfigItem> itemHash = new Hashtable<String, ConfigItem>();
+	private List<ConfigItem> configItemList = new ArrayList<ConfigItem>();
+	
+	private Hashtable<String, ConfigItem> configItemHash = new Hashtable<String, ConfigItem>();
 	
 		
-	private Hashtable<String, AbstractBeforeDependenceItem> beforeDependenceItemHash = new Hashtable<String, AbstractBeforeDependenceItem>();
-	private Hashtable<String, AbstractAfterDependenceItem> afterDependenceItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
+	private Hashtable<String, AbstractConditionChecker> conditionCheckerHash = new Hashtable<String, AbstractConditionChecker>();
+	private Hashtable<String, AbstractBreakChecker> breakCheckerHash = new Hashtable<String, AbstractBreakChecker>();
+	
+	
 	
 	private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
-	private List<ConfigItem> dbcpPartItemList = new ArrayList<ConfigItem>();
-	private Hashtable<String, ConfigItem> dbcpPartItemHash = new Hashtable<String, ConfigItem>();
+	// private List<ConfigItem> dbcpPartItemList = new ArrayList<ConfigItem>();
+	// private Hashtable<String, ConfigItem> dbcpPartconfigItemHash = new Hashtable<String, ConfigItem>();
 	
-	private Hashtable<String, AbstractBeforeDependenceItem> beforeDependenceDBCPPartItemHash = new Hashtable<String, AbstractBeforeDependenceItem>();	
-	private Hashtable<String, AbstractAfterDependenceItem> afterDependenceDBCPPartItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
+	// private Hashtable<String, AbstractConditionChecker> beforeDependenceDBCPPartconfigItemHash = new Hashtable<String, AbstractConditionChecker>();	
+	// private Hashtable<String, AbstractAfterDependenceItem> afterDependenceDBCPPartconfigItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
 	
 	
-	private List<ConfigItem> projectPartItemList = new ArrayList<ConfigItem>();
-	private Hashtable<String, ConfigItem> projectPartItemHash = new Hashtable<String, ConfigItem>();
+	// private List<ConfigItem> projectPartItemList = new ArrayList<ConfigItem>();
+	// private Hashtable<String, ConfigItem> projectPartconfigItemHash = new Hashtable<String, ConfigItem>();
 		
-	private Hashtable<String, AbstractBeforeDependenceItem> beforeDependenceProjectPartItemHash = new Hashtable<String, AbstractBeforeDependenceItem>();	
-	private Hashtable<String, AbstractAfterDependenceItem> afterDependenceProjectPartItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
+	// private Hashtable<String, AbstractConditionChecker> beforeDependenceProjectPartconfigItemHash = new Hashtable<String, AbstractConditionChecker>();	
+	// private Hashtable<String, AbstractAfterDependenceItem> afterDependenceProjectPartconfigItemHash = new Hashtable<String, AbstractAfterDependenceItem>();
 
 	private List<String> projectNameList = new LinkedList<String>();
 	
@@ -98,32 +101,30 @@ public class SinnoriProjectConfig {
 	private void dbcpPart() throws IllegalArgumentException, ConfigErrorException {
 		ConfigItem item = null;
 		// String keyOfDepenceItem = null;
-		String key = null;		
+		String dbcpID = null;		
 		try {
 			/** DBCP start */
 			
-			key = "connection_pool_name_list.value";
-			item = new ConfigItem(key,
+			dbcpID = "connection_pool_name_list.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
 					"dbcp 연결 폴 이름 목록, 구분자 콤마",
 					"", false, 
-					new ItemValidatorOfNoCheck());
-			dbcpPartItemList.add(item);
-			dbcpPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoCheck());
+			addConfigItem(item);
 			
-			key = "confige_file.value";
-			item = new ConfigItem(key,
+			dbcpID = "confige_file.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
 					"연결 폴의 설정 파일 경로명, 형식 : dbcp.<dbcp 연결 폴 이름>.config_file.value",
 					"/home/madang01/gitsinnori/sinnori/project/sample_test/server_build/APP-INF/resources/kr/pe/sinnori/impl/mybatis/tw_sinnoridb.properties", false, 
-					new ItemValidatorOfFile());
-			dbcpPartItemList.add(item);
-			dbcpPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfFile());
+			addConfigItem(item);
 
 			/** DBCP end */
 		} catch(ConfigValueInvalidException | IllegalArgumentException e) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)			
-			.append("]::key[")
-			.append(key)
+			.append("]::dbcpID[")
+			.append(dbcpID)
 			.append("] errrorMessage=")
 			.append(e.getMessage()).toString();
 			
@@ -135,203 +136,151 @@ public class SinnoriProjectConfig {
 	
 	private void initCommonPart() throws IllegalArgumentException, ConfigErrorException {
 		ConfigItem item = null;
-		String keyOfDepenceItem = null;
-		String key = null;		
-		try {
-			/*key = "jdbc.connection_uri.value";
-			item = new ConfigItem(key, 
-					"jdbc connection url",
-					"jdbc:mysql://localhost:3306/sinnori", true,
-					 new ItemValidatorOfJdbcConnectionURI());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
-			
-			key = "jdbc.db_user_name.value";
-			item = new ConfigItem(key,
-					"DB user name",
-					"dbmadangse", true, 
-					new ItemValidatorOfJdbcDBUserName());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
-			
-			key = "jdbc.db_user_password.value";
-			item = new ConfigItem(key,
-					"DB user password",
-					"test1234", true, 
-					new ItemValidatorOfJdbcDBUserPassword());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
-			
-			key = "jdbc.driver_class_name.value";
-			item = new ConfigItem(key,
-					"JDBC driver class name",
-					"com.mysql.jdbc.Driver", true, 
-					new ItemValidatorOfJdbcDriverClassName());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);*/
-			
-			// dbcp.connection_pool_name_list.value
-			
-			
-			
-			key = "servlet_jsp.jdf_error_message_page.value";
-			item = new ConfigItem(key,
+		String depenceItemID = null;
+		String targetItemID = null;		
+		try {			
+			targetItemID = "servlet_jsp.jdf_error_message_page.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"JDF framework 에서 에러 발생시 에러 내용을 보여주는 사용자 친화적인 화면을 전담할 jsp",
 					"/errorMessagePage.jsp", true, 
-					new ItemValidatorOfNoNullAndEmptyString());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoNullAndEmptyString());			
+			addConfigItem(item);
 			
-			key = "servlet_jsp.jdf_login_page.value";
-			item = new ConfigItem(key,
+			targetItemID = "servlet_jsp.jdf_login_page.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"로그인 처리 jsp",
 					"/login.jsp", true, 
-					new ItemValidatorOfNoNullAndEmptyString());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoNullAndEmptyString());
+			addConfigItem(item);
 			
-			key = "servlet_jsp.jdf_servlet_trace.value";
-			item = new ConfigItem(key,
+			targetItemID = "servlet_jsp.jdf_servlet_trace.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"JDF framework에서 서블릿 경과시간 추적 여부",
 					"true", true, 
-					new ItemValidatorOfBoolean());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfBoolean());
+			addConfigItem(item);
 			
-			key = "servlet_jsp.web_layout_control_page.value";
-			item = new ConfigItem(key,
+			targetItemID = "servlet_jsp.web_layout_control_page.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"신놀이 웹 사이트의 레이아웃 컨트롤러 jsp",
 					"/PageJump.jsp", true, 
-					new ItemValidatorOfNoNullAndEmptyString());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoNullAndEmptyString());
+			addConfigItem(item);
 			
-			keyOfDepenceItem = "sessionkey.rsa_keypair_source.value";
-			key = "sessionkey.rsa_keypair_path.value";
+			depenceItemID = "sessionkey.rsa_keypair_source.value";
+			targetItemID = "sessionkey.rsa_keypair_path.value";
 			
-			item = new ConfigItem(keyOfDepenceItem,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, depenceItemID,
 					"세션키에 사용되는 공개키 키쌍 생성 방법, API:자체 암호 lib 이용하여 RSA 키쌍 생성, File:외부 파일를 읽어와서 RSA  키쌍을 생성",
 					"API", true, 
-					new ItemValidatorOfSingleStringSet("API", "File"));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);			
+					new ItemValueGetterOfSingleStringSet("API", "File"));
+			addConfigItem(item);			
 			
-			item = new ConfigItem(key,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"세션키에 사용되는 공개키 키쌍 파일 경로, 세션키에 사용되는 공개키 키쌍 생성 방법이 File인 경우에 유효하다.",
 					getSessionKeyRSAKeypairPathString(), true, 
-					new ItemValidatorOfSessionKeyRSAKeypairPath());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSessionKeyRSAKeypairPath());
+			addConfigItem(item);
 			
-			beforeDependenceItemHash.put(key, 
-					new BeforeDependenceItemOfWantedMatchValue(keyOfDepenceItem, 
-					itemHash.get(keyOfDepenceItem).getItemValidator(), "File"));			
+			conditionCheckerHash.put(targetItemID, 
+					new ValueEqualConditionChecker(targetItemID, 
+							depenceItemID, "File", this));			
 			
 			
-			key = "sessionkey.rsa_keysize.value";
-			item = new ConfigItem(key,
+			targetItemID = "sessionkey.rsa_keysize.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"세션키에 사용하는 공개키 크기, 단위 byte",
 					"1024", true, 
-					new ItemValidatorOfSingleIntegerSet("512", "1024", "2048"));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSingleIntegerSet("512", "1024", "2048"));
+			addConfigItem(item);
 			
-			key = "sessionkey.symmetric_key_algorithm.value";
-			item = new ConfigItem(key,
+			targetItemID = "sessionkey.symmetric_key_algorithm.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"세션키에 사용되는 대칭키 알고리즘",
 					"AES", true, 
-					new ItemValidatorOfSingleStringSet("AES", "DESede", "DES"));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSingleStringSet("AES", "DESede", "DES"));
+			addConfigItem(item);
 			
-			key = "sessionkey.symmetric_key_size.value";
-			item = new ConfigItem(key,
+			targetItemID = "sessionkey.symmetric_key_size.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"세션키에 사용되는 대칭키 크기",
 					"16", true, 
-					new ItemValidatorOfSingleIntegerSet("8", "16", "24"));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSingleIntegerSet("8", "16", "24"));
+			addConfigItem(item);
 			
-			key = "sessionkey.iv_size.value";
-			item = new ConfigItem(key,
+			targetItemID = "sessionkey.iv_size.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"세션키에 사용되는 대칭키와 같이 사용되는 IV 크기",
 					"16", true, 
-					new ItemValidatorOfSingleIntegerSet("8", "16", "24"));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSingleIntegerSet("8", "16", "24"));
+			addConfigItem(item);
 			
-			key = "sessionkey.private_key.encoding.value";
-			item = new ConfigItem(key,
+			targetItemID = "sessionkey.private_key.encoding.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"개인키를 인코딩 방법, 웹의 경우 이진데이터는 폼 전송이 불가하므로 base64 인코딩하여 전송한다.",
 					"BASE64", true, 
-					new ItemValidatorOfSessionkeyPrivateKeyEncoding());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfSessionkeyPrivateKeyEncoding());
+			addConfigItem(item);
 			
-			key = "common.updownfile.local_source_file_resource_cnt.value";
-			item = new ConfigItem(key,
+			targetItemID = "common.updownfile.local_source_file_resource_cnt.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"로컬 원본 파일 자원 갯수",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(item);
 			
-			key = "common.updownfile.local_target_file_resource_cnt.value";
-			item = new ConfigItem(key,
+			targetItemID = "common.updownfile.local_target_file_resource_cnt.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"로컬 목적지 파일 자원 갯수",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(item);
 			
-			key = "common.updownfile.file_block_max_size.value";
-			item = new ConfigItem(key,
+			targetItemID = "common.updownfile.file_block_max_size.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"파일 송수신 파일 블락 최대 크기, 1024 배수, 단위 byte",
 					"1048576", true, 
-					new ItemValidatorOfUpDownFileBlockMaxSize(1024, Integer.MAX_VALUE));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfUpDownFileBlockMaxSize(1024, Integer.MAX_VALUE));
+			addConfigItem(item);
 						
-			key = "common.cached_object.max_size.value";
-			item = new ConfigItem(key,
+			targetItemID = "common.cached_object.max_size.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"싱글턴 클래스 객체 캐쉬 관리자(LoaderAndName2ObjectManager) 에서 캐쉬로 관리할 객체의 최대 갯수. 주로 캐쉬되는 대상 객체는 xxxServerCodec, xxxClientCodec 이다.",
 					"100", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(item);
 			
 			// common.projectlist.value
-			key = "common.projectlist.value";
-			item = new ConfigItem(key,
+			targetItemID = "common.projectlist.value";
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
 					"프로젝트 목록, 프로젝트 구분은 콤마",
 					"", false, 
-					new ItemValidatorOfNoCheck());
-			itemList.add(item);
-			itemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoCheck());
+			addConfigItem(item);
 			
-			/*itemValidatorHash.put("jdbc.connection_uri.value", new ItemValidatorOfJdbcConnectionURI("jdbc:mysql://localhost:3306/sinnori"));
-			itemValidatorHash.put("jdbc.db_user_name.value", new ItemValidatorOfJdbcDBUserName("dbmadangse"));*/
-			//itemValidatorHash.put("jdbc.db_user_password.value", new ItemValidatorOfJdbcDBUserPassword("test1234"));
-			// itemValidatorHash.put("jdbc.driver_class_name.value", new ItemValidatorOfJdbcDriverClassName("com.mysql.jdbc.Driver"));
-			// itemValidatorHash.put("servlet_jsp.jdf_error_message_page.value", new ItemValidatorOfNoNullAndEmptyString("/errorMessagePage.jsp"));
-			// itemValidatorHash.put("servlet_jsp.jdf_login_page.value", new ItemValidatorOfNoNullAndEmptyString("/login.jsp"));
-			// itemValidatorHash.put("servlet_jsp.jdf_servlet_trace.value", new ItemValidatorOfBoolean("true"));
-			// itemValidatorHash.put("servlet_jsp.web_layout_control_page.value", new ItemValidatorOfNoNullAndEmptyString("/PageJump.jsp"));
-			// itemValidatorHash.put("sessionkey.rsa_keypair_source.value", new ItemValidatorOfSingleStringSet("API", "File"));
-			// itemValidatorHash.put("sessionkey.rsa_keypair_path.value", new ItemValidatorOfSessionKeyRSAKeypairPath(getDefaultValueOfSessionKeyRSAKeypairPath()));			
-			// itemValidatorHash.put("sessionkey.rsa_keysize.value", new ItemValidatorOfSingleIntegerSet("1024", "512", "1024", "2048"));			
-			// itemValidatorHash.put("sessionkey.symmetric_key_algorithm.value", new ItemValidatorOfSingleStringSet("ASE", "ASE", "DESede", "DES"));			
-			// itemValidatorHash.put("sessionkey.symmetric_key_size.value", new ItemValidatorOfSingleIntegerSet("16", "8", "16", "24"));			
-			// itemValidatorHash.put("sessionkey.private_key.encoding.value", new ItemValidatorOfSessionkeyPrivateKeyEncoding("BASE64"));
+			/*ItemValueGetterHash.put("jdbc.connection_uri.value", new ItemValueGetterOfJdbcConnectionURI("jdbc:mysql://localhost:3306/sinnori"));
+			ItemValueGetterHash.put("jdbc.db_user_name.value", new ItemValueGetterOfJdbcDBUserName("dbmadangse"));*/
+			//ItemValueGetterHash.put("jdbc.db_user_password.value", new ItemValueGetterOfJdbcDBUserPassword("test1234"));
+			// ItemValueGetterHash.put("jdbc.driver_class_name.value", new ItemValueGetterOfJdbcDriverClassName("com.mysql.jdbc.Driver"));
+			// ItemValueGetterHash.put("servlet_jsp.jdf_error_message_page.value", new ItemValueGetterOfNoNullAndEmptyString("/errorMessagePage.jsp"));
+			// ItemValueGetterHash.put("servlet_jsp.jdf_login_page.value", new ItemValueGetterOfNoNullAndEmptyString("/login.jsp"));
+			// ItemValueGetterHash.put("servlet_jsp.jdf_servlet_trace.value", new ItemValueGetterOfBoolean("true"));
+			// ItemValueGetterHash.put("servlet_jsp.web_layout_control_page.value", new ItemValueGetterOfNoNullAndEmptyString("/PageJump.jsp"));
+			// ItemValueGetterHash.put("sessionkey.rsa_keypair_source.value", new ItemValueGetterOfSingleStringSet("API", "File"));
+			// ItemValueGetterHash.put("sessionkey.rsa_keypair_path.value", new ItemValueGetterOfSessionKeyRSAKeypairPath(getDefaultValueOfSessionKeyRSAKeypairPath()));			
+			// ItemValueGetterHash.put("sessionkey.rsa_keysize.value", new ItemValueGetterOfSingleIntegerSet("1024", "512", "1024", "2048"));			
+			// ItemValueGetterHash.put("sessionkey.symmetric_key_algorithm.value", new ItemValueGetterOfSingleStringSet("ASE", "ASE", "DESede", "DES"));			
+			// ItemValueGetterHash.put("sessionkey.symmetric_key_size.value", new ItemValueGetterOfSingleIntegerSet("16", "8", "16", "24"));			
+			// ItemValueGetterHash.put("sessionkey.private_key.encoding.value", new ItemValueGetterOfSessionkeyPrivateKeyEncoding("BASE64"));
 			
-			// itemValidatorHash.put("common.updownfile.local_source_file_resource_cnt.value", new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put("common.updownfile.local_target_file_resource_cnt.value", new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
-			//itemValidatorHash.put("common.updownfile.file_block_max_size.value", new ItemValidatorOfUpDownFileBlockMaxSize("1048576", 1024, Integer.MAX_VALUE));		
+			// ItemValueGetterHash.put("common.updownfile.local_source_file_resource_cnt.value", new ItemValueGetterOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put("common.updownfile.local_target_file_resource_cnt.value", new ItemValueGetterOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
+			//ItemValueGetterHash.put("common.updownfile.file_block_max_size.value", new ItemValueGetterOfUpDownFileBlockMaxSize("1048576", 1024, Integer.MAX_VALUE));		
 		} catch(ConfigValueInvalidException | IllegalArgumentException e) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)			
 			.append("]::key[")
-			.append(key)
+			.append(targetItemID)
 			.append("] errrorMessage=")
 			.append(e.getMessage()).toString();
 			
@@ -342,503 +291,409 @@ public class SinnoriProjectConfig {
 	}
 	
 	private void initProjectPart() throws ConfigErrorException {
-		String projectPartSubKeyOfDepenceItem = null;
-		String projectPartSubkey = null;
-		ConfigItem item = null;
+		String depenceItemID = null;
+		String targetItemID = null;
+		ConfigItem configItem = null;
 		try {			
 			/** 프로젝트 공통 설정 부분 */
-			projectPartSubkey = getProjectCommonPartSubKeyName("message_info.xmlpath");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("message_info.xmlpath");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"메시지 정보 파일 경로",
 					getDefaultValueOfMessageInfoXMLPath(), true, 
-					new ItemValidatorOfMessageInfoXMLPath());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMessageInfoXMLPath());
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("host");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("host");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"클라이언트에서 접속할 서버 주소",
 					"localhost", true, 
-					new ItemValidatorOfNoNullAndEmptyString());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoNullAndEmptyString());
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("port");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("port");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"포트 번호",
 					"9090", true, 
-					new ItemValidatorOfMinMaxInteger(1024, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1024, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("byteorder");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("byteorder");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"바이트 오더",
 					"LITTLE_ENDIAN", true, 
-					new ItemValidatorOfByteOrder());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfByteOrder());
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("charset");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("charset");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"문자셋",
 					"UTF-8", true, 
-					new ItemValidatorOfCharset());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfCharset());
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("data_packet_buffer_max_cnt_per_message");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("data_packet_buffer_max_cnt_per_message");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"1개 메시지당 할당 받을 수 있는 데이터 패킷 버퍼 최대수",
 					"1000", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("data_packet_buffer_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("data_packet_buffer_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"데이터 패킷 버퍼 크기, 단위 byte",
 					"4096", true, 
-					new ItemValidatorOfMinMaxInteger(1024, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1024, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
 			/** 메시지 식별자 크기의 최소 크기는 내부적으로 사용하는 SelfExn 메시지를 기준으로 정했음. */
-			projectPartSubkey = getProjectCommonPartSubKeyName("message_id_fixed_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("message_id_fixed_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"메시지 식별자 크기의 최소 크기",
 					"50", true, 
-					new ItemValidatorOfMinMaxInteger(7, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(7, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectCommonPartSubKeyName("message_protocol");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("message_protocol");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"메시지 프로토콜, DHB:교차 md5 헤더+바디, DJSON:길이+존슨문자열, THB:길이+바디",
 					"DHB", true, 
-					new ItemValidatorOfMessageProtocol());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMessageProtocol());
+			addConfigItem(configItem);
 			
 			/** 변경전 : classloader.class.package_prefix_name, 변경후 : classloader.class_package_prefix_name*/
-			projectPartSubkey = getProjectCommonPartSubKeyName("classloader.class_package_prefix_name");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectCommonPartID("classloader.class_package_prefix_name");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
 					"동적 클래스 패키지명 접두어, 동적 클래스 여부를 판단하는 기준",
 					"kr.pe.sinnori.impl.", true, 
-					new ItemValidatorOfNoNullAndEmptyString());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfNoNullAndEmptyString());
+			addConfigItem(configItem);
 			
-			// itemValidatorHash.put(getCommonKeyName("message_info.xmlpath"), new ItemValidatorOfMessageInfoXMLPath(getDefaultValueOfMessageInfoXMLPath()));
-			// itemValidatorHash.put(getCommonKeyName("host"), new ItemValidatorOfNoNullAndEmptyString("localhost"));
-			// itemValidatorHash.put(getCommonKeyName("port"), new ItemValidatorOfMinMaxInteger("9090", 1024, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getCommonKeyName("byteorder"), new ItemValidatorOfByteOrder("LITTLE_ENDIAN"));
-			// itemValidatorHash.put(getCommonKeyName("charset"), new ItemValidatorOfCharset("UTF-8"));
-			// itemValidatorHash.put(getCommonKeyName("data_packet_buffer_max_cnt_per_message"), new ItemValidatorOfMinMaxInteger("1000", 1, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getCommonKeyName("message_info.xmlpath"), new ItemValueGetterOfMessageInfoXMLPath(getDefaultValueOfMessageInfoXMLPath()));
+			// ItemValueGetterHash.put(getCommonKeyName("host"), new ItemValueGetterOfNoNullAndEmptyString("localhost"));
+			// ItemValueGetterHash.put(getCommonKeyName("port"), new ItemValueGetterOfMinMaxInteger("9090", 1024, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getCommonKeyName("byteorder"), new ItemValueGetterOfByteOrder("LITTLE_ENDIAN"));
+			// ItemValueGetterHash.put(getCommonKeyName("charset"), new ItemValueGetterOfCharset("UTF-8"));
+			// ItemValueGetterHash.put(getCommonKeyName("data_packet_buffer_max_cnt_per_message"), new ItemValueGetterOfMinMaxInteger("1000", 1, Integer.MAX_VALUE));
 			/** 메시지 식별자 크기의 최소 크기는 내부적으로 사용하는 SelfExn 메시지를 기준으로 정했음. */
-			// itemValidatorHash.put(getCommonKeyName("message_id_fixed_size"), new ItemValidatorOfMinMaxInteger("50", 7, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getCommonKeyName("message_protocol"), new ItemValidatorOfSingleStringSet("DHB", "DHB", "DJSON", "THB"));
+			// ItemValueGetterHash.put(getCommonKeyName("message_id_fixed_size"), new ItemValueGetterOfMinMaxInteger("50", 7, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getCommonKeyName("message_protocol"), new ItemValueGetterOfSingleStringSet("DHB", "DHB", "DJSON", "THB"));
 			/** 변경전 : classloader.class.package_prefix_name, 변경후 : classloader.class_package_prefix_name*/
-			// itemValidatorHash.put(getCommonKeyName("classloader.class_package_prefix_name"), new ItemValidatorOfNoNullAndEmptyString("kr.pe.sinnori.impl."));
+			// ItemValueGetterHash.put(getCommonKeyName("classloader.class_package_prefix_name"), new ItemValueGetterOfNoNullAndEmptyString("kr.pe.sinnori.impl."));
 			
 			
 			/** 프로젝트 클라이언트 설정 부분 */
-			projectPartSubkey = getProjectClientPartSubKeyName("connection.type");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("connection.type");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"소캣 랩퍼 클래스인 연결 종류, NoShareAsyn:비공유+비동기, ShareAsyn:공유+비동기, NoShareSync:비공유+동기",
 					"NoShareAsyn", true, 
-					new ItemValidatorOfConnectionType());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfConnectionType());
+			addConfigItem(configItem);
 			
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("connection.socket_timeout");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("connection.socket_timeout");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"소켓 타임아웃, 단위 ms",
 					"5000", true, 
-					new ItemValidatorOfMinMaxLong(1000, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("connection.whether_to_auto_connect");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("connection.whether_to_auto_connect");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"연결 생성시 자동 접속 여부",
 					"false", true, 
-					new ItemValidatorOfBoolean());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfBoolean());
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("connection.count");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("connection.count");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"연결 갯수",
 					"4", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("data_packet_buffer_cnt");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("data_packet_buffer_cnt");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 프로젝트가 가지는 데이터 패킷 버퍼 갯수",
 					"1000", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.finish_connect.max_call");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.finish_connect.max_call");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 소켓 채널의 연결 확립 최대 시도 횟수",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.finish_connect.waitting_time");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.finish_connect.waitting_time");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 소켓 채널의 연결 확립을 재 시도 간격",
 					"10", true, 
-					new ItemValidatorOfMinMaxLong(0, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(0, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.output_message_executor_thread_cnt");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_executor_thread_cnt");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"비동기 출력 메시지 처리자 쓰레드 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.share.mailbox_cnt");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.share.mailbox_cnt");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"비동기+공유 연결 클래스(ShareAsynConnection)의 메일함 갯수",
 					"2", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.input_message_queue_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.input_message_queue_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 큐 크기",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			/// itemValidatorHash.put(getClientKeyName("connection.type"), new ItemValidatorOfSingleStringSet("NoShareAsyn", "NoShareAsyn", "ShareAsyn", "NoShareSync"));
-			// itemValidatorHash.put(getClientKeyName("connection.socket_timeout"), new ItemValidatorOfMinMaxLong("5000", 1000, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getClientKeyName("connection.whether_to_auto_connect"), new ItemValidatorOfBoolean("false"));			
-			// itemValidatorHash.put(getClientKeyName("connection.count"), new ItemValidatorOfMinMaxInteger("4", 1, Integer.MAX_VALUE));			
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("data_packet_buffer_cnt"), new ItemValidatorOfMinMaxInteger("1000", 1, Integer.MAX_VALUE));			
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.finish_connect.max_call"), new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.finish_connect.waitting_time"), new ItemValidatorOfMinMaxInteger("10", 0, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.output_message_executor_thread_cnt"), new ItemValidatorOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.share.mailbox_cnt"), new ItemValidatorOfMinMaxInteger("2", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.input_message_queue_size"), new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
-			
-			projectPartSubKeyOfDepenceItem = getProjectClientPartSubKeyName("asyn.input_message_writer.max_size");
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.input_message_writer.size");
-			// itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValidatorOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectClientPartSubKeyName("asyn.input_message_writer.max_size");
+			targetItemID = getProjectClientPartSubKeyName("asyn.input_message_writer.size");
+			// ItemValueGetterHash.put(getProjectClientPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValueGetterOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 쓰기 담당 쓰레드 최대 갯수",
 					"2", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 쓰기 담당 쓰레드 갯수",
 					"2", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));	
-			// itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValidatorOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(
+							targetItemID,
+							depenceItemID, 
+							this));	
+			// ItemValueGetterHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValueGetterOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.output_message_queue_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_queue_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"출력 메시지 큐 크기",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.output_message_queue_size"), new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getProjectClientPartSubKeyName("asyn.output_message_queue_size"), new ItemValueGetterOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
 					
-			projectPartSubKeyOfDepenceItem = getProjectClientPartSubKeyName("asyn.output_message_reader.max_size");
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.output_message_reader.size");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectClientPartSubKeyName("asyn.output_message_reader.max_size");
+			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_reader.size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 읽기 담당 쓰레드 최대 갯수",
 					"4", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 읽기 담당 쓰레드 갯수",
 					"4", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));	
-			/*itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValidatorOfMinMaxInteger("2", 1, Integer.MAX_VALUE));		
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, itemValidatorHash.get(projectPartSubKeyOfDepenceItem)));	
-			itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValidatorOfMinMaxInteger("2", 1, Integer.MAX_VALUE));*/
-			
-			projectPartSubkey = getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval");
-			item = new ConfigItem(projectPartSubkey,
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));	
+
+			targetItemID = getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"클라이언트 비동기 입출력 지원용 출력 메시지 소켓 읽기 담당 쓰레드에서 블락된 읽기 이벤트 전용 selector 를 깨우는 주기. 단위 ms",
 					"10", true, 
-					new ItemValidatorOfMinMaxLong(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval"), new ItemValidatorOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
+					new ItemValueGetterOfMinMaxLong(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
+			// ItemValueGetterHash.put(getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval"), new ItemValueGetterOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
 			
-			projectPartSubkey = getProjectClientPartSubKeyName("monitor.time_interval");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectClientPartSubKeyName("monitor.time_interval");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
 					"모니터링 주기, 단위 ms",
 					"5000", true, 
-					new ItemValidatorOfMinMaxLong(1000, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
 			/** 변경전:sample_test.client.monitor.request_timeout.value, 변경후:sample_test.client.monitor.reception_timeout.value*/
-			projectPartSubkey = getProjectClientPartSubKeyName("connection.socket_timeout");
-			projectPartSubKeyOfDepenceItem = getProjectClientPartSubKeyName("monitor.reception_timeout");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			targetItemID = getProjectClientPartSubKeyName("connection.socket_timeout");
+			depenceItemID = getProjectClientPartSubKeyName("monitor.reception_timeout");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
 					"데이터를 수신하지 않고 기다려주는 최대 시간, 권장 값은 소켓 타임 아웃 시간*2, 단위 ms",
 					"20000", true, 
-					new ItemValidatorOfMinMaxLong(1000, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));	
-			// itemValidatorHash.put(getClientKeyName("monitor.time_interval"), new ItemValidatorOfMinMaxLong("5000", 1000, Integer.MAX_VALUE));			
-			// itemValidatorHash.put(getProjectClientPartSubKeyName("monitor.request_timeout"), new ItemValidatorOfMinMaxLong("20000", 1000, Integer.MAX_VALUE));
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));	
+			// ItemValueGetterHash.put(getClientKeyName("monitor.time_interval"), new ItemValueGetterOfMinMaxLong("5000", 1000, Integer.MAX_VALUE));			
+			// ItemValueGetterHash.put(getProjectClientPartSubKeyName("monitor.request_timeout"), new ItemValueGetterOfMinMaxLong("20000", 1000, Integer.MAX_VALUE));
 			
 			/** 프로젝트 서버 설정 부분 */
-			projectPartSubkey = getProjectServerPartSubKeyName("monitor.time_interval");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("monitor.time_interval");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"모니터링 주기, 단위 ms",
 					"5000", true, 
-					new ItemValidatorOfMinMaxLong(1000, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("monitor.reception_timeout");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("monitor.reception_timeout");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"데이터를 수신하지 않고 기다려주는 최대 시간, 권장 값은 소켓 타임 아웃 시간*2, 단위 ms",
 					"20000", true, 
-					new ItemValidatorOfMinMaxLong(1000, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("max_clients");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("max_clients");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"서버로 접속할 수 있는 최대 클라이언트 수",
 					"5", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("data_packet_buffer_cnt");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("data_packet_buffer_cnt");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"서버 프로젝트가 가지는 데이터 패킷 버퍼 수",
 					"1000", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.accept_queue_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("pool.accept_queue_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"접속 승인 큐 크기",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(10, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.input_message_queue_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("pool.input_message_queue_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"입력 메시지 큐 크기",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(10, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.output_message_queue_size");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("pool.output_message_queue_size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"출력 메시지 큐 크기",
 					"10", true, 
-					new ItemValidatorOfMinMaxInteger(10, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("accept_selector_timeout");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("accept_selector_timeout");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"접속 이벤트 전용 selector 에서 접속 이벤트 최대 대기 시간, 단위 ms",
 					"10", true, 
-					new ItemValidatorOfMinMaxLong(10, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxLong(10, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.read_selector_wakeup_interval");
-			item = new ConfigItem(projectPartSubkey,
+			targetItemID = getProjectServerPartSubKeyName("pool.read_selector_wakeup_interval");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드에서 블락된 읽기 이벤트 전용 selector 를 깨우는 주기. 단위 ms",
 					"10", true, 
-					new ItemValidatorOfMinMaxLong(10, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);	
+					new ItemValueGetterOfMinMaxLong(10, Integer.MAX_VALUE));
+			addConfigItem(configItem);	
 			
 			
-			// itemValidatorHash.put(getProjectServerPartSubKeyName("max_clients"), new ItemValidatorOfMinMaxInteger("5", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectServerPartSubKeyName("data_packet_buffer_cnt"), new ItemValidatorOfMinMaxInteger("1000", 1, Integer.MAX_VALUE));
-			// itemValidatorHash.put(getProjectServerPartSubKeyName("accept_selector_timeout"), new ItemValidatorOfMinMaxLong("10", 10, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getProjectServerPartSubKeyName("max_clients"), new ItemValueGetterOfMinMaxInteger("5", 1, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getProjectServerPartSubKeyName("data_packet_buffer_cnt"), new ItemValueGetterOfMinMaxInteger("1000", 1, Integer.MAX_VALUE));
+			// ItemValueGetterHash.put(getProjectServerPartSubKeyName("accept_selector_timeout"), new ItemValueGetterOfMinMaxLong("10", 10, Integer.MAX_VALUE));
 			
-			projectPartSubKeyOfDepenceItem = getProjectServerPartSubKeyName("pool.accept_processor.max_size");
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.accept_processor.size");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectServerPartSubKeyName("pool.accept_processor.max_size");
+			targetItemID = getProjectServerPartSubKeyName("pool.accept_processor.size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
 					"접속 요청이 승락된 클라이언트의 등록을 담당하는 쓰레드 최대 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"접속 요청이 승락된 클라이언트의 등록을 담당하는 쓰레드 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));	
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));	
 			
-			/*itemValidatorHash.put(getProjectServerPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValidatorOfMinMaxInteger("1", 1, Integer.MAX_VALUE));		
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, itemValidatorHash.get(projectPartSubKeyOfDepenceItem)));	
-			itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValidatorOfMinMaxInteger("1", 1, Integer.MAX_VALUE));*/			
-			
-			// itemValidatorHash.put(getProjectServerPartSubKeyName("pool.accept_queue_size"), new ItemValidatorOfMinMaxLong("10", 1, Integer.MAX_VALUE));
-			
-			/*projectPartSubKeyOfDepenceItem = "pool.executor_processor.max_size";
-			projectPartSubkey = "pool.executor_processor.size";
-			itemValidatorHash.put(getProjectServerPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValidatorOfMinMaxInteger("3", 1, Integer.MAX_VALUE));		
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, itemValidatorHash.get(projectPartSubKeyOfDepenceItem)));	
-			itemValidatorHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValidatorOfMinMaxInteger("3", 1, Integer.MAX_VALUE));*/
-			
-			projectPartSubKeyOfDepenceItem = getProjectServerPartSubKeyName("pool.executor_processor.max_size");
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.executor_processor.size");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectServerPartSubKeyName("pool.executor_processor.max_size");
+			targetItemID = getProjectServerPartSubKeyName("pool.executor_processor.size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
 					"서버 비지니스 로직 수행 담당 쓰레드 최대 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"서버 비지니스 로직 수행 담당 쓰레드 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));
 			
 			
 			
-			projectPartSubKeyOfDepenceItem = getProjectServerPartSubKeyName("pool.input_message_reader.max_size");
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.input_message_reader.size");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectServerPartSubKeyName("pool.input_message_reader.max_size");
+			targetItemID = getProjectServerPartSubKeyName("pool.input_message_reader.size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드 최대 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));
 			
 			
-			projectPartSubKeyOfDepenceItem = getProjectServerPartSubKeyName("pool.output_message_writer.max_size");
-			projectPartSubkey = getProjectServerPartSubKeyName("pool.output_message_writer.size");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
+			depenceItemID = getProjectServerPartSubKeyName("pool.output_message_writer.max_size");
+			targetItemID = getProjectServerPartSubKeyName("pool.output_message_writer.size");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
 					"출력 메시지 소켓 쓰기 담당 쓰레드 최대 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"출력 메시지 소켓 쓰기 담당 쓰레드 갯수",
 					"1", true, 
-					new ItemValidatorOfMinMaxInteger(1, Integer.MAX_VALUE));
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);
+					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
+			addConfigItem(configItem);
 			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfIntegerTypeMaxValue(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));
+			breakCheckerHash.put(targetItemID, 
+					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));
+						
 			
-			
-			/*projectPartSubkey = getProjectServerPartSubKeyName("classloader.appinf.path");			
-			item = new ConfigItem(projectPartSubkey,
+			depenceItemID = getProjectServerPartSubKeyName("classloader.appinf.path");
+			targetItemID = getProjectServerPartSubKeyName("mybatis.config_file");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
 					"서버 동적 클래스 APP-INF 경로",
 					getAPPINFPathString(), false, 
-					new ItemValidatorOfPath());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);	
+					new ItemValueGetterOfPath());
+			addConfigItem(configItem);	
 			
-			projectPartSubkey = getProjectServerPartSubKeyName("mybatis.config_file");			
-			item = new ConfigItem(projectPartSubkey,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
 					"mybatis 설정 파일 이름. SinnoriClassLoader.getResourceAsStream 통해서 접근된다.",
 					"kr/pe/sinnori/impl/mybatis/mybatisConfig.xml", false, 
-					new ItemValidatorOfNoCheck());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);	*/
+					new ItemValueGetterOfNoCheck());
+			addConfigItem(configItem);	
 			
-			
-			projectPartSubKeyOfDepenceItem = getProjectServerPartSubKeyName("classloader.appinf.path");
-			projectPartSubkey = getProjectServerPartSubKeyName("mybatis.config_file");
-			item = new ConfigItem(projectPartSubKeyOfDepenceItem,
-					"서버 동적 클래스 APP-INF 경로",
-					getAPPINFPathString(), false, 
-					new ItemValidatorOfPath());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);	
-			
-			item = new ConfigItem(projectPartSubkey,
-					"mybatis 설정 파일 이름. SinnoriClassLoader.getResourceAsStream 통해서 접근된다.",
-					"kr/pe/sinnori/impl/mybatis/mybatisConfig.xml", false, 
-					new ItemValidatorOfNoCheck());
-			projectPartItemList.add(item);
-			projectPartItemHash.put(item.getKey(), item);	
-			
-			afterDependenceProjectPartItemHash.put(projectPartSubkey, 
-					new  AfterDependenceItemOfClassLoaderResourceFile(projectPartSubKeyOfDepenceItem, 
-							projectPartItemHash.get(projectPartSubKeyOfDepenceItem).getItemValidator()));
+			breakCheckerHash.put(targetItemID, 
+					new  ClassLoaderResourceFileBreakChecker(targetItemID, 
+							depenceItemID, this));
 			
 		} catch(ConfigValueInvalidException | IllegalArgumentException e) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)
 			.append("]::project part sub key[")
-			.append(projectPartSubkey)
+			.append(targetItemID)
 			.append("] errrorMessage=")
 			.append(e.getMessage()).toString();
 			
@@ -848,7 +703,7 @@ public class SinnoriProjectConfig {
 		}
 	}
 	
-	public String getProjectConfigFilePathString() {
+	private String getProjectConfigFilePathString() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);		
 		strBuilder.append(File.separator);
 		strBuilder.append("config");
@@ -858,14 +713,14 @@ public class SinnoriProjectConfig {
 		return strBuilder.toString();
 	}
 	
-	public String getSessionKeyRSAKeypairPathString() {
+	private String getSessionKeyRSAKeypairPathString() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);
 		strBuilder.append(File.separator);
 		strBuilder.append("rsa_keypair");		
 		return strBuilder.toString();
 	}
 	
-	public String getAPPINFPathString() {
+	private String getAPPINFPathString() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);
 		strBuilder.append(File.separator);
 		strBuilder.append("server_build");
@@ -874,19 +729,30 @@ public class SinnoriProjectConfig {
 		return strBuilder.toString();
 	}
 	
-	
-	public String getDefaultValueOfMessageInfoXMLPath() {
-		StringBuilder strBuilder = new StringBuilder(projectPathString);
-		strBuilder.append(File.separator);
-		strBuilder.append("impl");
-		strBuilder.append(File.separator);
-		strBuilder.append("message");
-		strBuilder.append(File.separator);
-		strBuilder.append("info");
-		return strBuilder.toString();
+	public ConfigItem getConfigItem(String itemID) {
+		return configItemHash.get(itemID);
 	}
 	
-	private String getProjectCommonPartSubKeyName(String subkey) {
+	private void addConfigItem(ConfigItem configItem) throws ConfigErrorException {
+		ConfigItem oldConfigItem = configItemHash.get(configItem.getItemID());
+		if (null != oldConfigItem) {
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)		
+			.append("] errrorMessage=config item[")
+			.append(configItem.getItemID())
+			.append("] is registed").toString();
+			
+			log.warn(errorMessage);
+			
+			throw new ConfigErrorException(errorMessage);
+		}
+		
+		configItemHash.put(configItem.getItemID(), configItem);
+		configItemList.add(configItem);
+	}
+	
+	
+	private String getProjectCommonPartID(String subkey) {
 		/*StringBuffer strBuff = new StringBuffer(projectName);
 		strBuff.append(".common.");
 		strBuff.append(subkey);
@@ -911,6 +777,17 @@ public class SinnoriProjectConfig {
 		strBuff.append(subkey);
 		strBuff.append(".value");		
 		return strBuff.toString();
+	}
+	
+	public String getDefaultValueOfMessageInfoXMLPath() {
+		StringBuilder strBuilder = new StringBuilder(projectPathString);
+		strBuilder.append(File.separator);
+		strBuilder.append("impl");
+		strBuilder.append(File.separator);
+		strBuilder.append("message");
+		strBuilder.append(File.separator);
+		strBuilder.append("info");
+		return strBuilder.toString();
 	}
 	
 	public void combind(Properties sourceProperties) throws ConfigErrorException {
@@ -1065,33 +942,105 @@ public class SinnoriProjectConfig {
 	}	
 	
 	public SequencedProperties getSequencedProperties() {
-		SequencedProperties sequencedProperties = new SequencedProperties();
-		for (ConfigItem configItem : itemList) {
-			String key = configItem.getKey();
+		SequencedProperties sequencedProperties = new SequencedProperties();		
+		
+		List<ConfigItem> dbcpPartConfigItemList = new ArrayList<ConfigItem>();
+		List<ConfigItem> commonPartConfigItemList = new ArrayList<ConfigItem>();
+		List<ConfigItem> projectPartConfigItemList = new ArrayList<ConfigItem>();		
+		
+		for (ConfigItem configItem : configItemList) {
+			ConfigItem.ConfigPart itemConfigPart = configItem.getConfigPart();
+			if (ConfigItem.ConfigPart.DBCP == itemConfigPart) {				
+				dbcpPartConfigItemList.add(configItem);
+			} else if (ConfigItem.ConfigPart.COMMON == itemConfigPart) {
+				commonPartConfigItemList.add(configItem);
+			} else {
+				projectPartConfigItemList.add(configItem);
+			}
+		}
+		
+		String key = null;
+		
+		/** DBCP */
+		{
+			for (ConfigItem configItem : dbcpPartConfigItemList) {
+				String itemID = configItem.getItemID();
+				if (itemID.equals("connection_pool_name_list.value")) {
+					key = new StringBuilder("dbcp.")
+					.append(itemID).toString();
+					
+					int len = key.length();
+					String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
+					
+					// FIXME!
+					log.info("descKey=[{}]", descKey);
+					
+					sequencedProperties.put(descKey, configItem.toDescription());
+					sequencedProperties.put(key, configItem.getDefaultValue());
+				}
+			}			
+			
+			for (String dbcpConnectionPoolName : dbcpConnectionPoolNameList) {				
+				for (ConfigItem configItem : dbcpPartConfigItemList) {
+					String itemID = configItem.getItemID();
+					if (!itemID.equals("connection_pool_name_list.value")) {
+						key = new StringBuilder("dbcp.")
+						.append(dbcpConnectionPoolName)
+						.append(".")
+						.append(itemID).toString();
+						
+						int len = key.length();
+						String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
+						
+						// FIXME!
+						log.info("descKey=[{}]", descKey);
+						
+						sequencedProperties.put(descKey, configItem.toDescription());
+						sequencedProperties.put(key, configItem.getDefaultValue());
+					}
+				}				
+			}
+		}
+		
+		
+		/** common */
+		for (ConfigItem configItem : commonPartConfigItemList) {
+			key = configItem.getItemID();
 			int len = key.length();
 			String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
+			
+			// FIXME!
+			log.info("descKey=[{}]", descKey);
+			
 			sequencedProperties.put(descKey, configItem.toDescription());
 			sequencedProperties.put(key, configItem.getDefaultValue());
 		}
 		
+		/** project */		
 		for (String projectName : projectNameList) {
-			for (ConfigItem configItem : projectPartItemList) {
-				String key = new StringBuilder(projectName)
+			for (ConfigItem configItem : projectPartConfigItemList) {
+				key = new StringBuilder(projectName)
 				.append(".")
-				.append(configItem.getKey()).toString();
+				.append(configItem.getItemID()).toString();
+				
 				int len = key.length();
 				String descKey = new StringBuilder(key.subSequence(0, len - ".value".length())).append(".desc").toString();
+				
+				// FIXME!
+				log.info("descKey=[{}]", descKey);
+				
 				sequencedProperties.put(descKey, configItem.toDescription());
 				sequencedProperties.put(key, configItem.getDefaultValue());
 			}
 		}
+		
 		return sequencedProperties;
 	}
 	
 	// FIXME!
 	public boolean isValidate(String key, Properties sourceProperties) throws ConfigValueInvalidException {
 		boolean isValidation= true;
-		AbstractBeforeDependenceItem beforeDependenceItem = null;
+		AbstractConditionChecker beforeDependenceItem = null;
 		
 		StringTokenizer tokens = new StringTokenizer(key, "."); 
 		if (tokens.hasMoreTokens()) {
@@ -1121,7 +1070,7 @@ public class SinnoriProjectConfig {
 					
 					// FIXME!
 					log.info("dbcp subkey={}", subKeyBuilder.toString());
-					beforeDependenceItem = beforeDependenceDBCPPartItemHash.get(subKeyBuilder.toString());
+					beforeDependenceItem = conditionCheckerHash.get(subKeyBuilder.toString());
 				}
 			} else if (projectNameList.contains(firstToken)) {
 				StringBuilder subKeyBuilder = new StringBuilder();
@@ -1135,15 +1084,15 @@ public class SinnoriProjectConfig {
 				}
 				
 				String subKey = subKeyBuilder.toString();					
-				beforeDependenceItem = beforeDependenceProjectPartItemHash.get(subKey);			
+				beforeDependenceItem = conditionCheckerHash.get(subKey);			
 			} else {
-				beforeDependenceItem = beforeDependenceItemHash.get(key);
+				beforeDependenceItem = conditionCheckerHash.get(key);
 			}
 		}
 		
 		
 		if (null != beforeDependenceItem) {
-			isValidation = beforeDependenceItem.isValidation(sourceProperties.getProperty(beforeDependenceItem.getKeyOfDependenceItem()));
+			isValidation = beforeDependenceItem.isValidation(sourceProperties, key);
 		}
 		return isValidation;
 	}
@@ -1162,16 +1111,16 @@ public class SinnoriProjectConfig {
 					// String projectNameOfConfig = firstToken;				
 					String subKey = key.substring(inx+1);
 					
-					itemConfig = projectPartItemHash.get(subKey);
+					itemConfig = projectPartconfigItemHash.get(subKey);
 					
 				} else {
-					itemConfig = itemHash.get(key);
+					itemConfig = configItemHash.get(key);
 				}
 			} else {
-				itemConfig = itemHash.get(key);
+				itemConfig = configItemHash.get(key);
 			}
 		} else {
-			itemConfig = itemHash.get(key);
+			itemConfig = configItemHash.get(key);
 		}
 		
 		if (null == itemConfig) {
@@ -1187,7 +1136,7 @@ public class SinnoriProjectConfig {
 		}
 		
 		try {
-			nativeValue = itemConfig.getItemValidator().validateItem(sourceProperties.getProperty(key));
+			nativeValue = itemConfig.getItemValueGetter().validateItem(sourceProperties.getProperty(key));
 		} catch(ConfigValueInvalidException e) {
 			String errorMessage = new StringBuilder("project[")
 			.append(projectName)			
@@ -1204,11 +1153,99 @@ public class SinnoriProjectConfig {
 		return nativeValue;
 	}	*/
 	
+	public String getItemIDFromKey(String key) {
+		StringTokenizer tokens = new StringTokenizer(key, "."); 
+		if (tokens.hasMoreTokens()) {
+			String firstToken = tokens.nextToken();
+			if (firstToken.equals("dbcp")) {
+				if (tokens.hasMoreTokens()) {
+					String secondToken = tokens.nextToken();
+					
+					StringBuilder itemIDBuilder = new StringBuilder();
+					
+					if (dbcpConnectionPoolNameList.contains(secondToken)) {
+						if (tokens.hasMoreTokens()) {
+							itemIDBuilder.append(tokens.nextToken());
+						}
+						while (tokens.hasMoreTokens()) {
+							itemIDBuilder.append(".");
+							itemIDBuilder.append(tokens.nextToken());
+						}
+					} else {								
+						itemIDBuilder.append(secondToken);
+						
+						while (tokens.hasMoreTokens()) {
+							itemIDBuilder.append(".");
+							itemIDBuilder.append(tokens.nextToken());
+						}
+					}
+					
+					// FIXME!
+					// log.info("dbcp subkey={}", itemIDBuilder.toString());
+					return itemIDBuilder.toString();
+				}
+			} else if (projectNameList.contains(firstToken)) {
+				StringBuilder itemIDBuilder = new StringBuilder();
+				if (tokens.hasMoreTokens()) {
+					itemIDBuilder.append(tokens.nextToken());
+				}
+				
+				while (tokens.hasMoreTokens()) {
+					itemIDBuilder.append(".");
+					itemIDBuilder.append(tokens.nextToken());
+				}
+				
+				return itemIDBuilder.toString();
+			} else {
+				return key;
+			}
+		}
+		
+		return null;
+	}
+	
+	public String getKeyOfItemIDFromKey(String key, String itemID) {
+		StringTokenizer tokens = new StringTokenizer(key, "."); 
+		if (tokens.hasMoreTokens()) {
+			String firstToken = tokens.nextToken();
+			if (firstToken.equals("dbcp")) {
+				if (tokens.hasMoreTokens()) {
+					String secondToken = tokens.nextToken();
+					
+					StringBuilder itemKeyBuilder = new StringBuilder(firstToken);
+					itemKeyBuilder.append(".");					
+					
+					if (dbcpConnectionPoolNameList.contains(secondToken)) {
+						itemKeyBuilder.append(secondToken);
+						itemKeyBuilder.append(".");
+						itemKeyBuilder.append(itemID);
+					} else {
+						itemKeyBuilder.append(itemID);
+					}
+					
+					// FIXME!
+					// log.info("dbcp subkey={}", itemIDBuilder.toString());
+					return itemKeyBuilder.toString();
+				}
+			} else if (projectNameList.contains(firstToken)) {
+				StringBuilder itemKeyBuilder = new StringBuilder(firstToken);
+				itemKeyBuilder.append(".");	
+				itemKeyBuilder.append(itemID);	
+				
+				return itemKeyBuilder.toString();
+			} else {
+				return key;
+			}
+		}
+		
+		return null;
+	}
+	
 	public Object getNativeValueWithAfterValidate(String key, Properties sourceProperties) throws ConfigValueInvalidException, ConfigKeyNotFoundException {
 		Object nativeValue = null;
 		ConfigItem itemConfig = null;
 		
-		AbstractAfterDependenceItem afterDependenceItem = null;
+		AbstractBreakChecker afterDependenceItem = null;
 		StringTokenizer tokens = new StringTokenizer(key, "."); 
 		if (tokens.hasMoreTokens()) {
 			String firstToken = tokens.nextToken();
@@ -1237,8 +1274,8 @@ public class SinnoriProjectConfig {
 					
 					// FIXME!
 					log.info("dbcp subkey={}", subKeyBuilder.toString());
-					itemConfig = dbcpPartItemHash.get(subKeyBuilder.toString());
-					afterDependenceItem = afterDependenceDBCPPartItemHash.get(subKeyBuilder.toString());
+					itemConfig = configItemHash.get(subKeyBuilder.toString());
+					afterDependenceItem = breakCheckerHash.get(subKeyBuilder.toString());
 				}
 			} else if (projectNameList.contains(firstToken)) {
 				StringBuilder subKeyBuilder = new StringBuilder();
@@ -1252,11 +1289,11 @@ public class SinnoriProjectConfig {
 				}
 				
 				String subKey = subKeyBuilder.toString();					
-				itemConfig = projectPartItemHash.get(subKey);
-				afterDependenceItem = afterDependenceProjectPartItemHash.get(subKey);
+				itemConfig = configItemHash.get(subKey);
+				afterDependenceItem = breakCheckerHash.get(subKey);
 			} else {
-				itemConfig = itemHash.get(key);
-				afterDependenceItem = afterDependenceItemHash.get(key);
+				itemConfig = configItemHash.get(key);
+				afterDependenceItem = breakCheckerHash.get(key);
 			}
 		}
 		
@@ -1274,7 +1311,7 @@ public class SinnoriProjectConfig {
 		
 		String value = sourceProperties.getProperty(key);
 		try {
-			nativeValue = itemConfig.getItemValidator().validateItem(value);
+			nativeValue = itemConfig.getItemValueGetter().getItemValueWithValidation(value);
 		} catch(ConfigValueInvalidException e) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)			
@@ -1289,9 +1326,9 @@ public class SinnoriProjectConfig {
 		}
 		
 		if (null != afterDependenceItem) {
-			String valueOfDependenceItem = sourceProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem());
+			// String valueOfDependenceItem = sourceProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem());
 			try {
-				afterDependenceItem.validate(valueOfDependenceItem, nativeValue);
+				afterDependenceItem.validate(sourceProperties, key);
 			} catch(ConfigValueInvalidException e) {
 				String errorMessage = new StringBuilder("project config file[")
 				.append(projectConfigFilePathString)			
@@ -1320,15 +1357,15 @@ public class SinnoriProjectConfig {
 					// String projectNameOfConfig = firstToken;				
 					String subKey = key.substring(inx+1);
 					
-					afterDependenceItem = afterDependenceProjectPartItemHash.get(subKey);
+					afterDependenceItem = afterDependenceProjectPartconfigItemHash.get(subKey);
 				} else {				
-					afterDependenceItem = afterDependenceItemHash.get(key);
+					afterDependenceItem = afterDependenceconfigItemHash.get(key);
 				}
 			} else {
-				afterDependenceItem = afterDependenceItemHash.get(key);
+				afterDependenceItem = afterDependenceconfigItemHash.get(key);
 			}
 		} else {
-			afterDependenceItem = afterDependenceItemHash.get(key);
+			afterDependenceItem = afterDependenceconfigItemHash.get(key);
 		}
 		if (null != afterDependenceItem) {
 			String valueOfDependenceItem = sourceProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem());
@@ -1379,7 +1416,7 @@ public class SinnoriProjectConfig {
 							
 							// FIXME!
 							log.info("dbcp subkey={}", subKeyBuilder.toString());
-							itemConfig = dbcpPartItemHash.get(subKeyBuilder.toString());
+							itemConfig = configItemHash.get(subKeyBuilder.toString());
 						}
 					} else if (projectNameList.contains(firstToken)) {
 						StringBuilder subKeyBuilder = new StringBuilder();
@@ -1393,9 +1430,9 @@ public class SinnoriProjectConfig {
 						}
 						
 						String subKey = subKeyBuilder.toString();					
-						itemConfig = projectPartItemHash.get(subKey);
+						itemConfig = configItemHash.get(subKey);
 					} else {
-						itemConfig = itemHash.get(key);
+						itemConfig = configItemHash.get(key);
 					}
 				}
 				
@@ -1423,7 +1460,7 @@ public class SinnoriProjectConfig {
 			String projectNameOfList = isProjectPart(key);
 			if (null == projectNameOfList) {
 				if (key.endsWith(".value")) {
-					ItemOfConfig itemOfConfig = itemHash.get(key);
+					ItemOfConfig itemOfConfig = configItemHash.get(key);
 					if (null == itemOfConfig) {
 						String errorMessage = new StringBuilder("project[")
 						.append(projectName)
@@ -1436,9 +1473,9 @@ public class SinnoriProjectConfig {
 						throw new ConfigException(errorMessage);
 					}
 					
-					ItemValidator itemValidator = itemOfConfig.getItemValidator();
+					ItemValueGetter ItemValueGetter = itemOfConfig.getItemValueGetter();
 					
-					AbstractBeforeDependenceItem beforeDependenceItem = beforeDependenceItemHash.get(key);
+					AbstractBeforeDependenceItem beforeDependenceItem = beforeDependenceconfigItemHash.get(key);
 					boolean isValidation= true;
 					if (null != beforeDependenceItem) {
 						try {
@@ -1462,7 +1499,7 @@ public class SinnoriProjectConfig {
 					if (isValidation) {
 						Object nativeValue = null;
 						try {
-							nativeValue = itemValidator.validateItem(sourceSequencedProperties.getProperty(key));
+							nativeValue = ItemValueGetter.validateItem(sourceSequencedProperties.getProperty(key));
 						} catch(ConfigException e) {
 							String errorMessage = new StringBuilder("project[")
 							.append(projectName)
@@ -1478,7 +1515,7 @@ public class SinnoriProjectConfig {
 							throw new ConfigException(errorMessage);
 						}
 						
-						AbstractAfterDependenceItem afterDependenceItem = afterDependenceItemHash.get(key);
+						AbstractAfterDependenceItem afterDependenceItem = afterDependenceconfigItemHash.get(key);
 						if (null != afterDependenceItem) {
 							try {
 								afterDependenceItem.validate(sourceSequencedProperties.getProperty(afterDependenceItem.getKeyOfDependenceItem()), nativeValue);
