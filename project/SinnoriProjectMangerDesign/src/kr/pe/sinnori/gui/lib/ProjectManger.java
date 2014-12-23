@@ -19,8 +19,8 @@ public class ProjectManger {
 	private Logger log = LoggerFactory.getLogger(ProjectManger.class);
 	
 	private String projectBasePathString = null;
-	private Hashtable<String, Project> projectHash = new Hashtable<String, Project>();
-	private List<Project> projectList = new ArrayList<Project>();
+	private Hashtable<String, MainProject> projectHash = new Hashtable<String, MainProject>();
+	private List<MainProject> projectList = new ArrayList<MainProject>();
 	
 	public ProjectManger(String projectBasePathString) throws ConfigErrorException {
 		if (null == projectBasePathString) {
@@ -88,7 +88,7 @@ public class ProjectManger {
 				throw new ConfigErrorException(errorMessage);
 			}
 						
-			Project project = new Project(projectName, projectPathString, sourceProperties);
+			MainProject project = new MainProject(projectName, projectPathString, sourceProperties);
 				
 			// tempProjectHash.put(projectName, project);
 			projectList.add(project);
@@ -139,11 +139,11 @@ public class ProjectManger {
 		return projectBasePathString;
 	}
 	
-	public Project getProject(String projectName) {
+	public MainProject getProject(String projectName) {
 		return projectHash.get(projectName);
 	}
 
-	public List<Project> getProjectList() {
+	public List<MainProject> getProjectList() {
 		return projectList;
 	}
 }

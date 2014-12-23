@@ -18,7 +18,7 @@ public class MinMaxBreakChecker extends AbstractBreakChecker {
 
 	@Override
 	public void validate(Properties sourceProperties, 
-			String prefixOfDomain) throws ConfigValueInvalidException {
+			String targetItemKey, String dependenceItemKey) throws ConfigValueInvalidException {
 			
 		if (null == sourceProperties) {
 			String errorMessage = new StringBuilder("targetItemID[")
@@ -29,18 +29,26 @@ public class MinMaxBreakChecker extends AbstractBreakChecker {
 			log.warn(errorMessage);			
 			throw new ConfigValueInvalidException(errorMessage);
 		}
-		if (null == prefixOfDomain) {
+		if (null == targetItemKey) {
 			String errorMessage = new StringBuilder("targetItemID[")
 			.append(targetItemID)
 			.append("] dependenceItemID=[")	
 			.append(dependenceItemID)	
-			.append("] errormessage=parameter prefixOfDomain is null").toString();
+			.append("] errormessage=parameter targetItemKey is null").toString();
 			log.warn(errorMessage);
 			throw new ConfigValueInvalidException(errorMessage);
 		}
 		
-		String targetItemKey = new StringBuilder(prefixOfDomain).append(targetItemID).toString();
-		String dependenceItemKey = new StringBuilder(prefixOfDomain).append(dependenceItemID).toString();
+		if (null == dependenceItemKey) {
+			String errorMessage = new StringBuilder("targetItemID[")
+			.append(targetItemID)
+			.append("] dependenceItemID=[")	
+			.append(dependenceItemID)	
+			.append("] errormessage=parameter dependenceItemKey is null").toString();
+			log.warn(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
+		}
+		
 		
 		int min=Integer.MIN_VALUE;
 		try {

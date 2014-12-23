@@ -43,7 +43,7 @@ public class SinnoriConfigInfo {
 	public final static String DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING = "dbcp.connection_pool_name_list.value";
 	public final static String PROJECT_NAME_LIST_KEY_STRING = "project.name_list.value";
 	
-	private String projectName;
+	private String mainProjectName;
 	private String projectPathString;
 	// private String projectConfigFilePathString;
 	// private SequencedProperties sourceSequencedProperties;
@@ -66,17 +66,17 @@ public class SinnoriConfigInfo {
 	private List<ConfigItem> commonPartConfigItemList = new ArrayList<ConfigItem>();
 	private List<ConfigItem> projectPartConfigItemList = new ArrayList<ConfigItem>();
 	
-	public SinnoriConfigInfo(String projectName, String projectPathString) throws ConfigErrorException {
-		this.projectName = projectName;
+	public SinnoriConfigInfo(String mainProjectName, String projectPathString) throws ConfigErrorException {
+		this.mainProjectName = mainProjectName;
 		this.projectPathString = projectPathString;		
 		// this.sourceSequencedProperties = sourceSequencedProperties;		
 		// this.projectConfigFilePathString = getProjectConfigFilePathString();
 		
 		projectConfigFilePathString = getProjectConfigFilePathString();
 		
-		projectNameList.add(projectName);
+		projectNameList.add(mainProjectName);
 		
-		log.info("projectName={}", projectName);
+		log.info("projectName={}", mainProjectName);
 		
 		initCommonPart();
 		
@@ -108,18 +108,15 @@ public class SinnoriConfigInfo {
 		// String keyOfDepenceItem = null;
 		String dbcpID = null;		
 		try {
-			/** DBCP start */			
-			/*dbcpID = "connection_pool_name_list.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
-					"dbcp 연결 폴 이름 목록, 구분자 콤마",
-					"", false, 
-					new ItemValueGetterOfNoCheck());
-			addConfigItem(item);*/
+			/** DBCP start */	
+			dbcpID = "confige_file.value";		
 			
-			dbcpID = "confige_file.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, dbcpID,
+			item = new ConfigItem(ConfigItem.ConfigPart.DBCP, 
+					ConfigItem.ConfigItemViewType.FILE,					
+					dbcpID,
 					"연결 폴의 설정 파일 경로명, 형식 : dbcp.<dbcp 연결 폴 이름>.config_file.value",
-					"/home/madang01/gitsinnori/sinnori/project/sample_test/server_build/APP-INF/resources/kr/pe/sinnori/impl/mybatis/tw_sinnoridb.properties", false, 
+					getDefaultValueOfDBCPConfigFile(), 
+					false, 
 					new ItemValueGetterOfFile());
 			addConfigItem(item);
 
@@ -144,28 +141,34 @@ public class SinnoriConfigInfo {
 		String targetItemID = null;		
 		try {			
 			targetItemID = "servlet_jsp.jdf_error_message_page.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON,
+					ConfigItem.ConfigItemViewType.TEXT,	
+					targetItemID,					
 					"JDF framework 에서 에러 발생시 에러 내용을 보여주는 사용자 친화적인 화면을 전담할 jsp",
 					"/errorMessagePage.jsp", true, 
 					new ItemValueGetterOfNoNullAndEmptyString());			
 			addConfigItem(item);
 			
 			targetItemID = "servlet_jsp.jdf_login_page.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,	targetItemID,
 					"로그인 처리 jsp",
 					"/login.jsp", true, 
 					new ItemValueGetterOfNoNullAndEmptyString());
 			addConfigItem(item);
 			
 			targetItemID = "servlet_jsp.jdf_servlet_trace.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,	
+					targetItemID,
 					"JDF framework에서 서블릿 경과시간 추적 여부",
 					"true", true, 
 					new ItemValueGetterOfBoolean());
 			addConfigItem(item);
 			
 			targetItemID = "servlet_jsp.web_layout_control_page.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,	targetItemID,
 					"신놀이 웹 사이트의 레이아웃 컨트롤러 jsp",
 					"/PageJump.jsp", true, 
 					new ItemValueGetterOfNoNullAndEmptyString());
@@ -174,15 +177,18 @@ public class SinnoriConfigInfo {
 			depenceItemID = "sessionkey.rsa_keypair_source.value";
 			targetItemID = "sessionkey.rsa_keypair_path.value";
 			
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, depenceItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,	depenceItemID,
 					"세션키에 사용되는 공개키 키쌍 생성 방법, API:자체 암호 lib 이용하여 RSA 키쌍 생성, File:외부 파일를 읽어와서 RSA  키쌍을 생성",
 					"API", true, 
 					new ItemValueGetterOfSingleStringSet("API", "File"));
 			addConfigItem(item);			
 			
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.PATH,	
+					targetItemID,
 					"세션키에 사용되는 공개키 키쌍 파일 경로, 세션키에 사용되는 공개키 키쌍 생성 방법이 File인 경우에 유효하다.",
-					getSessionKeyRSAKeypairPathString(), true, 
+					getDefaultValueOfSessionKeyRSAKeypairPath(), true, 
 					new ItemValueGetterOfSessionKeyRSAKeypairPath());
 			addConfigItem(item);
 			
@@ -192,63 +198,81 @@ public class SinnoriConfigInfo {
 			
 			
 			targetItemID = "sessionkey.rsa_keysize.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"세션키에 사용하는 공개키 크기, 단위 byte",
 					"1024", true, 
 					new ItemValueGetterOfSingleIntegerSet("512", "1024", "2048"));
 			addConfigItem(item);
 			
 			targetItemID = "sessionkey.symmetric_key_algorithm.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"세션키에 사용되는 대칭키 알고리즘",
 					"AES", true, 
 					new ItemValueGetterOfSingleStringSet("AES", "DESede", "DES"));
 			addConfigItem(item);
 			
 			targetItemID = "sessionkey.symmetric_key_size.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"세션키에 사용되는 대칭키 크기",
 					"16", true, 
 					new ItemValueGetterOfSingleIntegerSet("8", "16", "24"));
 			addConfigItem(item);
 			
 			targetItemID = "sessionkey.iv_size.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"세션키에 사용되는 대칭키와 같이 사용되는 IV 크기",
 					"16", true, 
 					new ItemValueGetterOfSingleIntegerSet("8", "16", "24"));
 			addConfigItem(item);
 			
 			targetItemID = "sessionkey.private_key.encoding.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON,
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"개인키를 인코딩 방법, 웹의 경우 이진데이터는 폼 전송이 불가하므로 base64 인코딩하여 전송한다.",
 					"BASE64", true, 
 					new ItemValueGetterOfSessionkeyPrivateKeyEncoding());
 			addConfigItem(item);
 			
 			targetItemID = "common.updownfile.local_source_file_resource_cnt.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"로컬 원본 파일 자원 갯수",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(item);
 			
 			targetItemID = "common.updownfile.local_target_file_resource_cnt.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"로컬 목적지 파일 자원 갯수",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(item);
 			
 			targetItemID = "common.updownfile.file_block_max_size.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"파일 송수신 파일 블락 최대 크기, 1024 배수, 단위 byte",
 					"1048576", true, 
 					new ItemValueGetterOfUpDownFileBlockMaxSize(1024, Integer.MAX_VALUE));
 			addConfigItem(item);
 						
 			targetItemID = "common.cached_object.max_size.value";
-			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, targetItemID,
+			item = new ConfigItem(ConfigItem.ConfigPart.COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"싱글턴 클래스 객체 캐쉬 관리자(LoaderAndName2ObjectManager) 에서 캐쉬로 관리할 객체의 최대 갯수. 주로 캐쉬되는 대상 객체는 xxxServerCodec, xxxClientCodec 이다.",
 					"100", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -301,49 +325,63 @@ public class SinnoriConfigInfo {
 		try {			
 			/** 프로젝트 공통 설정 부분 */
 			targetItemID = getProjectCommonPartID("message_info.xmlpath");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.PATH,
+					targetItemID,
 					"메시지 정보 파일 경로",
 					getDefaultValueOfMessageInfoXMLPath(), true, 
 					new ItemValueGetterOfMessageInfoXMLPath());
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("host");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트에서 접속할 서버 주소",
 					"localhost", true, 
 					new ItemValueGetterOfNoNullAndEmptyString());
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("port");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"포트 번호",
 					"9090", true, 
 					new ItemValueGetterOfMinMaxInteger(1024, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("byteorder");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"바이트 오더",
 					"LITTLE_ENDIAN", true, 
 					new ItemValueGetterOfByteOrder());
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("charset");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"문자셋",
 					"UTF-8", true, 
 					new ItemValueGetterOfCharset());
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("data_packet_buffer_max_cnt_per_message");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"1개 메시지당 할당 받을 수 있는 데이터 패킷 버퍼 최대수",
 					"1000", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("data_packet_buffer_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"데이터 패킷 버퍼 크기, 단위 byte",
 					"4096", true, 
 					new ItemValueGetterOfMinMaxInteger(1024, Integer.MAX_VALUE));
@@ -351,14 +389,18 @@ public class SinnoriConfigInfo {
 			
 			/** 메시지 식별자 크기의 최소 크기는 내부적으로 사용하는 SelfExn 메시지를 기준으로 정했음. */
 			targetItemID = getProjectCommonPartID("message_id_fixed_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"메시지 식별자 크기의 최소 크기",
 					"50", true, 
 					new ItemValueGetterOfMinMaxInteger(7, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectCommonPartID("message_protocol");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"메시지 프로토콜, DHB:교차 md5 헤더+바디, DJSON:길이+존슨문자열, THB:길이+바디",
 					"DHB", true, 
 					new ItemValueGetterOfMessageProtocol());
@@ -366,7 +408,9 @@ public class SinnoriConfigInfo {
 			
 			/** 변경전 : classloader.class.package_prefix_name, 변경후 : classloader.class_package_prefix_name*/
 			targetItemID = getProjectCommonPartID("classloader.class_package_prefix_name");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_COMMON, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"동적 클래스 패키지명 접두어, 동적 클래스 여부를 판단하는 기준",
 					"kr.pe.sinnori.impl.", true, 
 					new ItemValueGetterOfNoNullAndEmptyString());
@@ -387,7 +431,9 @@ public class SinnoriConfigInfo {
 			
 			/** 프로젝트 클라이언트 설정 부분 */
 			targetItemID = getProjectClientPartSubKeyName("connection.type");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"소캣 랩퍼 클래스인 연결 종류, NoShareAsyn:비공유+비동기, ShareAsyn:공유+비동기, NoShareSync:비공유+동기",
 					"NoShareAsyn", true, 
 					new ItemValueGetterOfConnectionType());
@@ -395,63 +441,81 @@ public class SinnoriConfigInfo {
 			
 			
 			targetItemID = getProjectClientPartSubKeyName("connection.socket_timeout");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"소켓 타임아웃, 단위 ms",
 					"5000", true, 
 					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("connection.whether_to_auto_connect");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.SINGLE_SET,
+					targetItemID,
 					"연결 생성시 자동 접속 여부",
 					"false", true, 
 					new ItemValueGetterOfBoolean());
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("connection.count");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"연결 갯수",
 					"4", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("data_packet_buffer_cnt");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 프로젝트가 가지는 데이터 패킷 버퍼 갯수",
 					"1000", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.finish_connect.max_call");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 소켓 채널의 연결 확립 최대 시도 횟수",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.finish_connect.waitting_time");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 소켓 채널의 연결 확립을 재 시도 간격",
 					"10", true, 
 					new ItemValueGetterOfMinMaxLong(0, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_executor_thread_cnt");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"비동기 출력 메시지 처리자 쓰레드 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.share.mailbox_cnt");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"비동기+공유 연결 클래스(ShareAsynConnection)의 메일함 갯수",
 					"2", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.input_message_queue_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 큐 크기",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -460,13 +524,17 @@ public class SinnoriConfigInfo {
 			depenceItemID = getProjectClientPartSubKeyName("asyn.input_message_writer.max_size");
 			targetItemID = getProjectClientPartSubKeyName("asyn.input_message_writer.size");
 			// ItemValueGetterHash.put(getProjectClientPartSubKeyName(projectPartSubKeyOfDepenceItem), new ItemValueGetterOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 쓰기 담당 쓰레드 최대 갯수",
 					"2", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 쓰기 담당 쓰레드 갯수",
 					"2", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -480,7 +548,9 @@ public class SinnoriConfigInfo {
 			// ItemValueGetterHash.put(getProjectClientPartSubKeyName(projectPartSubkey), new ItemValueGetterOfMinMaxInteger("1", 1, Integer.MAX_VALUE));
 			
 			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_queue_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"출력 메시지 큐 크기",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -490,13 +560,17 @@ public class SinnoriConfigInfo {
 					
 			depenceItemID = getProjectClientPartSubKeyName("asyn.output_message_reader.max_size");
 			targetItemID = getProjectClientPartSubKeyName("asyn.output_message_reader.size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 읽기 담당 쓰레드 최대 갯수",
 					"4", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 입출력 지원용 입력 메시지 소켓 읽기 담당 쓰레드 갯수",
 					"4", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -506,7 +580,9 @@ public class SinnoriConfigInfo {
 					new  MinMaxBreakChecker(targetItemID, depenceItemID, this));	
 
 			targetItemID = getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"클라이언트 비동기 입출력 지원용 출력 메시지 소켓 읽기 담당 쓰레드에서 블락된 읽기 이벤트 전용 selector 를 깨우는 주기. 단위 ms",
 					"10", true, 
 					new ItemValueGetterOfMinMaxLong(1, Integer.MAX_VALUE));
@@ -514,7 +590,9 @@ public class SinnoriConfigInfo {
 			// ItemValueGetterHash.put(getProjectClientPartSubKeyName("asyn.read_selector_wakeup_interval"), new ItemValueGetterOfMinMaxInteger("10", 1, Integer.MAX_VALUE));
 			
 			targetItemID = getProjectClientPartSubKeyName("monitor.time_interval");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"모니터링 주기, 단위 ms",
 					"5000", true, 
 					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
@@ -523,7 +601,9 @@ public class SinnoriConfigInfo {
 			/** 변경전:sample_test.client.monitor.request_timeout.value, 변경후:sample_test.client.monitor.reception_timeout.value*/
 			targetItemID = getProjectClientPartSubKeyName("connection.socket_timeout");
 			depenceItemID = getProjectClientPartSubKeyName("monitor.reception_timeout");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_CLIENT, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"데이터를 수신하지 않고 기다려주는 최대 시간, 권장 값은 소켓 타임 아웃 시간*2, 단위 ms",
 					"20000", true, 
 					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
@@ -536,63 +616,81 @@ public class SinnoriConfigInfo {
 			
 			/** 프로젝트 서버 설정 부분 */
 			targetItemID = getProjectServerPartSubKeyName("monitor.time_interval");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"모니터링 주기, 단위 ms",
 					"5000", true, 
 					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("monitor.reception_timeout");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"데이터를 수신하지 않고 기다려주는 최대 시간, 권장 값은 소켓 타임 아웃 시간*2, 단위 ms",
 					"20000", true, 
 					new ItemValueGetterOfMinMaxLong(1000, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("max_clients");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"서버로 접속할 수 있는 최대 클라이언트 수",
 					"5", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("data_packet_buffer_cnt");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"서버 프로젝트가 가지는 데이터 패킷 버퍼 수",
 					"1000", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("pool.accept_queue_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"접속 승인 큐 크기",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("pool.input_message_queue_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"입력 메시지 큐 크기",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("pool.output_message_queue_size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"출력 메시지 큐 크기",
 					"10", true, 
 					new ItemValueGetterOfMinMaxInteger(10, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("accept_selector_timeout");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"접속 이벤트 전용 selector 에서 접속 이벤트 최대 대기 시간, 단위 ms",
 					"10", true, 
 					new ItemValueGetterOfMinMaxLong(10, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
 			targetItemID = getProjectServerPartSubKeyName("pool.read_selector_wakeup_interval");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드에서 블락된 읽기 이벤트 전용 selector 를 깨우는 주기. 단위 ms",
 					"10", true, 
 					new ItemValueGetterOfMinMaxLong(10, Integer.MAX_VALUE));
@@ -605,13 +703,17 @@ public class SinnoriConfigInfo {
 			
 			depenceItemID = getProjectServerPartSubKeyName("pool.accept_processor.max_size");
 			targetItemID = getProjectServerPartSubKeyName("pool.accept_processor.size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"접속 요청이 승락된 클라이언트의 등록을 담당하는 쓰레드 최대 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"접속 요청이 승락된 클라이언트의 등록을 담당하는 쓰레드 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -622,13 +724,17 @@ public class SinnoriConfigInfo {
 			
 			depenceItemID = getProjectServerPartSubKeyName("pool.executor_processor.max_size");
 			targetItemID = getProjectServerPartSubKeyName("pool.executor_processor.size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 					
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"서버 비지니스 로직 수행 담당 쓰레드 최대 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"서버 비지니스 로직 수행 담당 쓰레드 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -641,13 +747,17 @@ public class SinnoriConfigInfo {
 			
 			depenceItemID = getProjectServerPartSubKeyName("pool.input_message_reader.max_size");
 			targetItemID = getProjectServerPartSubKeyName("pool.input_message_reader.size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드 최대 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"입력 메시지 소켓 읽기 담당 쓰레드 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -659,13 +769,17 @@ public class SinnoriConfigInfo {
 			
 			depenceItemID = getProjectServerPartSubKeyName("pool.output_message_writer.max_size");
 			targetItemID = getProjectServerPartSubKeyName("pool.output_message_writer.size");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, depenceItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					depenceItemID,
 					"출력 메시지 소켓 쓰기 담당 쓰레드 최대 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
 			addConfigItem(configItem);
 			
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, 
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
 					"출력 메시지 소켓 쓰기 담당 쓰레드 갯수",
 					"1", true, 
 					new ItemValueGetterOfMinMaxInteger(1, Integer.MAX_VALUE));
@@ -676,9 +790,11 @@ public class SinnoriConfigInfo {
 						
 			
 			targetItemID = getProjectServerPartSubKeyName("classloader.appinf.path");
-			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER, targetItemID,
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
+					ConfigItem.ConfigItemViewType.PATH,
+					targetItemID,
 					"서버 동적 클래스 APP-INF 경로",
-					getAPPINFPathString(), false, 
+					getDefaultValueOfAPPINFPath(), false, 
 					new ItemValueGetterOfPath());
 			addConfigItem(configItem);		
 			/*
@@ -699,7 +815,6 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}
 	}
-	
 	private String getProjectConfigFilePathString() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);		
 		strBuilder.append(File.separator);
@@ -710,14 +825,38 @@ public class SinnoriConfigInfo {
 		return strBuilder.toString();
 	}
 	
-	private String getSessionKeyRSAKeypairPathString() {
+	private String getDefaultValueOfDBCPConfigFile() {
+		// server_build/APP-INF/resources/kr/pe/sinnori/impl/mybatis/tw_sinnoridb.properties", 
+		StringBuilder strBuilder = new StringBuilder(projectPathString);
+		strBuilder.append(File.separator);
+		strBuilder.append("server_build");
+		strBuilder.append(File.separator);
+		strBuilder.append("APP-INF");
+		strBuilder.append(File.separator);
+		strBuilder.append("resources");
+		strBuilder.append(File.separator);
+		strBuilder.append("kr");
+		strBuilder.append(File.separator);
+		strBuilder.append("pe");
+		strBuilder.append(File.separator);
+		strBuilder.append("sinnori");
+		strBuilder.append(File.separator);
+		strBuilder.append("impl");
+		strBuilder.append(File.separator);
+		strBuilder.append("mybatis");
+		strBuilder.append(File.separator);
+		strBuilder.append("tw_sinnoridb.properties");
+		return strBuilder.toString();
+	}
+	
+	private String getDefaultValueOfSessionKeyRSAKeypairPath() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);
 		strBuilder.append(File.separator);
 		strBuilder.append("rsa_keypair");		
 		return strBuilder.toString();
 	}
 	
-	private String getAPPINFPathString() {
+	private String getDefaultValueOfAPPINFPath() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);
 		strBuilder.append(File.separator);
 		strBuilder.append("server_build");
@@ -842,8 +981,8 @@ public class SinnoriConfigInfo {
 	private void makeProjectNameSetFromSourceProperties(Properties sourceProperties) throws ConfigErrorException {
 		String projectNameListValue = sourceProperties.getProperty(PROJECT_NAME_LIST_KEY_STRING);
 		
-		log.info("projectName={}, projectNameListValue={}", 
-				projectName, projectNameListValue);
+		log.info("mainProjectName={}, projectNameListValue={}", 
+				mainProjectName, projectNameListValue);
 		
 		
 		if (null == projectNameListValue) {
@@ -880,7 +1019,7 @@ public class SinnoriConfigInfo {
 			projectNameList.add(projectNameOfList);
 		}
 		
-		if (! tempNameSet.contains(projectName)) {
+		if (! tempNameSet.contains(mainProjectName)) {
 			/** 프로젝트 목록에 지정된 메인 프로젝트에 대한 정보가 없는 경우 */
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
@@ -909,7 +1048,7 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}
 		
-		if (subProjectName.equals(projectName)) {
+		if (subProjectName.equals(mainProjectName)) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("]::parameter subProjectName is same to the main proejct name").toString();
@@ -935,7 +1074,7 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}
 		
-		if (subProjectName.equals(projectName)) {
+		if (subProjectName.equals(mainProjectName)) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("]::the main project cannot be deleted").toString();
@@ -947,7 +1086,11 @@ public class SinnoriConfigInfo {
 	
 	public List<String> getProjectNameList() {
 		return projectNameList;
-	}	
+	}
+	
+	public List<String> getDBCPConnectionPoolNameList() {
+		return dbcpConnectionPoolNameList;
+	}
 	
 	public SequencedProperties getSequencedProperties() {
 		SequencedProperties sequencedProperties = new SequencedProperties();
@@ -1013,7 +1156,7 @@ public class SinnoriConfigInfo {
 		/** project */
 		{
 			List<String> projectNameList = new ArrayList<String>();
-			projectNameList.add(this.projectName);
+			projectNameList.add(this.mainProjectName);
 			
 			StringBuilder projectNameListBuilder = new StringBuilder();
 			int projectNameListSize = projectNameList.size();
@@ -1055,7 +1198,7 @@ public class SinnoriConfigInfo {
 	}
 	
 	// FIXME!
-	public boolean isValidate(String targetKey, Properties sourceProperties) throws ConfigValueInvalidException {
+	public boolean isValidation(String targetKey, Properties sourceProperties) throws ConfigValueInvalidException {
 		boolean isValidation= true;
 		String itemID = getItemIDFromKey(targetKey);
 		if (null == itemID) {
@@ -1140,6 +1283,7 @@ public class SinnoriConfigInfo {
 		
 		return null;
 	}
+		
 	
 	public Object getNativeValueAfterBreakChecker(String targetKey, Properties sourceProperties) throws ConfigValueInvalidException {		
 		String itemID = getItemIDFromKey(targetKey);
@@ -1195,9 +1339,9 @@ public class SinnoriConfigInfo {
 		}
 		
 		Object targetNativeValue = null;
-		String targetSourceValue = sourceProperties.getProperty(targetKey);
+		String targetValue = sourceProperties.getProperty(targetKey);
 		try {
-			targetNativeValue = configItem.getItemValueGetter().getItemValueWithValidation(targetSourceValue);
+			targetNativeValue = configItem.getItemValueGetter().getItemValueWithValidation(targetValue);
 		} catch(ConfigValueInvalidException e) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)			
@@ -1341,4 +1485,18 @@ public class SinnoriConfigInfo {
 			}
 		}
 	}
+
+	public List<ConfigItem> getDbcpPartConfigItemList() {
+		return dbcpPartConfigItemList;
+	}
+
+	public List<ConfigItem> getCommonPartConfigItemList() {
+		return commonPartConfigItemList;
+	}
+
+	public List<ConfigItem> getProjectPartConfigItemList() {
+		return projectPartConfigItemList;
+	}
+	
+	
 }

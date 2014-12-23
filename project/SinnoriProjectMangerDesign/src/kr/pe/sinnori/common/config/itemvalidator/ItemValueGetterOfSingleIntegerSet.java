@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
 /**
@@ -12,7 +13,7 @@ import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
  * @author "Won Jonghoon"
  *
  */
-public class ItemValueGetterOfSingleIntegerSet extends AbstractItemValueGetter {
+public class ItemValueGetterOfSingleIntegerSet extends AbstractItemValueGetter implements SingleSetValueGetterIF {
 	private Set<String> stringValueSet = new HashSet<String>();
 	public ItemValueGetterOfSingleIntegerSet(String ... parmValueSet) throws ConfigValueInvalidException {
 		if (parmValueSet.length == 0) {
@@ -65,7 +66,7 @@ public class ItemValueGetterOfSingleIntegerSet extends AbstractItemValueGetter {
 		}
 	}
 	
-	public String getStringValueSet() {
+	public String getStringTokensOfValueSet() {
 		StringBuilder strBuilder = new StringBuilder();
 		Iterator<String> iter = stringValueSet.iterator();
 		if (iter.hasNext()) {
@@ -90,5 +91,10 @@ public class ItemValueGetterOfSingleIntegerSet extends AbstractItemValueGetter {
 		}
 		descriptionBuilder.append("}");
 		return descriptionBuilder.toString();
+	}
+	
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 }

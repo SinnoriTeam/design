@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType;
 
@@ -12,7 +13,8 @@ import kr.pe.sinnori.common.lib.CommonType;
  * @author "Won Jonghoon"
  *
  */
-public class ItemValueGetterOfConnectionType extends AbstractItemValueGetter {	
+public class ItemValueGetterOfConnectionType extends AbstractItemValueGetter 
+implements SingleSetValueGetterIF {	
 	private Set<String> stringValueSet = new HashSet<String>();
 	
 	/**
@@ -60,5 +62,10 @@ public class ItemValueGetterOfConnectionType extends AbstractItemValueGetter {
 	@Override
 	public String toDescription() {
 		return "single set {NoShareAsyn, ShareAsyn, NoShareSync}";
+	}
+
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 }

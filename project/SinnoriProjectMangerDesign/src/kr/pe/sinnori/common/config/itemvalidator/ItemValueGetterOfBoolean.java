@@ -4,9 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
-public class ItemValueGetterOfBoolean extends AbstractItemValueGetter {	
+public class ItemValueGetterOfBoolean extends AbstractItemValueGetter implements SingleSetValueGetterIF {	
 	private Set<String> stringValueSet = new HashSet<String>();
 	public ItemValueGetterOfBoolean() throws ConfigValueInvalidException {
 		stringValueSet.add("true");
@@ -46,5 +47,10 @@ public class ItemValueGetterOfBoolean extends AbstractItemValueGetter {
 	@Override
 	public String toDescription() {
 		return "single set {true, false}";
+	}
+
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 }

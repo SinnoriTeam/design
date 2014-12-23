@@ -28,7 +28,7 @@ import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 import kr.pe.sinnori.common.exception.ConfigErrorException;
-import kr.pe.sinnori.gui.lib.Project;
+import kr.pe.sinnori.gui.lib.MainProject;
 import kr.pe.sinnori.gui.lib.ProjectManger;
 import kr.pe.sinnori.gui.lib.WindowManger;
 import kr.pe.sinnori.gui.util.PathSwingAction;
@@ -57,7 +57,7 @@ public class FirstScreen extends JPanel {
 		// FIXME!
 		if (projectListComboBox.getSelectedIndex() > 0) {
 			String projectName = (String)projectListComboBox.getSelectedItem();
-			Project selectedProject = projectManger.getProject(projectName);
+			MainProject selectedProject = projectManger.getProject(projectName);
 			if (null == selectedProject) {
 				JOptionPane.showMessageDialog(mainFrame, "프로젝트를 얻는데 실패하였습니다.");
 				sinnoriInstalledPathInputTextField.requestFocusInWindow();
@@ -143,8 +143,8 @@ public class FirstScreen extends JPanel {
 		projectListComboBox.removeAllItems();
 		projectListComboBox.addItem("- project -");
 		
-		List<Project> projectList = projectManger.getProjectList();
-		for (Project project : projectList) {
+		List<MainProject> projectList = projectManger.getProjectList();
+		for (MainProject project : projectList) {
 			projectListComboBox.addItem(project.getMainProjectName());
 		}
 		
@@ -166,7 +166,7 @@ public class FirstScreen extends JPanel {
 			
 			if (projectListComboBox.getSelectedIndex() > 0) {
 				String projectName = (String)e.getItem();
-				Project selectedProject = projectManger.getProject(projectName);
+				MainProject selectedProject = projectManger.getProject(projectName);
 				if (null == selectedProject) {
 					JOptionPane.showMessageDialog(mainFrame, "selectedProject is null");
 					sinnoriInstalledPathInputTextField.requestFocusInWindow();
@@ -187,7 +187,7 @@ public class FirstScreen extends JPanel {
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		// Generated using JFormDesigner Evaluation license - Jonghoon Won
+		// Generated using JFormDesigner non-commercial license
 		sinnoriInstalledPathInputLinePanel = new JPanel();
 		sinnoriInstalledPathInputLabel = new JLabel();
 		sinnoriInstalledPathInputTextField = new JTextField();
@@ -227,14 +227,6 @@ public class FirstScreen extends JPanel {
 		projectConfigVeiwButton = new JButton();
 
 		//======== this ========
-
-		// JFormDesigner evaluation mark
-		setBorder(new javax.swing.border.CompoundBorder(
-			new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-				"JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-				javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-				java.awt.Color.red), getBorder())); addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-
 		setLayout(new FormLayout(
 			"${growing-button}",
 			"18dlu, 2*($lgap, default), $lgap, 13dlu, 8*($lgap, default)"));
@@ -256,6 +248,9 @@ public class FirstScreen extends JPanel {
 			//---- sinnoriInstalledPathInputLabel ----
 			sinnoriInstalledPathInputLabel.setText("\uc2e0\ub180\uc774 \uc124\uce58 \uacbd\ub85c");
 			sinnoriInstalledPathInputLinePanel.add(sinnoriInstalledPathInputLabel, CC.xy(1, 1));
+
+			//---- sinnoriInstalledPathInputTextField ----
+			sinnoriInstalledPathInputTextField.setText("d:\\gitsinnori\\sinnori");
 			sinnoriInstalledPathInputLinePanel.add(sinnoriInstalledPathInputTextField, CC.xy(3, 1));
 
 			//---- sinnoriInstalledPathInputButton ----
@@ -463,7 +458,7 @@ public class FirstScreen extends JPanel {
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-	// Generated using JFormDesigner Evaluation license - Jonghoon Won
+	// Generated using JFormDesigner non-commercial license
 	private JPanel sinnoriInstalledPathInputLinePanel;
 	private JLabel sinnoriInstalledPathInputLabel;
 	private JTextField sinnoriInstalledPathInputTextField;

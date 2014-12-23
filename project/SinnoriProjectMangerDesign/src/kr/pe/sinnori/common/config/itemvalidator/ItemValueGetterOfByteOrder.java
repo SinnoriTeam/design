@@ -5,9 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 
-public class ItemValueGetterOfByteOrder extends AbstractItemValueGetter {
+public class ItemValueGetterOfByteOrder extends AbstractItemValueGetter implements SingleSetValueGetterIF {
 	private Set<String> stringValueSet = new HashSet<String>();
 	
 	public ItemValueGetterOfByteOrder() throws ConfigValueInvalidException {		
@@ -50,6 +51,11 @@ public class ItemValueGetterOfByteOrder extends AbstractItemValueGetter {
 	@Override
 	public String toDescription() {
 		return "single set {LITTLE_ENDIAN, BIG_ENDIAN}";
+	}
+
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 
 }

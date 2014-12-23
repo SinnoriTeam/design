@@ -23,10 +23,7 @@ public abstract class AbstractBreakChecker {
 	public AbstractBreakChecker(String targetItemID, 			
 			String dependenceItemID,
 			SinnoriConfigInfo sinnoriConfigInfo) throws ConfigErrorException {
-		this.targetItemID = targetItemID;
-		// this.itemCheckerOfDependenceItem = itemCheckerOfDependenceItem;
-		// this.wantedNativeValue = wantedNativeValue;
-		
+		this.targetItemID = targetItemID;		
 		this.dependenceItemID = dependenceItemID;
 		this.sinnoriConfigInfo = sinnoriConfigInfo;
 		
@@ -63,8 +60,37 @@ public abstract class AbstractBreakChecker {
 		dependenceItemValueGetter = dependConfigItem.getItemValueGetter();
 	}
 	
+	public void validate(Properties sourceProperties, 
+			String prefixOfDomain) throws ConfigValueInvalidException {
+		if (null == sourceProperties) {
+			String errorMessage = new StringBuilder("targetItemID[")
+			.append(targetItemID)
+			.append("] dependenceItemID=[")	
+			.append(dependenceItemID)	
+			.append("] errormessage=parameter sourceProperties is null").toString();
+			log.warn(errorMessage);			
+			throw new ConfigValueInvalidException(errorMessage);
+		}
+		if (null == prefixOfDomain) {
+			String errorMessage = new StringBuilder("targetItemID[")
+			.append(targetItemID)
+			.append("] dependenceItemID=[")	
+			.append(dependenceItemID)	
+			.append("] errormessage=parameter prefixOfDomain is null").toString();
+			log.warn(errorMessage);
+			throw new ConfigValueInvalidException(errorMessage);
+		}
+		
+		String targetItemKey = new StringBuilder(prefixOfDomain).append(targetItemID).toString();
+		String dependenceItemKey = new StringBuilder(prefixOfDomain).append(dependenceItemID).toString();
+		
+		validate(sourceProperties, targetItemKey, dependenceItemKey);
+	}
+	
+	
+	
 	public abstract void validate(Properties sourceProperties, 
-			String prefixOfDomain) throws ConfigValueInvalidException;
+			String targetItemKey, String dependenceItemKey) throws ConfigValueInvalidException;
 	
 	public String getTargetItemID() {
 		return targetItemID;

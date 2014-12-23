@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType;
 
@@ -13,7 +14,7 @@ import kr.pe.sinnori.common.lib.CommonType;
  * @author "Won Jonghoon"
  *
  */
-public class ItemValueGetterOfMessageProtocol extends AbstractItemValueGetter {	
+public class ItemValueGetterOfMessageProtocol extends AbstractItemValueGetter implements SingleSetValueGetterIF {	
 	private Set<String> stringValueSet = new HashSet<String>();
 	
 	/**
@@ -67,6 +68,11 @@ public class ItemValueGetterOfMessageProtocol extends AbstractItemValueGetter {
 		}
 		descriptionBuilder.append("}");
 		return descriptionBuilder.toString();
+	}
+
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 
 }

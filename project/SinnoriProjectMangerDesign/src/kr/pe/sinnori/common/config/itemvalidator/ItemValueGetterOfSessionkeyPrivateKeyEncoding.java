@@ -5,10 +5,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import kr.pe.sinnori.common.config.AbstractItemValueGetter;
+import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.lib.CommonType;
 
-public class ItemValueGetterOfSessionkeyPrivateKeyEncoding extends AbstractItemValueGetter {
+public class ItemValueGetterOfSessionkeyPrivateKeyEncoding extends AbstractItemValueGetter implements SingleSetValueGetterIF {
 	private Set<String> stringValueSet = new HashSet<String>();
 
 	public ItemValueGetterOfSessionkeyPrivateKeyEncoding()
@@ -70,6 +71,11 @@ public class ItemValueGetterOfSessionkeyPrivateKeyEncoding extends AbstractItemV
 		}
 		descriptionBuilder.append("}");
 		return descriptionBuilder.toString();
+	}
+
+	@Override
+	public Set<String> getStringTypeValueSet() {
+		return stringValueSet;
 	}
 
 }

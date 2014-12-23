@@ -12,8 +12,8 @@ import kr.pe.sinnori.common.util.SequencedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Project {
-	private Logger log = LoggerFactory.getLogger(Project.class);
+public class MainProject {
+	private Logger log = LoggerFactory.getLogger(MainProject.class);
 	
 	private String mainProjectName;
 	private String projectPathString;
@@ -27,6 +27,7 @@ public class Project {
 	
 	
 	private List<String> subProjectNameList = new ArrayList<String>();
+	private List<String> dbcpConnPoolNameList = new ArrayList<String>();
 
 	/**
 	 * 기존 생성된 프로젝트 생성자
@@ -35,13 +36,13 @@ public class Project {
 	 * @param sourceSequencedProperties
 	 * @throws ConfigErrorException
 	 */
-	public Project(String projectName, String projectPathString, SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
-		this.mainProjectName = projectName;
+	public MainProject(String mainProjectName, String projectPathString, SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
+		this.mainProjectName = mainProjectName;
 		this.projectPathString = projectPathString;
 		this.sourceSequencedProperties = sourceSequencedProperties;		
 		// projectConfigFilePathString = getProjectConfigFilePathString();
 		
-		sinnoriConfigInfo = new SinnoriConfigInfo(projectName, projectPathString);
+		sinnoriConfigInfo = new SinnoriConfigInfo(mainProjectName, projectPathString);
 		
 		sinnoriConfigInfo.combind(sourceSequencedProperties);		
 		
@@ -58,12 +59,19 @@ public class Project {
 		
 		subProjectNameList.add("- 서브 프로젝트 -");
 		
-		List<String> projectNameListOfConfig = sinnoriConfigInfo.getProjectNameList();
 		
-		for (String projectNameOfConfig : projectNameListOfConfig) {
-			if (!projectName.equals(projectNameOfConfig)) {
-				subProjectNameList.add(projectNameOfConfig);
+		List<String> projectNameList = sinnoriConfigInfo.getProjectNameList();
+		
+		for (String projectName : projectNameList) {
+			if (!mainProjectName.equals(projectName)) {
+				subProjectNameList.add(projectName);
 			}
+		}
+		
+		dbcpConnPoolNameList.add("- dbcp connection pool name -");
+		List<String> dbcpConnPoolNameListOfConfig = sinnoriConfigInfo.getDBCPConnectionPoolNameList();
+		for (String dbcpConnPoolName : dbcpConnPoolNameListOfConfig) {
+			dbcpConnPoolNameList.add(dbcpConnPoolName);
 		}
 	}
 	
@@ -299,6 +307,8 @@ public class Project {
 	public List<String> getSubProjectNameList() {
 		return subProjectNameList;
 	}
-	
+	public List<String> getDBCPConnPoolNameList() {
+		return dbcpConnPoolNameList;
+	}
 	
 }
