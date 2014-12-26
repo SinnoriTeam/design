@@ -1,7 +1,7 @@
 package kr.pe.sinnori.gui.table;
 
+import java.awt.Dimension;
 import java.awt.LayoutManager;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -29,6 +29,7 @@ public class ConfigItemCellValue extends JPanel {
 	private Logger log = LoggerFactory.getLogger(ConfigItemCellValue.class);
 	
 	private String targetKey;
+	private ConfigItem.ConfigItemViewType configItemViewType=null;
 	// private Properties sourceProperties = null;
 	// private SinnoriConfigInfo sinnoriConfigInfo = null;
 	private JFrame mainFrame = null;
@@ -47,30 +48,47 @@ public class ConfigItemCellValue extends JPanel {
 		log.info("parnet layout manger class name={}", parentLayoutManger.getClass().getName());
 	}
 		
-	public ConfigItemCellValue(String targetKey, 
+	/*public ConfigItemCellValue(String targetKey, 
 			Properties sourceProperties, 
-			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {
-		// this.setSize(200, 200);
-		// this.setLayout(arg0);
-		// this.getHeight();
-		
-		
+			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {		
+		this(targetKey, sourceProperties.getProperty(targetKey),
+				sinnoriConfigInfo, mainFrame);
+	}*/
+	
+	public ConfigItemCellValue(String targetKey, 
+			String targetItemValue, 
+			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {		
 		this.targetKey = targetKey;
-		// this.sourceProperties = sourceProperties;
-		// this.sinnoriConfigInfo = sinnoriConfigInfo;
-		this.mainFrame = mainFrame;
-		
+		this.mainFrame = mainFrame;		
 		
 		String itemID = sinnoriConfigInfo.getItemIDFromKey(targetKey);
 		ConfigItem configItem = sinnoriConfigInfo.getConfigItem(itemID);
-		ConfigItem.ConfigItemViewType configItemViewType = configItem.getConfigItemViewType();
-		String targetItemValue = sourceProperties.getProperty(targetKey);
+		if (null == configItem) {
+			log.error("configItem is null, targetKey={}, itemID={}", targetKey, itemID);
+			System.exit(1);
+		}
+		configItemViewType = configItem.getConfigItemViewType();
+		String defaultValue = configItem.getDefaultValue();
+		
+		if (null == targetItemValue) {
+			targetItemValue = defaultValue;
+			log.info("targetKey[{}] is not found so change deault value[{}]", targetKey, defaultValue);
+		} else {
+			if (targetItemValue.equals("")) {
+				targetItemValue = defaultValue;
+				log.info("targetKey[{}]'s value is a empty string so change deault value[{}]", targetKey, defaultValue);
+			}
+		}
+		
+		/*if (targetKey.equals("dbcp.tw_sinnoridb.confige_file.value")) {
+			log.info("targetKey={}, configItemViewType={}, targetItemValue={}", 
+					targetKey, configItemViewType, targetItemValue);
+		}*/
 		
 		if (configItemViewType == ConfigItem.ConfigItemViewType.FILE) {
-			// Dimension textDimension = new Dimension(150, 30);
 			valueTextField = new JTextField();
 			valueTextField.setText(targetItemValue);
-			valueTextField.setSize(150, 30);
+			valueTextField.setPreferredSize(new Dimension(310,20));
 			add(valueTextField);
 			
 			pathButton = new JButton("파일 선택");
@@ -86,7 +104,7 @@ public class ConfigItemCellValue extends JPanel {
 		} else if (configItemViewType == ConfigItem.ConfigItemViewType.PATH) {
 			valueTextField = new JTextField();
 			valueTextField.setText(targetItemValue);
-			valueTextField.setSize(150, 30);
+			valueTextField.setPreferredSize(new Dimension(310,20));
 			add(valueTextField);
 			
 			pathButton = new JButton("경로 선택");
@@ -100,26 +118,27 @@ public class ConfigItemCellValue extends JPanel {
 			pathButton.setAction(pathAction);
 			add(pathButton);
 		} else if (configItemViewType == ConfigItemViewType.SINGLE_SET) {
-			AbstractItemValueGetter itemValueGetter = configItem.getItemValueGetter();
-			String defaultValue = configItem.getDefaultValue();
-			int selectedIndex = -1;			
+			AbstractItemValueGetter itemValueGetter = configItem.getItemValueGetter();			
+			int selectedIndex = -1;
 			SingleSetValueGetterIF singleSetValueGetter = (SingleSetValueGetterIF)itemValueGetter;
 			Set<String> singleSet = singleSetValueGetter.getStringTypeValueSet();
 			int inx=0;
 			valueComboBox = new JComboBox<String>();
 			for (String value : singleSet) {
 				valueComboBox.addItem(value);
-				if (defaultValue.equals(value)) {
+				if (targetItemValue.equals(value)) {
 					selectedIndex=inx;
 				}
 				inx++;
 			}
-			if (-1 == selectedIndex) selectedIndex=0;
+			if (-1 == selectedIndex) {
+				selectedIndex=0;
+			}
 			valueComboBox.setSelectedIndex(selectedIndex);
 			add(valueComboBox);
 		} else {
 			valueTextField = new JTextField();
-			valueTextField.setSize(150, 30);
+			valueTextField.setPreferredSize(new Dimension(400,20));
 			valueTextField.setText(targetItemValue);
 			add(valueTextField);
 		}
@@ -131,11 +150,10 @@ public class ConfigItemCellValue extends JPanel {
 	
 
 	public String getValueOfComponent() {
-		if (null == valueTextField) {
+		if (configItemViewType == ConfigItemViewType.SINGLE_SET) {
 			return valueComboBox.getItemAt(valueComboBox.getSelectedIndex());
 		} else {
 			return valueTextField.getText();
-		}
-		
+		}		
 	}
 }

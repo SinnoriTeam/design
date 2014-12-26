@@ -4,7 +4,7 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-			"$columnSpecs": "max(pref;443dlu)"
+			"$columnSpecs": "max(pref;443dlu):grow"
 			"$rowSpecs": "default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, default, linegap, 104dlu, linegap, default, linegap, 116dlu, linegap, default"
 		} ) {
 			name: "this"
@@ -155,7 +155,7 @@ new FormModel {
 				name: "subProjectNameInputLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "subProjectNameInputLabel"
-					"text": "서브 프로젝트 이름 :"
+					"text": "Sub Project Name :"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
@@ -166,8 +166,8 @@ new FormModel {
 					"gridX": 3
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "subProjectNameInputButton"
-					"text": "추가"
+					name: "subProjectNameAddButton"
+					"text": "add"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
 					"gridY": 1
@@ -182,7 +182,7 @@ new FormModel {
 				name: "subProjectListLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "subProjectNameListLabel"
-					"text": "생성된 서브 프로젝트 목록"
+					"text": "Sub Project Name Choose"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
@@ -190,8 +190,8 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JComboBox" ) {
 					name: "subProjectNameListComboBox"
 					"model": new javax.swing.DefaultComboBoxModel {
-						selectedItem: "- 서브 프로젝트 선택 -"
-						addElement( "- 서브 프로젝트 선택 -" )
+						selectedItem: "- Sub Project Name -"
+						addElement( "- Sub Project Name -" )
 						addElement( "sample_test_sub1" )
 						addElement( "sample_test_sub2" )
 					}
@@ -206,12 +206,12 @@ new FormModel {
 					name: "subProjectNameListFuncPanel"
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "subProjectNameEditButton"
-						"text": "편집"
+						"text": "edit"
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "subProjectEditButtonActionPerformed", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "subProjectNameDeleteButton"
-						"text": "삭제"
+						"text": "remove"
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
@@ -227,19 +227,20 @@ new FormModel {
 				name: "dbcpConnPoolNameInputLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "dbcpConnPoolNameInputLabel"
-					"text": "DBCP Connection Name :"
+					"text": "DBCP Connection Pool Name :"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
-					name: "dbcpConnPoolNameInputTextField"
+					name: "dbcpConnPoolNameTextField"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "dbcpConnPoolNameInputButton"
-					"text": "추가"
+					name: "dbcpConnPoolNameAddButton"
+					"text": "add"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "dbcpConnPoolNameAddButtonActionPerformed", true ) )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
 					"gridY": 1
@@ -254,16 +255,16 @@ new FormModel {
 				name: "dbcpConnPoolNameListLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "dbcpConnPoolNameListLabel"
-					"text": "생성된 서브 프로젝트 목록"
+					"text": "DBCP Conn Pool Name Choose"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
 				} )
 				add( new FormComponent( "javax.swing.JComboBox" ) {
-					name: "dbcpConnNameListComboBox"
+					name: "dbcpConnPoolNameListComboBox"
 					"model": new javax.swing.DefaultComboBoxModel {
-						selectedItem: "- DB Connection pool name -"
-						addElement( "- DB Connection pool name -" )
+						selectedItem: "- DBCP Conn Pool Name -"
+						addElement( "- DBCP Conn Pool Name -" )
 						addElement( "tw_sinnoridb" )
 					}
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
@@ -276,13 +277,14 @@ new FormModel {
 				} ) {
 					name: "dbcpConnNameListFuncPanel"
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "dbcpConnNameEditButton"
-						"text": "편집"
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "subProjectEditButtonActionPerformed", true ) )
+						name: "dbcpConnPoolNameEditButton"
+						"text": "edit"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "dbcpConnPoolNameEditButtonActionPerformed", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "dbcpConnNameDeleteButton"
-						"text": "삭제"
+						name: "dbcpConnPoolNameDeleteButton"
+						"text": "remote"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "dbcpConnPoolNameDeleteButtonActionPerformed", true ) )
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
@@ -293,7 +295,7 @@ new FormModel {
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "commonConfigLabel"
-				"text": "공통 설정"
+				"text": "Common Part Config"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 1
 				"gridY": 21
@@ -316,8 +318,8 @@ new FormModel {
 							add( null )
 						} )
 					}, new java.util.Vector {
-						add( "키" )
-						add( "값" )
+						add( "key" )
+						add( "value" )
 					}, new java.util.Vector {
 						add( class java.lang.String )
 						add( null )
@@ -336,16 +338,16 @@ new FormModel {
 				"gridY": 23
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "projectConfigLabel"
-				"text": "주 프로젝트 설정"
+				name: "mainProjectConfigLabel"
+				"text": "Main Project Part Config"
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridX": 1
 				"gridY": 25
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-				name: "projectConfigScrollPane"
+				name: "mainProjectConfigScrollPane"
 				add( new FormComponent( "javax.swing.JTable" ) {
-					name: "projectConfigTable"
+					name: "mainProjectConfigTable"
 					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
 						add( new java.util.Vector {
 							add( null )
@@ -356,8 +358,8 @@ new FormModel {
 							add( null )
 						} )
 					}, new java.util.Vector {
-						add( "키" )
-						add( "값" )
+						add( "key" )
+						add( "value" )
 					}, new java.util.Vector {
 						add( class java.lang.String )
 						add( null )
@@ -375,7 +377,7 @@ new FormModel {
 				"gridY": 27
 			} )
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 0 )
+			"location": new java.awt.Point( 90, 70 )
 			"size": new java.awt.Dimension( 800, 675 )
 		} )
 	}

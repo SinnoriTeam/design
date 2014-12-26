@@ -59,7 +59,6 @@ public class SinnoriConfigInfo {
 	
 		
 	private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
-
 	private List<String> projectNameList = new LinkedList<String>();
 	
 	private List<ConfigItem> dbcpPartConfigItemList = new ArrayList<ConfigItem>();
@@ -115,7 +114,7 @@ public class SinnoriConfigInfo {
 					ConfigItem.ConfigItemViewType.FILE,					
 					dbcpID,
 					"연결 폴의 설정 파일 경로명, 형식 : dbcp.<dbcp 연결 폴 이름>.config_file.value",
-					getDefaultValueOfDBCPConfigFile(), 
+					getDefaultValueOfDBCPConnPoolConfigFile(), 
 					false, 
 					new ItemValueGetterOfFile());
 			addConfigItem(item);
@@ -825,28 +824,8 @@ public class SinnoriConfigInfo {
 		return strBuilder.toString();
 	}
 	
-	private String getDefaultValueOfDBCPConfigFile() {
-		// server_build/APP-INF/resources/kr/pe/sinnori/impl/mybatis/tw_sinnoridb.properties", 
-		StringBuilder strBuilder = new StringBuilder(projectPathString);
-		strBuilder.append(File.separator);
-		strBuilder.append("server_build");
-		strBuilder.append(File.separator);
-		strBuilder.append("APP-INF");
-		strBuilder.append(File.separator);
-		strBuilder.append("resources");
-		strBuilder.append(File.separator);
-		strBuilder.append("kr");
-		strBuilder.append(File.separator);
-		strBuilder.append("pe");
-		strBuilder.append(File.separator);
-		strBuilder.append("sinnori");
-		strBuilder.append(File.separator);
-		strBuilder.append("impl");
-		strBuilder.append(File.separator);
-		strBuilder.append("mybatis");
-		strBuilder.append(File.separator);
-		strBuilder.append("tw_sinnoridb.properties");
-		return strBuilder.toString();
+	private String getDefaultValueOfDBCPConnPoolConfigFile() {
+		return getDefaultValueOfDBCPConnPoolConfigFile("tw_sinnoridb");
 	}
 	
 	private String getDefaultValueOfSessionKeyRSAKeypairPath() {
@@ -862,6 +841,26 @@ public class SinnoriConfigInfo {
 		strBuilder.append("server_build");
 		strBuilder.append(File.separator);
 		strBuilder.append("APP-INF");
+		return strBuilder.toString();
+	}
+	
+	public String getDefaultValueOfDBCPConnPoolConfigFile(String dbcpConnPoolName) {
+		StringBuilder strBuilder = new StringBuilder(getDefaultValueOfAPPINFPath());
+		strBuilder.append(File.separator);
+		strBuilder.append("resources");
+		strBuilder.append(File.separator);
+		strBuilder.append("kr");
+		strBuilder.append(File.separator);
+		strBuilder.append("pe");		
+		strBuilder.append(File.separator);
+		strBuilder.append("sinnori");
+		strBuilder.append(File.separator);
+		strBuilder.append("impl");
+		strBuilder.append(File.separator);
+		strBuilder.append("mybatis");
+		strBuilder.append(File.separator);
+		strBuilder.append(dbcpConnPoolName);
+		strBuilder.append(".properties");
 		return strBuilder.toString();
 	}
 	
@@ -1090,6 +1089,20 @@ public class SinnoriConfigInfo {
 	
 	public List<String> getDBCPConnectionPoolNameList() {
 		return dbcpConnectionPoolNameList;
+	}
+	
+	public void addDBCPConnectionPoolName(String newDBCPConnPoolName) {
+		if (dbcpConnectionPoolNameList.contains(newDBCPConnPoolName)) {
+			String errorMessage = String.format("중복된 이름[%s]을 가진 DBCP 연결 폴 이름이 있습니다.", newDBCPConnPoolName);
+			log.warn(errorMessage);
+			throw new RuntimeException(errorMessage);
+		}
+		
+		dbcpConnectionPoolNameList.add(newDBCPConnPoolName);
+	}
+	
+	public void removeDBCPConnectionPoolName(String selectedDBCPConnPoolName) {
+		dbcpConnectionPoolNameList.remove(selectedDBCPConnPoolName);
 	}
 	
 	public SequencedProperties getSequencedProperties() {
@@ -1486,7 +1499,7 @@ public class SinnoriConfigInfo {
 		}
 	}
 
-	public List<ConfigItem> getDbcpPartConfigItemList() {
+	public List<ConfigItem> getDBCPPartConfigItemList() {
 		return dbcpPartConfigItemList;
 	}
 
@@ -1497,6 +1510,7 @@ public class SinnoriConfigInfo {
 	public List<ConfigItem> getProjectPartConfigItemList() {
 		return projectPartConfigItemList;
 	}
+	
 	
 	
 }

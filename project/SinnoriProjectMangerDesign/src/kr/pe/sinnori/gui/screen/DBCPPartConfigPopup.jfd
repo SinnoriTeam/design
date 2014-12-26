@@ -1,111 +1,101 @@
-JFDML JFormDesigner: "5.2.0.3.124" Java: "1.7.0_60" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.3.124" Java: "1.7.0_71" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 			name: "this"
+			auxiliary() {
+				"JavaCodeGenerator.customCreate": true
+			}
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "dialogPane"
 				"border": sfield com.jgoodies.forms.factories.Borders DIALOG
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-					"$columnSpecs": "growbutton"
-					"$rowSpecs": "default, linegap, default, linegap, default, linegap, 90dlu:grow"
+					"$columnSpecs": "394dlu:grow"
+					"$rowSpecs": "default, linegap, default, linegap, default, linegap, default"
 				} ) {
 					name: "contentPanel"
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-						"$columnSpecs": "default, labelcompgap, default:grow"
+						"$columnSpecs": "110dlu, labelcompgap, 168dlu"
 						"$rowSpecs": "default"
 					} ) {
-						name: "sinnoriInstalledPathLinePanel"
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "sinnoriInstalledPathTitleLabel"
-							"text": "신놀이 설치 경로 :"
-						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-							"gridX": 1
-							"gridY": 1
-						} )
-						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "sinnoriInstalledPathValueLabel"
-							"text": "d:\\gitsinnori\\sinnori"
-						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-							"gridX": 3
-							"gridY": 1
-						} )
-					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-						"$columnSpecs": "default, labelcompgap, default:grow"
-						"$rowSpecs": "default"
-					} ) {
-						name: "mainProjectNameLinePanel"
+						name: "mainProjectLinePanel"
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "mainProjectNameTitleLabel"
-							"text": "주 프로젝트 이름 :"
+							"text": "Main Project Name :"
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 1
 							"gridY": 1
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "mainProjectNameValueLabel"
-							"text": "sample_test"
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 3
 							"gridY": 1
 						} )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-						"gridY": 3
+						"gridX": 1
+						"gridY": 1
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class com.jgoodies.forms.layout.FormLayout ) {
-						"$columnSpecs": "default, labelcompgap, default:grow"
+						"$columnSpecs": "110dlu, labelcompgap, 200dlu"
 						"$rowSpecs": "default"
 					} ) {
-						name: "subProjectNameLinePanel"
+						name: "dbcpConnPoolNameLinePanel"
 						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "subProjectNameTitleLabel"
-							"text": "서브 프로젝트 이름 :"
+							name: "dbcpConnPoolNameTitleLabel"
+							"text": "DBCP Connection Pool Name :"
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 1
 							"gridY": 1
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
-							name: "subProjectNameValueLabel"
-							"text": "sample_test_sub1"
+							name: "dbcpConnPoolNameValueLabel"
+							auxiliary() {
+								"JavaCodeGenerator.postCreateCode": "/** Post-Creation Code Start */\ndbcpConnPoolNameValueLabel.setText(selectedDBCPConnPoolName);\n/** Post-Creation Code End */"
+							}
 						}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 							"gridX": 3
 							"gridY": 1
 						} )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+						"gridX": 1
+						"gridY": 3
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "dbcpPartIntroductionLable"
+						"text": "DBCP Part Config"
+					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
+						"gridX": 1
 						"gridY": 5
 					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "subProjectConfigScrollPane"
+						name: "dbcpPartScrollPane"
 						add( new FormComponent( "javax.swing.JTable" ) {
-							name: "subProjectConfigTable"
+							name: "dbcpPartTable"
 							"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
 								add( new java.util.Vector {
 									add( null )
 									add( null )
 								} )
-								add( new java.util.Vector {
-									add( null )
-									add( null )
-								} )
 							}, new java.util.Vector {
-								add( "키" )
-								add( "값" )
+								add( "key" )
+								add( "value" )
 							}, new java.util.Vector {
 								add( class java.lang.String )
 								add( null )
 							}, new java.util.Vector {
-								add( null )
-								add( null )
+								add( false )
+								add( false )
 							}, new java.util.Vector {
 								add( null )
-								add( null )
+								add( new com.jformdesigner.model.SwingTableColumn( null, 0, 150, 0, true ) )
 							} )
+							"selectionMode": 0
+							"autoCreateColumnsFromModel": false
 						} )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
-						"gridX": 1
 						"gridY": 7
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
@@ -119,7 +109,7 @@ new FormModel {
 					"border": sfield com.jgoodies.forms.factories.Borders BUTTON_BAR_PAD
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
-						"text": "OK"
+						"text": "Close"
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "okButtonActionPerformed", true ) )
 					}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 						"gridX": 2
@@ -132,8 +122,8 @@ new FormModel {
 				"value": "Center"
 			} )
 		}, new FormLayoutConstraints( null ) {
-			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 505, 405 )
+			"location": new java.awt.Point( 5, 0 )
+			"size": new java.awt.Dimension( 750, 195 )
 		} )
 	}
 }

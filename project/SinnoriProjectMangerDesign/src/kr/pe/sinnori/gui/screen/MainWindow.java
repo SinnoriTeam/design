@@ -22,14 +22,14 @@ public class MainWindow extends JFrame {
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		// Generated using JFormDesigner Evaluation license - Jonghoon Won
+		// Generated using JFormDesigner non-commercial license
 		firstScreenPanel = new FirstScreen(this);
 		projectEditScreenPanel = new ProjectEditScreen(this);
 
 		//======== this ========
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new FormLayout(
-			"default",
+			"default:grow",
 			"default, $lgap, default"));
 		contentPane.add(firstScreenPanel, CC.xy(1, 1));
 
@@ -42,7 +42,7 @@ public class MainWindow extends JFrame {
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-	// Generated using JFormDesigner Evaluation license - Jonghoon Won
+	// Generated using JFormDesigner non-commercial license
 	private FirstScreen firstScreenPanel;
 	private ProjectEditScreen projectEditScreenPanel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables	

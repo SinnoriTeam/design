@@ -8,6 +8,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
+import kr.pe.sinnori.gui.table.ConfigItemCellEditor;
+import kr.pe.sinnori.gui.table.ConfigItemCellRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemTableModel;
+
 import com.jgoodies.forms.factories.*;
 import com.jgoodies.forms.layout.*;
 
@@ -15,16 +20,38 @@ import com.jgoodies.forms.layout.*;
  * @author Jonghoon Won
  */
 @SuppressWarnings("serial")
-public class SubProjectConfigPopup extends JDialog {
-	public SubProjectConfigPopup(Frame owner) {
+public class SubProjectPartConfigPopup extends JDialog {
+	private String mainProjectName;
+	private String selectedSubProjectName;
+	private ConfigItemTableModel subProjectPartTableModel;
+	
+	public SubProjectPartConfigPopup(Frame owner,
+			String mainProjectName, 
+			String selectedSubProjectName,
+			ConfigItemTableModel subProjectPartTableModel) {
 		super(owner, true);
+		this.mainProjectName = mainProjectName;
+		this.selectedSubProjectName = selectedSubProjectName;
+		this.subProjectPartTableModel = subProjectPartTableModel;
+		
 		initComponents();
+		
+		/** Post-Creation Code Start */
+		mainProjectNameValueLabel.setText(this.mainProjectName);
+		subProjectNameValueLabel.setText(this.selectedSubProjectName);
+		subProjectPartTable.setModel(this.subProjectPartTableModel);
+				
+		// commonConfigTable.setModel(commonConfigItemTableModel);
+		subProjectPartTable.getColumnModel().getColumn(1).setResizable(false);
+		subProjectPartTable.getColumnModel().getColumn(1).setPreferredWidth(250);
+				
+		subProjectPartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
+		subProjectPartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+		subProjectPartTable.setRowHeight(38);
+		subProjectPartScrollPane.repaint();
+		/** Post-Creation Code End */
 	}
 
-	public SubProjectConfigPopup(Dialog owner) {
-		super(owner);
-		initComponents();
-	}
 
 	private void okButtonActionPerformed(ActionEvent e) {
 		this.dispose();
@@ -32,20 +59,17 @@ public class SubProjectConfigPopup extends JDialog {
 
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-		// Generated using JFormDesigner Evaluation license - Jonghoon Won
+		// Generated using JFormDesigner non-commercial license
 		dialogPane = new JPanel();
 		contentPanel = new JPanel();
-		sinnoriInstalledPathLinePanel = new JPanel();
-		sinnoriInstalledPathTitleLabel = new JLabel();
-		sinnoriInstalledPathValueLabel = new JLabel();
 		mainProjectNameLinePanel = new JPanel();
 		mainProjectNameTitleLabel = new JLabel();
 		mainProjectNameValueLabel = new JLabel();
 		subProjectNameLinePanel = new JPanel();
 		subProjectNameTitleLabel = new JLabel();
 		subProjectNameValueLabel = new JLabel();
-		subProjectConfigScrollPane = new JScrollPane();
-		subProjectConfigTable = new JTable();
+		subProjectPartScrollPane = new JScrollPane();
+		subProjectPartTable = new JTable();
 		buttonBar = new JPanel();
 		okButton = new JButton();
 
@@ -56,37 +80,13 @@ public class SubProjectConfigPopup extends JDialog {
 		//======== dialogPane ========
 		{
 			dialogPane.setBorder(Borders.createEmptyBorder("7dlu, 7dlu, 7dlu, 7dlu"));
-
-			// JFormDesigner evaluation mark
-			dialogPane.setBorder(new javax.swing.border.CompoundBorder(
-				new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-					"JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-					javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-					java.awt.Color.red), dialogPane.getBorder())); dialogPane.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-
 			dialogPane.setLayout(new BorderLayout());
 
 			//======== contentPanel ========
 			{
 				contentPanel.setLayout(new FormLayout(
 					"${growing-button}",
-					"3*(default, $lgap), 90dlu:grow"));
-
-				//======== sinnoriInstalledPathLinePanel ========
-				{
-					sinnoriInstalledPathLinePanel.setLayout(new FormLayout(
-						"default, $lcgap, default:grow",
-						"default"));
-
-					//---- sinnoriInstalledPathTitleLabel ----
-					sinnoriInstalledPathTitleLabel.setText("\uc2e0\ub180\uc774 \uc124\uce58 \uacbd\ub85c :");
-					sinnoriInstalledPathLinePanel.add(sinnoriInstalledPathTitleLabel, CC.xy(1, 1));
-
-					//---- sinnoriInstalledPathValueLabel ----
-					sinnoriInstalledPathValueLabel.setText("d:\\gitsinnori\\sinnori");
-					sinnoriInstalledPathLinePanel.add(sinnoriInstalledPathValueLabel, CC.xy(3, 1));
-				}
-				contentPanel.add(sinnoriInstalledPathLinePanel, CC.xy(1, 1));
+					"2*(default, $lgap), 90dlu:grow"));
 
 				//======== mainProjectNameLinePanel ========
 				{
@@ -102,7 +102,7 @@ public class SubProjectConfigPopup extends JDialog {
 					mainProjectNameValueLabel.setText("sample_test");
 					mainProjectNameLinePanel.add(mainProjectNameValueLabel, CC.xy(3, 1));
 				}
-				contentPanel.add(mainProjectNameLinePanel, CC.xy(1, 3));
+				contentPanel.add(mainProjectNameLinePanel, CC.xy(1, 1));
 
 				//======== subProjectNameLinePanel ========
 				{
@@ -118,13 +118,13 @@ public class SubProjectConfigPopup extends JDialog {
 					subProjectNameValueLabel.setText("sample_test_sub1");
 					subProjectNameLinePanel.add(subProjectNameValueLabel, CC.xy(3, 1));
 				}
-				contentPanel.add(subProjectNameLinePanel, CC.xy(1, 5));
+				contentPanel.add(subProjectNameLinePanel, CC.xy(1, 3));
 
-				//======== subProjectConfigScrollPane ========
+				//======== subProjectPartScrollPane ========
 				{
 
-					//---- subProjectConfigTable ----
-					subProjectConfigTable.setModel(new DefaultTableModel(
+					//---- subProjectPartTable ----
+					subProjectPartTable.setModel(new DefaultTableModel(
 						new Object[][] {
 							{null, null},
 							{null, null},
@@ -141,9 +141,9 @@ public class SubProjectConfigPopup extends JDialog {
 							return columnTypes[columnIndex];
 						}
 					});
-					subProjectConfigScrollPane.setViewportView(subProjectConfigTable);
+					subProjectPartScrollPane.setViewportView(subProjectPartTable);
 				}
-				contentPanel.add(subProjectConfigScrollPane, CC.xy(1, 7));
+				contentPanel.add(subProjectPartScrollPane, CC.xy(1, 5));
 			}
 			dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -155,7 +155,7 @@ public class SubProjectConfigPopup extends JDialog {
 					"pref"));
 
 				//---- okButton ----
-				okButton.setText("OK");
+				okButton.setText("Close");
 				okButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -173,20 +173,17 @@ public class SubProjectConfigPopup extends JDialog {
 	}
 
 	// JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-	// Generated using JFormDesigner Evaluation license - Jonghoon Won
+	// Generated using JFormDesigner non-commercial license
 	private JPanel dialogPane;
 	private JPanel contentPanel;
-	private JPanel sinnoriInstalledPathLinePanel;
-	private JLabel sinnoriInstalledPathTitleLabel;
-	private JLabel sinnoriInstalledPathValueLabel;
 	private JPanel mainProjectNameLinePanel;
 	private JLabel mainProjectNameTitleLabel;
 	private JLabel mainProjectNameValueLabel;
 	private JPanel subProjectNameLinePanel;
 	private JLabel subProjectNameTitleLabel;
 	private JLabel subProjectNameValueLabel;
-	private JScrollPane subProjectConfigScrollPane;
-	private JTable subProjectConfigTable;
+	private JScrollPane subProjectPartScrollPane;
+	private JTable subProjectPartTable;
 	private JPanel buttonBar;
 	private JButton okButton;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables

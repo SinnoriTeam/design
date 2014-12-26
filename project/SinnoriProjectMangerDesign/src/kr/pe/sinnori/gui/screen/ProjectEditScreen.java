@@ -7,8 +7,8 @@ package kr.pe.sinnori.gui.screen;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
-import javax.swing.*;
 
 import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
@@ -19,14 +19,16 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
-import javax.swing.table.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 import kr.pe.sinnori.common.config.ConfigItem;
 import kr.pe.sinnori.common.config.SinnoriConfigInfo;
@@ -39,6 +41,9 @@ import kr.pe.sinnori.gui.table.ConfigItemCellValue;
 import kr.pe.sinnori.gui.table.ConfigItemTableModel;
 import kr.pe.sinnori.gui.util.PathSwingAction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -47,6 +52,8 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 @SuppressWarnings("serial")
 public class ProjectEditScreen extends JPanel {
+	private Logger log = LoggerFactory.getLogger(ProjectEditScreen.class);
+	
 	private JFrame mainFrame = null;
 	private JFileChooser chooser = null;
 	private MainProject mainProject = null;
@@ -60,91 +67,180 @@ public class ProjectEditScreen extends JPanel {
 	};
 	
 	private ConfigItemTableModel commonConfigItemTableModel = null;
-	private ConfigItemTableModel mainProjectConfigItemTableModel = null;
+	private HashMap<String, ConfigItemTableModel> dbcpConnPoolName2ConfigItemTableModelHash = null;
+	private HashMap<String, ConfigItemTableModel> projectName2ConfigItemTableModelHash = null;
 	
-	private Object valuesOfCommonConfigItemTable[][] = null;
-	private SequencedProperties saveSequencedProperties = new SequencedProperties();
+	//private Object valuesOfCommonConfigItemTable[][] = null;
+	// private SequencedProperties saveSequencedProperties = new SequencedProperties();
 	
 	public ProjectEditScreen(JFrame mainFrame) {
 		this.mainFrame = mainFrame;
 		initComponents();
 	}
 	
-	public void setProject(MainProject selectedProject) {
-		this.mainProject = selectedProject;
+	public void setProject(MainProject mainProject) {
+		this.mainProject = mainProject;
 		
-		sinnoriInstalledPathValueLabel.setText(selectedProject.getProjectPathString());
-		mainProjectNameValueLabel.setText(selectedProject.getMainProjectName());
+		sinnoriInstalledPathValueLabel.setText(mainProject.getProjectPathString());
+		mainProjectNameValueLabel.setText(mainProject.getMainProjectName());
 		// serverCheckBox.setSelected(selectedProject.get);
-		appClientCheckBox.setSelected(selectedProject.isAppClient());
-		webClientCheckBox.setSelected(selectedProject.isWebClient());
-		servletEnginLibinaryPathTextField.setEditable(selectedProject.isWebClient());
-		servletEnginLibinaryPathButton.setEnabled(selectedProject.isWebClient());
-		servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
+		appClientCheckBox.setSelected(mainProject.isAppClient());
+		webClientCheckBox.setSelected(mainProject.isWebClient());
+		servletEnginLibinaryPathTextField.setEditable(mainProject.isWebClient());
+		servletEnginLibinaryPathButton.setEnabled(mainProject.isWebClient());
+		servletEnginLibinaryPathTextField.setText(mainProject.getServletEnginLibPathString());
 				
 		List<String> subProjectList = mainProject.getSubProjectNameList();
-		String[] subProjectArray = new String[subProjectList.size()];
-		for (int i=0; i < subProjectArray.length; i++) {
-			subProjectArray[i] = subProjectList.get(i);
+		int subProjectListSize = subProjectList.size();
+		
+		String[] subProjectArray = new String[subProjectListSize+1];
+		subProjectArray[0] = "- Sub Project Name -";
+		for (int i=0; i < subProjectListSize; i++) {
+			subProjectArray[i+1] = subProjectList.get(i);
 		}
 		
 		ComboBoxModel<String> subProjectNameComboBoxModel = new DefaultComboBoxModel<String>(subProjectArray);
 		
 		subProjectNameListComboBox.setModel(subProjectNameComboBoxModel);
 		
-		List<String> dbcpConnPoolNameList = mainProject.getDBCPConnPoolNameList();
-		String[] dbcpConnPoolNameArray = new String[dbcpConnPoolNameList.size()];
-		for (int i=0; i < dbcpConnPoolNameArray.length; i++) {
-			dbcpConnPoolNameArray[i] = dbcpConnPoolNameList.get(i);
+		final List<String> dbcpConnPoolNameList = this.mainProject.getDBCPConnPoolNameList();
+		int dbcpConnPoolNameListSize = dbcpConnPoolNameList.size();
+		String[] dbcpConnPoolNameArray = new String[dbcpConnPoolNameListSize+1];
+		dbcpConnPoolNameArray[0] = "- DBCP Conn Pool Name -";
+		for (int i=0; i < dbcpConnPoolNameListSize; i++) {
+			dbcpConnPoolNameArray[i+1] = dbcpConnPoolNameList.get(i);
 		}
 		
 		ComboBoxModel<String> dbcpConnPoolNameComboBoxModel = new DefaultComboBoxModel<String>(dbcpConnPoolNameArray);
 		
-		dbcpConnNameListComboBox.setModel(dbcpConnPoolNameComboBoxModel);
-		
-		
-		// FIXME!
+		dbcpConnPoolNameListComboBox.setModel(dbcpConnPoolNameComboBoxModel);
+				
 		SequencedProperties sourceSequencedProperties = 
 				mainProject.getSourceSequencedProperties();
 		
 		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
 		
-		//sinnoriConfigInfo.getDbcpPartConfigItemList();
-		List<ConfigItem> commonConfigItemList = 
-				sinnoriConfigInfo.getCommonPartConfigItemList();		
-		/*List<ConfigItem> projectConfigItemList = 
-				sinnoriConfigInfo.getProjectPartConfigItemList();*/
-		
-		// commonConfigTable
-		this.valuesOfCommonConfigItemTable = new Object[commonConfigItemList.size()][titlesOfConfigItemTable.length];
-		
-		for (int i=0; i < valuesOfCommonConfigItemTable.length; i++) {
-			ConfigItem configItem = commonConfigItemList.get(i);
-			String itemID = configItem.getItemID();
-			String targetKey = itemID;
-			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
-					targetKey, 
-					sourceSequencedProperties,
-					sinnoriConfigInfo, mainFrame);
-					
-			valuesOfCommonConfigItemTable[i][0] = targetKey;
-			valuesOfCommonConfigItemTable[i][1] = configItemCellValue;
+		{
+			List<ConfigItem> commonPartConfigItemList = 
+					sinnoriConfigInfo.getCommonPartConfigItemList();		
 			
-			//saveSequencedProperties.put(targetKey, configItemCellValue.getValueOfComponent());
+			
+			// commonConfigTable
+			Object[][] valuesOfCommonConfigItemTable = new Object[commonPartConfigItemList.size()][titlesOfConfigItemTable.length];
+			
+			for (int i=0; i < valuesOfCommonConfigItemTable.length; i++) {
+				ConfigItem configItem = commonPartConfigItemList.get(i);
+				String itemID = configItem.getItemID();
+				String targetKey = itemID;
+				ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+						targetKey, 
+						sourceSequencedProperties.getProperty(targetKey),
+						sinnoriConfigInfo, mainFrame);
+						
+				valuesOfCommonConfigItemTable[i][0] = targetKey;
+				valuesOfCommonConfigItemTable[i][1] = configItemCellValue;
+				
+				//saveSequencedProperties.put(targetKey, configItemCellValue.getValueOfComponent());
+			}
+			
+			commonConfigItemTableModel = new ConfigItemTableModel(valuesOfCommonConfigItemTable, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+			commonConfigTable.setModel(commonConfigItemTableModel);
+			
+			// commonConfigTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+					
+			commonConfigTable.getColumnModel().getColumn(1).setResizable(false);
+			commonConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);
+					
+			commonConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
+			commonConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+			commonConfigTable.setRowHeight(38);
+			commonConfigScrollPane.repaint();
 		}
 		
-		commonConfigItemTableModel = new ConfigItemTableModel(valuesOfCommonConfigItemTable, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
-		commonConfigTable.setModel(commonConfigItemTableModel);
+		{
+			List<ConfigItem> dbcpPartConfigItemList = sinnoriConfigInfo.getDBCPPartConfigItemList();
+			int dbcpPartConfigItemListSize = dbcpPartConfigItemList.size();
+			
+			dbcpConnPoolName2ConfigItemTableModelHash = new HashMap<String, ConfigItemTableModel>();
+			for (String dbcpConnPoolName : dbcpConnPoolNameList) {				
+				Object[][] values = new Object[dbcpPartConfigItemListSize][titlesOfConfigItemTable.length];
+				for (int i=0; i < values.length; i++) {
+					ConfigItem configItem = dbcpPartConfigItemList.get(i);
+					String itemID = configItem.getItemID();
+					
+					String targetKey = new StringBuilder("dbcp.")
+					.append(dbcpConnPoolName)
+					.append(".")
+					.append(itemID).toString();
+					
+					log.info("dbcpConnPoolName={}, targetKey={}", dbcpConnPoolName, targetKey);
+					
+					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+							targetKey, 
+							sourceSequencedProperties.getProperty(targetKey),
+							sinnoriConfigInfo, mainFrame);
+							
+					values[i][0] = targetKey;
+					values[i][1] = configItemCellValue;
+				}
+				
+				ConfigItemTableModel dbcpConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+				
+				dbcpConnPoolName2ConfigItemTableModelHash.put(dbcpConnPoolName, dbcpConfigItemTableModel);				
+			}
+		}
 		
-		// commonConfigTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+		{
+			// projectName2ConfigItemTableModelHash
+			List<String> projectNameList = sinnoriConfigInfo.getProjectNameList();
+			
+			List<ConfigItem> projectPartConfigItemList = 
+					sinnoriConfigInfo.getProjectPartConfigItemList();
+			int projectPartConfigItemListSize = projectPartConfigItemList.size();
 				
-		commonConfigTable.getColumnModel().getColumn(1).setResizable(false);
-		commonConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);
+			
+			projectName2ConfigItemTableModelHash = new HashMap<String, ConfigItemTableModel>();
+			for (String projectName : projectNameList) {
 				
-		commonConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
-		commonConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
-		commonConfigTable.setRowHeight(38);
-		commonConfigScrollPane.repaint();
+				Object[][] values = new Object[projectPartConfigItemListSize][titlesOfConfigItemTable.length];
+				for (int i=0; i < values.length; i++) {
+					ConfigItem configItem = projectPartConfigItemList.get(i);
+					String itemID = configItem.getItemID();
+					
+					String targetKey = new StringBuilder("project.")
+					.append(projectName)
+					.append(".")
+					.append(itemID).toString();
+					
+					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+							targetKey, 
+							sourceSequencedProperties.getProperty(targetKey),
+							sinnoriConfigInfo, mainFrame);
+							
+					values[i][0] = targetKey;
+					values[i][1] = configItemCellValue;
+				}
+				
+				ConfigItemTableModel oneProejctConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+				
+				projectName2ConfigItemTableModelHash.put(projectName, oneProejctConfigItemTableModel);				
+			}
+		}
+		
+		{
+			String mainProjectName = mainProject.getMainProjectName();
+			mainProjectConfigTable.setModel(projectName2ConfigItemTableModelHash.get(mainProjectName));
+			
+			// commonConfigTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+					
+			mainProjectConfigTable.getColumnModel().getColumn(1).setResizable(false);
+			mainProjectConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);
+					
+			mainProjectConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
+			mainProjectConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+			mainProjectConfigTable.setRowHeight(38);
+			mainProjectConfigScrollPane.repaint();
+		}
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
@@ -152,8 +248,110 @@ public class ProjectEditScreen extends JPanel {
 	}
 
 	private void subProjectEditButtonActionPerformed(ActionEvent e) {
-		SubProjectConfigPopup popup = new SubProjectConfigPopup(WindowManger.getInstance().getMainWindow());
-		popup.setVisible(true);
+		int selectedInx = subProjectNameListComboBox.getSelectedIndex();
+		if (selectedInx <= 0) {
+			String errorMessage = "Please, choose Sub Project Name";
+			subProjectNameListComboBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+		} else {
+			String mainProjectName = mainProject.getMainProjectName();
+			String selectedSubProjectName = subProjectNameListComboBox.getItemAt(selectedInx);
+			ConfigItemTableModel subProjectPartConfigTableModel = 
+					projectName2ConfigItemTableModelHash.get(selectedSubProjectName);
+			
+			SubProjectPartConfigPopup popup = new SubProjectPartConfigPopup(mainFrame, 
+					mainProjectName, selectedSubProjectName, subProjectPartConfigTableModel);
+			popup.setTitle("Sub Project Part Conifg");
+			// popup.setSize(740, 220);
+			popup.setVisible(true);
+		}
+	}
+
+	private void dbcpConnPoolNameEditButtonActionPerformed(ActionEvent e) {
+		int selectedInx = dbcpConnPoolNameListComboBox.getSelectedIndex();
+		if (selectedInx <= 0) {
+			String errorMessage = "Please, choose DBCP Connection Pool Name";
+			dbcpConnPoolNameListComboBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+		} else {
+			String mainProjectName = mainProject.getMainProjectName();
+			String selectedDBCPConnPoolName = dbcpConnPoolNameListComboBox.getItemAt(selectedInx);
+			ConfigItemTableModel dbcpConfigItemTableModel = 
+					dbcpConnPoolName2ConfigItemTableModelHash.get(selectedDBCPConnPoolName);
+			
+			DBCPConnPoolNamePopup popup = new DBCPConnPoolNamePopup(mainFrame, 
+					mainProjectName, selectedDBCPConnPoolName, dbcpConfigItemTableModel);
+			popup.setTitle("DBCP Connection Pool Name Conifg");
+			popup.setSize(740, 220);
+			popup.setVisible(true);
+		}		
+	}
+
+	private void dbcpConnPoolNameAddButtonActionPerformed(ActionEvent e) {		
+		// TODO add your code here
+		String newDBCPConnPoolName = dbcpConnPoolNameTextField.getText();
+		
+		List<String> dbcpConnPoolNameList = this.mainProject.getDBCPConnPoolNameList();
+		
+		if (dbcpConnPoolNameList.contains(newDBCPConnPoolName)) {
+			String errorMessage = String.format("중복된 이름[%s]을 가진 DBCP 연결 폴 이름이 있습니다.", newDBCPConnPoolName);
+			dbcpConnPoolNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		
+		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
+		
+		sinnoriConfigInfo.addDBCPConnectionPoolName(newDBCPConnPoolName);		
+		
+		List<ConfigItem> dbcpPartConfigItemList = sinnoriConfigInfo.getDBCPPartConfigItemList();
+		int dbcpPartConfigItemListSize = dbcpPartConfigItemList.size();
+		
+		Object[][] values = new Object[dbcpPartConfigItemListSize][titlesOfConfigItemTable.length];
+		for (int i=0; i < values.length; i++) {
+			ConfigItem configItem = dbcpPartConfigItemList.get(i);
+			String itemID = configItem.getItemID();
+			
+			String targetKey = new StringBuilder("dbcp.")
+			.append(newDBCPConnPoolName)
+			.append(".")
+			.append(itemID).toString();
+			
+			log.info("dbcpConnPoolName={}, targetKey={}", newDBCPConnPoolName, targetKey);
+						
+			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+					targetKey, 
+					sinnoriConfigInfo.getDefaultValueOfDBCPConnPoolConfigFile(newDBCPConnPoolName),
+					sinnoriConfigInfo, mainFrame);
+					
+			values[i][0] = targetKey;
+			values[i][1] = configItemCellValue;
+		}
+		
+		ConfigItemTableModel dbcpConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+		
+		dbcpConnPoolName2ConfigItemTableModelHash.put(newDBCPConnPoolName, dbcpConfigItemTableModel);
+		
+		dbcpConnPoolNameListComboBox.addItem(newDBCPConnPoolName);		
+		
+		JOptionPane.showMessageDialog(mainFrame, String.format("Adding a new DBCP Connection Pool Name[{}] is success", newDBCPConnPoolName));	
+	}
+
+	private void dbcpConnPoolNameDeleteButtonActionPerformed(ActionEvent e) {
+		int selectedInx = dbcpConnPoolNameListComboBox.getSelectedIndex();
+		if (selectedInx <= 0) {
+			String errorMessage = "Please, choose DBCP Connection Pool Name";
+			dbcpConnPoolNameListComboBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+		} else {
+			String selectedDBCPConnPoolName = dbcpConnPoolNameListComboBox.getItemAt(selectedInx);
+			
+			SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
+			sinnoriConfigInfo.removeDBCPConnectionPoolName(selectedDBCPConnPoolName);
+			
+			dbcpConnPoolName2ConfigItemTableModelHash.remove(selectedDBCPConnPoolName);
+			dbcpConnPoolNameListComboBox.removeItemAt(selectedInx);
+		}
 	}
 
 	private void initComponents() {
@@ -182,7 +380,7 @@ public class ProjectEditScreen extends JPanel {
 		subProjectNameInputLinePanel = new JPanel();
 		subProjectNameInputLabel = new JLabel();
 		subProjectNameInputTextField = new JTextField();
-		subProjectNameInputButton = new JButton();
+		subProjectNameAddButton = new JButton();
 		subProjectListLinePanel = new JPanel();
 		subProjectNameListLabel = new JLabel();
 		subProjectNameListComboBox = new JComboBox<>();
@@ -191,24 +389,24 @@ public class ProjectEditScreen extends JPanel {
 		subProjectNameDeleteButton = new JButton();
 		dbcpConnPoolNameInputLinePanel = new JPanel();
 		dbcpConnPoolNameInputLabel = new JLabel();
-		dbcpConnPoolNameInputTextField = new JTextField();
-		dbcpConnPoolNameInputButton = new JButton();
+		dbcpConnPoolNameTextField = new JTextField();
+		dbcpConnPoolNameAddButton = new JButton();
 		dbcpConnPoolNameListLinePanel = new JPanel();
 		dbcpConnPoolNameListLabel = new JLabel();
-		dbcpConnNameListComboBox = new JComboBox<>();
+		dbcpConnPoolNameListComboBox = new JComboBox<>();
 		dbcpConnNameListFuncPanel = new JPanel();
-		dbcpConnNameEditButton = new JButton();
-		dbcpConnNameDeleteButton = new JButton();
+		dbcpConnPoolNameEditButton = new JButton();
+		dbcpConnPoolNameDeleteButton = new JButton();
 		commonConfigLabel = new JLabel();
 		commonConfigScrollPane = new JScrollPane();
 		commonConfigTable = new JTable();
-		projectConfigLabel = new JLabel();
-		projectConfigScrollPane = new JScrollPane();
-		projectConfigTable = new JTable();
+		mainProjectConfigLabel = new JLabel();
+		mainProjectConfigScrollPane = new JScrollPane();
+		mainProjectConfigTable = new JTable();
 
 		//======== this ========
 		setLayout(new FormLayout(
-			"[443dlu,pref]",
+			"[443dlu,pref]:grow",
 			"11*(default, $lgap), 104dlu, $lgap, default, $lgap, 116dlu, $lgap, default"));
 		/** Post-initialization Code start */
 		UIManager.put("FileChooser.readOnly", Boolean.TRUE); 
@@ -334,13 +532,13 @@ public class ProjectEditScreen extends JPanel {
 				"default"));
 
 			//---- subProjectNameInputLabel ----
-			subProjectNameInputLabel.setText("\uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \uc774\ub984 :");
+			subProjectNameInputLabel.setText("Sub Project Name :");
 			subProjectNameInputLinePanel.add(subProjectNameInputLabel, CC.xy(1, 1));
 			subProjectNameInputLinePanel.add(subProjectNameInputTextField, CC.xy(3, 1));
 
-			//---- subProjectNameInputButton ----
-			subProjectNameInputButton.setText("\ucd94\uac00");
-			subProjectNameInputLinePanel.add(subProjectNameInputButton, CC.xy(5, 1));
+			//---- subProjectNameAddButton ----
+			subProjectNameAddButton.setText("add");
+			subProjectNameInputLinePanel.add(subProjectNameAddButton, CC.xy(5, 1));
 		}
 		add(subProjectNameInputLinePanel, CC.xy(1, 13));
 
@@ -351,12 +549,12 @@ public class ProjectEditScreen extends JPanel {
 				"default"));
 
 			//---- subProjectNameListLabel ----
-			subProjectNameListLabel.setText("\uc0dd\uc131\ub41c \uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
+			subProjectNameListLabel.setText("Sub Project Name Choose");
 			subProjectListLinePanel.add(subProjectNameListLabel, CC.xy(1, 1));
 
 			//---- subProjectNameListComboBox ----
 			subProjectNameListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
-				"- \uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \uc120\ud0dd -",
+				"- Sub Project Name -",
 				"sample_test_sub1",
 				"sample_test_sub2"
 			}));
@@ -367,7 +565,7 @@ public class ProjectEditScreen extends JPanel {
 				subProjectNameListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
 				//---- subProjectNameEditButton ----
-				subProjectNameEditButton.setText("\ud3b8\uc9d1");
+				subProjectNameEditButton.setText("edit");
 				subProjectNameEditButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -377,7 +575,7 @@ public class ProjectEditScreen extends JPanel {
 				subProjectNameListFuncPanel.add(subProjectNameEditButton);
 
 				//---- subProjectNameDeleteButton ----
-				subProjectNameDeleteButton.setText("\uc0ad\uc81c");
+				subProjectNameDeleteButton.setText("remove");
 				subProjectNameListFuncPanel.add(subProjectNameDeleteButton);
 			}
 			subProjectListLinePanel.add(subProjectNameListFuncPanel, CC.xy(5, 1));
@@ -391,13 +589,19 @@ public class ProjectEditScreen extends JPanel {
 				"default"));
 
 			//---- dbcpConnPoolNameInputLabel ----
-			dbcpConnPoolNameInputLabel.setText("DBCP Connection Name :");
+			dbcpConnPoolNameInputLabel.setText("DBCP Connection Pool Name :");
 			dbcpConnPoolNameInputLinePanel.add(dbcpConnPoolNameInputLabel, CC.xy(1, 1));
-			dbcpConnPoolNameInputLinePanel.add(dbcpConnPoolNameInputTextField, CC.xy(3, 1));
+			dbcpConnPoolNameInputLinePanel.add(dbcpConnPoolNameTextField, CC.xy(3, 1));
 
-			//---- dbcpConnPoolNameInputButton ----
-			dbcpConnPoolNameInputButton.setText("\ucd94\uac00");
-			dbcpConnPoolNameInputLinePanel.add(dbcpConnPoolNameInputButton, CC.xy(5, 1));
+			//---- dbcpConnPoolNameAddButton ----
+			dbcpConnPoolNameAddButton.setText("add");
+			dbcpConnPoolNameAddButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					dbcpConnPoolNameAddButtonActionPerformed(e);
+				}
+			});
+			dbcpConnPoolNameInputLinePanel.add(dbcpConnPoolNameAddButton, CC.xy(5, 1));
 		}
 		add(dbcpConnPoolNameInputLinePanel, CC.xy(1, 17));
 
@@ -408,40 +612,46 @@ public class ProjectEditScreen extends JPanel {
 				"default"));
 
 			//---- dbcpConnPoolNameListLabel ----
-			dbcpConnPoolNameListLabel.setText("\uc0dd\uc131\ub41c \uc11c\ube0c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
+			dbcpConnPoolNameListLabel.setText("DBCP Conn Pool Name Choose");
 			dbcpConnPoolNameListLinePanel.add(dbcpConnPoolNameListLabel, CC.xy(1, 1));
 
-			//---- dbcpConnNameListComboBox ----
-			dbcpConnNameListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
-				"- DB Connection pool name -",
+			//---- dbcpConnPoolNameListComboBox ----
+			dbcpConnPoolNameListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
+				"- DBCP Conn Pool Name -",
 				"tw_sinnoridb"
 			}));
-			dbcpConnPoolNameListLinePanel.add(dbcpConnNameListComboBox, CC.xy(3, 1));
+			dbcpConnPoolNameListLinePanel.add(dbcpConnPoolNameListComboBox, CC.xy(3, 1));
 
 			//======== dbcpConnNameListFuncPanel ========
 			{
 				dbcpConnNameListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
-				//---- dbcpConnNameEditButton ----
-				dbcpConnNameEditButton.setText("\ud3b8\uc9d1");
-				dbcpConnNameEditButton.addActionListener(new ActionListener() {
+				//---- dbcpConnPoolNameEditButton ----
+				dbcpConnPoolNameEditButton.setText("edit");
+				dbcpConnPoolNameEditButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						subProjectEditButtonActionPerformed(e);
+						dbcpConnPoolNameEditButtonActionPerformed(e);
 					}
 				});
-				dbcpConnNameListFuncPanel.add(dbcpConnNameEditButton);
+				dbcpConnNameListFuncPanel.add(dbcpConnPoolNameEditButton);
 
-				//---- dbcpConnNameDeleteButton ----
-				dbcpConnNameDeleteButton.setText("\uc0ad\uc81c");
-				dbcpConnNameListFuncPanel.add(dbcpConnNameDeleteButton);
+				//---- dbcpConnPoolNameDeleteButton ----
+				dbcpConnPoolNameDeleteButton.setText("remote");
+				dbcpConnPoolNameDeleteButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						dbcpConnPoolNameDeleteButtonActionPerformed(e);
+					}
+				});
+				dbcpConnNameListFuncPanel.add(dbcpConnPoolNameDeleteButton);
 			}
 			dbcpConnPoolNameListLinePanel.add(dbcpConnNameListFuncPanel, CC.xy(5, 1));
 		}
 		add(dbcpConnPoolNameListLinePanel, CC.xy(1, 19));
 
 		//---- commonConfigLabel ----
-		commonConfigLabel.setText("\uacf5\ud1b5 \uc124\uc815");
+		commonConfigLabel.setText("Common Part Config");
 		add(commonConfigLabel, CC.xy(1, 21));
 
 		//======== commonConfigScrollPane ========
@@ -455,7 +665,7 @@ public class ProjectEditScreen extends JPanel {
 					{null, null},
 				},
 				new String[] {
-					"\ud0a4", "\uac12"
+					"key", "value"
 				}
 			) {
 				Class<?>[] columnTypes = new Class<?>[] {
@@ -483,21 +693,21 @@ public class ProjectEditScreen extends JPanel {
 		}
 		add(commonConfigScrollPane, CC.xy(1, 23));
 
-		//---- projectConfigLabel ----
-		projectConfigLabel.setText("\uc8fc \ud504\ub85c\uc81d\ud2b8 \uc124\uc815");
-		add(projectConfigLabel, CC.xy(1, 25));
+		//---- mainProjectConfigLabel ----
+		mainProjectConfigLabel.setText("Main Project Part Config");
+		add(mainProjectConfigLabel, CC.xy(1, 25));
 
-		//======== projectConfigScrollPane ========
+		//======== mainProjectConfigScrollPane ========
 		{
 
-			//---- projectConfigTable ----
-			projectConfigTable.setModel(new DefaultTableModel(
+			//---- mainProjectConfigTable ----
+			mainProjectConfigTable.setModel(new DefaultTableModel(
 				new Object[][] {
 					{null, null},
 					{null, null},
 				},
 				new String[] {
-					"\ud0a4", "\uac12"
+					"key", "value"
 				}
 			) {
 				Class<?>[] columnTypes = new Class<?>[] {
@@ -508,10 +718,10 @@ public class ProjectEditScreen extends JPanel {
 					return columnTypes[columnIndex];
 				}
 			});
-			projectConfigTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			projectConfigScrollPane.setViewportView(projectConfigTable);
+			mainProjectConfigTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			mainProjectConfigScrollPane.setViewportView(mainProjectConfigTable);
 		}
-		add(projectConfigScrollPane, CC.xy(1, 27));
+		add(mainProjectConfigScrollPane, CC.xy(1, 27));
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 	}
 
@@ -540,7 +750,7 @@ public class ProjectEditScreen extends JPanel {
 	private JPanel subProjectNameInputLinePanel;
 	private JLabel subProjectNameInputLabel;
 	private JTextField subProjectNameInputTextField;
-	private JButton subProjectNameInputButton;
+	private JButton subProjectNameAddButton;
 	private JPanel subProjectListLinePanel;
 	private JLabel subProjectNameListLabel;
 	private JComboBox<String> subProjectNameListComboBox;
@@ -549,19 +759,19 @@ public class ProjectEditScreen extends JPanel {
 	private JButton subProjectNameDeleteButton;
 	private JPanel dbcpConnPoolNameInputLinePanel;
 	private JLabel dbcpConnPoolNameInputLabel;
-	private JTextField dbcpConnPoolNameInputTextField;
-	private JButton dbcpConnPoolNameInputButton;
+	private JTextField dbcpConnPoolNameTextField;
+	private JButton dbcpConnPoolNameAddButton;
 	private JPanel dbcpConnPoolNameListLinePanel;
 	private JLabel dbcpConnPoolNameListLabel;
-	private JComboBox<String> dbcpConnNameListComboBox;
+	private JComboBox<String> dbcpConnPoolNameListComboBox;
 	private JPanel dbcpConnNameListFuncPanel;
-	private JButton dbcpConnNameEditButton;
-	private JButton dbcpConnNameDeleteButton;
+	private JButton dbcpConnPoolNameEditButton;
+	private JButton dbcpConnPoolNameDeleteButton;
 	private JLabel commonConfigLabel;
 	private JScrollPane commonConfigScrollPane;
 	private JTable commonConfigTable;
-	private JLabel projectConfigLabel;
-	private JScrollPane projectConfigScrollPane;
-	private JTable projectConfigTable;
+	private JLabel mainProjectConfigLabel;
+	private JScrollPane mainProjectConfigScrollPane;
+	private JTable mainProjectConfigTable;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 }

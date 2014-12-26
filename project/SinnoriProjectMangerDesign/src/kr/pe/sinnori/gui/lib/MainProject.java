@@ -57,7 +57,7 @@ public class MainProject {
 		checkSeverBuild();		
 		checkClientBuild();
 		
-		subProjectNameList.add("- 서브 프로젝트 -");
+		// subProjectNameList.add("- 서브 프로젝트 -");
 		
 		
 		List<String> projectNameList = sinnoriConfigInfo.getProjectNameList();
@@ -68,7 +68,7 @@ public class MainProject {
 			}
 		}
 		
-		dbcpConnPoolNameList.add("- dbcp connection pool name -");
+		// dbcpConnPoolNameList.add("- dbcp connection pool name -");
 		List<String> dbcpConnPoolNameListOfConfig = sinnoriConfigInfo.getDBCPConnectionPoolNameList();
 		for (String dbcpConnPoolName : dbcpConnPoolNameListOfConfig) {
 			dbcpConnPoolNameList.add(dbcpConnPoolName);
