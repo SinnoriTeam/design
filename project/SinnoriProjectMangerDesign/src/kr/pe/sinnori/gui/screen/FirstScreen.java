@@ -29,9 +29,12 @@ import javax.swing.border.LineBorder;
 
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.gui.lib.MainProject;
-import kr.pe.sinnori.gui.lib.ProjectManger;
+import kr.pe.sinnori.gui.lib.MainProjectManger;
 import kr.pe.sinnori.gui.lib.WindowManger;
 import kr.pe.sinnori.gui.util.PathSwingAction;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.factories.CC;
 import com.jgoodies.forms.layout.FormLayout;
@@ -41,23 +44,21 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 @SuppressWarnings("serial")
 public class FirstScreen extends JPanel {
-	// private Logger log = LoggerFactory.getLogger(FirstScreen.class);
+	private Logger log = LoggerFactory.getLogger(FirstScreen.class);
 	private JFrame mainFrame = null;
 	private JFileChooser chooser = null;
-	private ProjectManger projectManger = null;
-	// private List<String> projectNameList = new ArrayList<String>();
-	// private HashMap<String, Project> projectHash = new HashMap<String, Project>();
+	private MainProjectManger mainProjectManger = null;
+	
 	
 	public FirstScreen(JFrame mainFrame) {
 		this.mainFrame =mainFrame;
 		initComponents();
 	}
 
-	private void projectEditButtonActionPerformed(ActionEvent e) {
-		// FIXME!
-		if (projectListComboBox.getSelectedIndex() > 0) {
-			String projectName = (String)projectListComboBox.getSelectedItem();
-			MainProject selectedProject = projectManger.getProject(projectName);
+	private void mainProjectNameEditButtonActionPerformed(ActionEvent e) {
+		if (mainProjectNameListComboBox.getSelectedIndex() > 0) {
+			String projectName = (String)mainProjectNameListComboBox.getSelectedItem();
+			MainProject selectedProject = mainProjectManger.getMainProject(projectName);
 			if (null == selectedProject) {
 				JOptionPane.showMessageDialog(mainFrame, "프로젝트를 얻는데 실패하였습니다.");
 				sinnoriInstalledPathInputTextField.requestFocusInWindow();
@@ -74,7 +75,6 @@ public class FirstScreen extends JPanel {
 	}
 
 	private void sinnoriInstalledPathAnalysisButtonActionPerformed(ActionEvent e) {
-		// TODO add your code here
 		String sinnoriInstalledPathString = sinnoriInstalledPathInputTextField.getText();
 		if ( null == sinnoriInstalledPathString) {
 			JOptionPane.showMessageDialog(mainFrame, "신놀이 설치 경로를 입력해 주세요.");
@@ -133,40 +133,38 @@ public class FirstScreen extends JPanel {
 		.append(File.separator).append("project").toString();
 		
 		try {
-			projectManger = new ProjectManger(projectBasePathString);
+			mainProjectManger = new MainProjectManger(projectBasePathString);
 		} catch (ConfigErrorException e2) {
 			JOptionPane.showMessageDialog(mainFrame, e2.getMessage());
 			sinnoriInstalledPathInputTextField.requestFocusInWindow();
 			return;
 		}		
 		
-		projectListComboBox.removeAllItems();
-		projectListComboBox.addItem("- project -");
+		mainProjectNameListComboBox.removeAllItems();
+		mainProjectNameListComboBox.addItem("- project -");
 		
-		List<MainProject> projectList = projectManger.getProjectList();
+		List<MainProject> projectList = mainProjectManger.getMainProjectList();
 		for (MainProject project : projectList) {
-			projectListComboBox.addItem(project.getMainProjectName());
+			mainProjectNameListComboBox.addItem(project.getMainProjectName());
 		}
 		
 		
 		sinnoriInstalledPathInfoValueLabel.setText(sinnoriInstalledPathString);
 		allProjectWorkSaveButton.setEnabled(true);
-		projectNameInputTextField.setEnabled(true);
-		projectNameInputButton.setEnabled(true);
+		mainProjectNameTextField.setEnabled(true);
+		projectNameAddButton.setEnabled(true);
 		
-		projectListComboBox.setEnabled(true);
-		projectEditButton.setEnabled(true);
-		projectDeleteButton.setEnabled(true);
+		mainProjectNameListComboBox.setEnabled(true);
+		mainProjectNameEditButton.setEnabled(true);
+		mainProjectNameDeleteButton.setEnabled(true);
 	}
-
-	private void projectListComboBoxItemStateChanged(ItemEvent e) {
-		// TODO add your code here
-		
+	
+	private void mainProjectNameListComboBoxItemStateChanged(ItemEvent e) {
 		if (ItemEvent.SELECTED == e.getStateChange()) {
 			
-			if (projectListComboBox.getSelectedIndex() > 0) {
+			if (mainProjectNameListComboBox.getSelectedIndex() > 0) {
 				String projectName = (String)e.getItem();
-				MainProject selectedProject = projectManger.getProject(projectName);
+				MainProject selectedProject = mainProjectManger.getMainProject(projectName);
 				if (null == selectedProject) {
 					JOptionPane.showMessageDialog(mainFrame, "selectedProject is null");
 					sinnoriInstalledPathInputTextField.requestFocusInWindow();
@@ -183,6 +181,39 @@ public class FirstScreen extends JPanel {
 			}
 		}
 	}
+
+	private void projectNameAddButtonActionPerformed(ActionEvent e) {
+		// TODO add your code here
+		log.info("start");
+		String newMainProjectName = mainProjectNameTextField.getText();
+		if (null == newMainProjectName) {
+			String errorMessage = "신규 메인 프로젝트 이름을 넣어 주세요.";
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		newMainProjectName = newMainProjectName.trim();
+		mainProjectNameTextField.setText(newMainProjectName);
+		if (newMainProjectName.equals("")) {
+			String errorMessage = "신규 메인 프로젝트 이름을 다시 넣어 주세요.";
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		
+		String newMainProjectNameTrim = newMainProjectName.trim();
+		
+		if (!newMainProjectName.equals(newMainProjectNameTrim)) {
+			String errorMessage = "신규 메인 프로젝트 이름에 앞뒤로 공백을 넣을 수 없습니다.";
+			log.warn(errorMessage);
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+
+		mainProjectManger.addMainProject(newMainProjectName);		
+	}
+
 	
 
 	private void initComponents() {
@@ -201,15 +232,15 @@ public class FirstScreen extends JPanel {
 		allProjectWorkSaveLinePanel = new JPanel();
 		allProjectWorkSaveButton = new JButton();
 		projectNameInputLinePanel = new JPanel();
-		projectNameInputLabel = new JLabel();
-		projectNameInputTextField = new JTextField();
-		projectNameInputButton = new JButton();
+		mainProjectNameLabel = new JLabel();
+		mainProjectNameTextField = new JTextField();
+		projectNameAddButton = new JButton();
 		projectListLinePanel = new JPanel();
-		projectListLabel = new JLabel();
+		mainProjectListLabel = new JLabel();
 		projectListFuncPanel = new JPanel();
-		projectListComboBox = new JComboBox<>();
-		projectEditButton = new JButton();
-		projectDeleteButton = new JButton();
+		mainProjectNameListComboBox = new JComboBox<>();
+		mainProjectNameEditButton = new JButton();
+		mainProjectNameDeleteButton = new JButton();
 		hSpacer2 = new JPanel(null);
 		projectNameLinePanel = new JPanel();
 		projectNameTitleLabel = new JLabel();
@@ -309,18 +340,24 @@ public class FirstScreen extends JPanel {
 				"default, $lcgap, ${growing-button}, $lcgap, 37dlu",
 				"default"));
 
-			//---- projectNameInputLabel ----
-			projectNameInputLabel.setText("\ud504\ub85c\uc81d\ud2b8 \uc774\ub984 :");
-			projectNameInputLinePanel.add(projectNameInputLabel, CC.xy(1, 1));
+			//---- mainProjectNameLabel ----
+			mainProjectNameLabel.setText("\uba54\uc778 \ud504\ub85c\uc81d\ud2b8 \uc774\ub984 :");
+			projectNameInputLinePanel.add(mainProjectNameLabel, CC.xy(1, 1));
 
-			//---- projectNameInputTextField ----
-			projectNameInputTextField.setEnabled(false);
-			projectNameInputLinePanel.add(projectNameInputTextField, CC.xy(3, 1));
+			//---- mainProjectNameTextField ----
+			mainProjectNameTextField.setEnabled(false);
+			projectNameInputLinePanel.add(mainProjectNameTextField, CC.xy(3, 1));
 
-			//---- projectNameInputButton ----
-			projectNameInputButton.setText("\ucd94\uac00");
-			projectNameInputButton.setEnabled(false);
-			projectNameInputLinePanel.add(projectNameInputButton, CC.xy(5, 1));
+			//---- projectNameAddButton ----
+			projectNameAddButton.setText("\ucd94\uac00");
+			projectNameAddButton.setEnabled(false);
+			projectNameAddButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					projectNameAddButtonActionPerformed(e);
+				}
+			});
+			projectNameInputLinePanel.add(projectNameAddButton, CC.xy(5, 1));
 		}
 		add(projectNameInputLinePanel, CC.xy(1, 11));
 
@@ -330,42 +367,42 @@ public class FirstScreen extends JPanel {
 				"default, $lcgap, default",
 				"default"));
 
-			//---- projectListLabel ----
-			projectListLabel.setText("\uc0dd\uc131\ub41c \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
-			projectListLinePanel.add(projectListLabel, CC.xy(1, 1));
+			//---- mainProjectListLabel ----
+			mainProjectListLabel.setText("\uc0dd\uc131\ub41c \uba54\uc778 \ud504\ub85c\uc81d\ud2b8 \ubaa9\ub85d");
+			projectListLinePanel.add(mainProjectListLabel, CC.xy(1, 1));
 
 			//======== projectListFuncPanel ========
 			{
 				projectListFuncPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
-				//---- projectListComboBox ----
-				projectListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
+				//---- mainProjectNameListComboBox ----
+				mainProjectNameListComboBox.setModel(new DefaultComboBoxModel<>(new String[] {
 					"- project -"
 				}));
-				projectListComboBox.setEnabled(false);
-				projectListComboBox.addItemListener(new ItemListener() {
+				mainProjectNameListComboBox.setEnabled(false);
+				mainProjectNameListComboBox.addItemListener(new ItemListener() {
 					@Override
 					public void itemStateChanged(ItemEvent e) {
-						projectListComboBoxItemStateChanged(e);
+						mainProjectNameListComboBoxItemStateChanged(e);
 					}
 				});
-				projectListFuncPanel.add(projectListComboBox);
+				projectListFuncPanel.add(mainProjectNameListComboBox);
 
-				//---- projectEditButton ----
-				projectEditButton.setText("\ud3b8\uc9d1");
-				projectEditButton.setEnabled(false);
-				projectEditButton.addActionListener(new ActionListener() {
+				//---- mainProjectNameEditButton ----
+				mainProjectNameEditButton.setText("\ud3b8\uc9d1");
+				mainProjectNameEditButton.setEnabled(false);
+				mainProjectNameEditButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						projectEditButtonActionPerformed(e);
+						mainProjectNameEditButtonActionPerformed(e);
 					}
 				});
-				projectListFuncPanel.add(projectEditButton);
+				projectListFuncPanel.add(mainProjectNameEditButton);
 
-				//---- projectDeleteButton ----
-				projectDeleteButton.setText("\uc0ad\uc81c");
-				projectDeleteButton.setEnabled(false);
-				projectListFuncPanel.add(projectDeleteButton);
+				//---- mainProjectNameDeleteButton ----
+				mainProjectNameDeleteButton.setText("\uc0ad\uc81c");
+				mainProjectNameDeleteButton.setEnabled(false);
+				projectListFuncPanel.add(mainProjectNameDeleteButton);
 			}
 			projectListLinePanel.add(projectListFuncPanel, CC.xy(3, 1));
 		}
@@ -472,15 +509,15 @@ public class FirstScreen extends JPanel {
 	private JPanel allProjectWorkSaveLinePanel;
 	private JButton allProjectWorkSaveButton;
 	private JPanel projectNameInputLinePanel;
-	private JLabel projectNameInputLabel;
-	private JTextField projectNameInputTextField;
-	private JButton projectNameInputButton;
+	private JLabel mainProjectNameLabel;
+	private JTextField mainProjectNameTextField;
+	private JButton projectNameAddButton;
 	private JPanel projectListLinePanel;
-	private JLabel projectListLabel;
+	private JLabel mainProjectListLabel;
 	private JPanel projectListFuncPanel;
-	private JComboBox<String> projectListComboBox;
-	private JButton projectEditButton;
-	private JButton projectDeleteButton;
+	private JComboBox<String> mainProjectNameListComboBox;
+	private JButton mainProjectNameEditButton;
+	private JButton mainProjectNameDeleteButton;
 	private JPanel hSpacer2;
 	private JPanel projectNameLinePanel;
 	private JLabel projectNameTitleLabel;

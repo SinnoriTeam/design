@@ -3,12 +3,9 @@ package kr.pe.sinnori.common.config;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import kr.pe.sinnori.common.config.dependitem.MinMaxBreakChecker;
@@ -58,8 +55,8 @@ public class SinnoriConfigInfo {
 	private Hashtable<String, AbstractBreakChecker> breakCheckerHash = new Hashtable<String, AbstractBreakChecker>();
 	
 		
-	private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
-	private List<String> projectNameList = new LinkedList<String>();
+	/*private List<String> dbcpConnectionPoolNameList = new LinkedList<String>();
+	private List<String> projectNameList = new LinkedList<String>();*/
 	
 	private List<ConfigItem> dbcpPartConfigItemList = new ArrayList<ConfigItem>();
 	private List<ConfigItem> commonPartConfigItemList = new ArrayList<ConfigItem>();
@@ -73,7 +70,7 @@ public class SinnoriConfigInfo {
 		
 		projectConfigFilePathString = getProjectConfigFilePathString();
 		
-		projectNameList.add(mainProjectName);
+		//projectNameList.add(mainProjectName);
 		
 		log.info("projectName={}", mainProjectName);
 		
@@ -814,7 +811,7 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}
 	}
-	private String getProjectConfigFilePathString() {
+	public String getProjectConfigFilePathString() {
 		StringBuilder strBuilder = new StringBuilder(projectPathString);		
 		strBuilder.append(File.separator);
 		strBuilder.append("config");
@@ -924,7 +921,7 @@ public class SinnoriConfigInfo {
 		strBuilder.append("info");
 		return strBuilder.toString();
 	}
-	
+	/*
 	public void combind(Properties sourceProperties) throws ConfigErrorException {
 		makeDBCPCOnnectionPoolNameSetFromSourceProperties(sourceProperties);
 		makeProjectNameSetFromSourceProperties(sourceProperties);
@@ -942,7 +939,7 @@ public class SinnoriConfigInfo {
 		String dbcpConnectionPoolNameListValue = sourceProperties.getProperty(DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING);
 		
 		if (null == dbcpConnectionPoolNameListValue) {
-			/** DBCP 연결 폴 이름 목록을 지정하는 키가 없을 경우 */
+			*//** DBCP 연결 폴 이름 목록을 지정하는 키가 없을 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("] has no a dbcp connection pool name list").toString();
@@ -965,7 +962,7 @@ public class SinnoriConfigInfo {
 		}		
 		
 		if (tempNameSet.size() != dbcpConnectionPoolNameList.size()) {
-			/** DBCP 연결 폴 이름 목록의 이름들중 중복된 것이 있는 경우 */
+			*//** DBCP 연결 폴 이름 목록의 이름들중 중복된 것이 있는 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
 			.append("]::dbcp connection pool name list has one more same thing").toString();
@@ -985,7 +982,7 @@ public class SinnoriConfigInfo {
 		
 		
 		if (null == projectNameListValue) {
-			/** 프로젝트 목록을 지정하는 키가 없을 경우 */
+			*//** 프로젝트 목록을 지정하는 키가 없을 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("] has no a project list").toString();
@@ -994,7 +991,7 @@ public class SinnoriConfigInfo {
 		
 		String[] projectNameArrray = projectNameListValue.split(",");
 		if (0 == projectNameArrray.length) {
-			/** 프로젝트 목록 값으로 부터 프로젝트 목록을 추출할 수 없는 경우 */
+			*//** 프로젝트 목록 값으로 부터 프로젝트 목록을 추출할 수 없는 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
 			.append("]:: the project list is empty").toString();
@@ -1019,7 +1016,7 @@ public class SinnoriConfigInfo {
 		}
 		
 		if (! tempNameSet.contains(mainProjectName)) {
-			/** 프로젝트 목록에 지정된 메인 프로젝트에 대한 정보가 없는 경우 */
+			*//** 프로젝트 목록에 지정된 메인 프로젝트에 대한 정보가 없는 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
 			.append("]:: the project list has no main project").toString();
@@ -1029,7 +1026,7 @@ public class SinnoriConfigInfo {
 		}
 		
 		if (tempNameSet.size() != projectNameList.size()) {
-			/** 프로젝트 목록의 이름들중 중복된 것이 있는 경우 */
+			*//** 프로젝트 목록의 이름들중 중복된 것이 있는 경우 *//*
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)					
 			.append("]::project name list has one more same thing").toString();
@@ -1038,8 +1035,9 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}		
 	}
+	*/
 	
-	public void addSubProjectName(String subProjectName) throws ConfigErrorException {
+	/*public void addSubProjectName(String subProjectName) throws ConfigErrorException {
 		if (null == subProjectName) {
 			String errorMessage = new StringBuilder("project config file[")
 			.append(projectConfigFilePathString)						
@@ -1104,7 +1102,7 @@ public class SinnoriConfigInfo {
 	public void removeDBCPConnectionPoolName(String selectedDBCPConnPoolName) {
 		dbcpConnectionPoolNameList.remove(selectedDBCPConnPoolName);
 	}
-	
+	*/
 	public SequencedProperties getSequencedProperties() {
 		SequencedProperties sequencedProperties = new SequencedProperties();
 		
@@ -1247,10 +1245,13 @@ public class SinnoriConfigInfo {
 			if (firstToken.equals("dbcp")) {
 				if (tokens.hasMoreTokens()) {
 					String secondToken = tokens.nextToken();
+					if (secondToken.equals("connection_pool_name_list")) {
+						return null;
+					}
 					
 					StringBuilder itemIDBuilder = new StringBuilder();
 					
-					if (dbcpConnectionPoolNameList.contains(secondToken)) {
+					/*if (dbcpConnectionPoolNameList.contains(secondToken)) {
 						if (tokens.hasMoreTokens()) {
 							itemIDBuilder.append(tokens.nextToken());
 						}
@@ -1265,6 +1266,14 @@ public class SinnoriConfigInfo {
 							itemIDBuilder.append(".");
 							itemIDBuilder.append(tokens.nextToken());
 						}
+					}*/
+					
+					if (tokens.hasMoreTokens()) {
+						itemIDBuilder.append(tokens.nextToken());
+					}
+					while (tokens.hasMoreTokens()) {
+						itemIDBuilder.append(".");
+						itemIDBuilder.append(tokens.nextToken());
 					}
 					
 					// FIXME!
@@ -1274,7 +1283,11 @@ public class SinnoriConfigInfo {
 			} else if (firstToken.equals("project")) {
 				if (tokens.hasMoreTokens()) {
 					String secondToken = tokens.nextToken();
-					if (projectNameList.contains(secondToken)) {
+					if (secondToken.equals("name_list")) {
+						return null;
+					}
+					
+					/*if (projectNameList.contains(secondToken)) {
 						StringBuilder itemIDBuilder = new StringBuilder();
 						if (tokens.hasMoreTokens()) {
 							itemIDBuilder.append(tokens.nextToken());
@@ -1286,7 +1299,19 @@ public class SinnoriConfigInfo {
 						}
 						
 						return itemIDBuilder.toString();
+					}*/
+					
+					StringBuilder itemIDBuilder = new StringBuilder();
+					if (tokens.hasMoreTokens()) {
+						itemIDBuilder.append(tokens.nextToken());
 					}
+					
+					while (tokens.hasMoreTokens()) {
+						itemIDBuilder.append(".");
+						itemIDBuilder.append(tokens.nextToken());
+					}
+					
+					return itemIDBuilder.toString();
 				}			
 				
 			} else {
@@ -1380,7 +1405,10 @@ public class SinnoriConfigInfo {
 	 * 
 	 * @throws ConfigKeyNotFoundException 환경 변수 값을 검사하기 위한 정보에 등록된 키가 없을 경우 던지는 예외
 	 */
-	private void checkOnlyAllKeyValidation(Properties sourceProperties) throws ConfigKeyNotFoundException {
+	@SuppressWarnings("unused")
+	private void checkOnlyAllKeyValidation(Properties sourceProperties,
+			List<String> dbcpConnectionPoolNameList,
+			List<String> projectNameList) throws ConfigKeyNotFoundException {
 		ConfigItem itemConfig = null;
 		
 		/**

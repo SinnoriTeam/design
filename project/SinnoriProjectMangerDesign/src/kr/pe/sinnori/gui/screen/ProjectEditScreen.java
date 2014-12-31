@@ -192,7 +192,7 @@ public class ProjectEditScreen extends JPanel {
 		
 		{
 			// projectName2ConfigItemTableModelHash
-			List<String> projectNameList = sinnoriConfigInfo.getProjectNameList();
+			List<String> subProjectNameList = mainProject.getSubProjectNameList();
 			
 			List<ConfigItem> projectPartConfigItemList = 
 					sinnoriConfigInfo.getProjectPartConfigItemList();
@@ -200,15 +200,16 @@ public class ProjectEditScreen extends JPanel {
 				
 			
 			projectName2ConfigItemTableModelHash = new HashMap<String, ConfigItemTableModel>();
-			for (String projectName : projectNameList) {
-				
+			
+			{
+				String mainProjectName = mainProject.getMainProjectName();
 				Object[][] values = new Object[projectPartConfigItemListSize][titlesOfConfigItemTable.length];
 				for (int i=0; i < values.length; i++) {
 					ConfigItem configItem = projectPartConfigItemList.get(i);
 					String itemID = configItem.getItemID();
 					
 					String targetKey = new StringBuilder("project.")
-					.append(projectName)
+					.append(mainProjectName)
 					.append(".")
 					.append(itemID).toString();
 					
@@ -221,9 +222,34 @@ public class ProjectEditScreen extends JPanel {
 					values[i][1] = configItemCellValue;
 				}
 				
-				ConfigItemTableModel oneProejctConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+				ConfigItemTableModel mainProjectPartConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
 				
-				projectName2ConfigItemTableModelHash.put(projectName, oneProejctConfigItemTableModel);				
+				projectName2ConfigItemTableModelHash.put(mainProjectName, mainProjectPartConfigItemTableModel);	
+			}
+			
+			for (String subProjectName : subProjectNameList) {				
+				Object[][] values = new Object[projectPartConfigItemListSize][titlesOfConfigItemTable.length];
+				for (int i=0; i < values.length; i++) {
+					ConfigItem configItem = projectPartConfigItemList.get(i);
+					String itemID = configItem.getItemID();
+					
+					String targetKey = new StringBuilder("project.")
+					.append(subProjectName)
+					.append(".")
+					.append(itemID).toString();
+					
+					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+							targetKey, 
+							sourceSequencedProperties.getProperty(targetKey),
+							sinnoriConfigInfo, mainFrame);
+							
+					values[i][0] = targetKey;
+					values[i][1] = configItemCellValue;
+				}
+				
+				ConfigItemTableModel subProjectPartConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+				
+				projectName2ConfigItemTableModelHash.put(subProjectName, subProjectPartConfigItemTableModel);				
 			}
 		}
 		
@@ -242,11 +268,67 @@ public class ProjectEditScreen extends JPanel {
 			mainProjectConfigScrollPane.repaint();
 		}
 	}
+	
+	private void projectWorkSaveButtonActionPerformed(ActionEvent e) {
+		// TODO add your code here
+	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
 		WindowManger.getInstance().changeProjectEditScreenToFirstScreen();
 	}
 
+	private void subProjectNameAddButtonActionPerformed(ActionEvent e) {
+		String mainProjectName = mainProject.getMainProjectName();
+		
+		String newSubProjectName = subProjectNameTextField.getText();
+		if (newSubProjectName.equals(mainProjectName)) {
+			String errorMessage = 
+					String.format("입력한 서브 프포르젝트 이름[%s]은 메인 프로젝트 이름과 동일합니다. 다른 이름을 넣어주세요.", newSubProjectName);
+			subProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		List<String> subProjectNameList = mainProject.getSubProjectNameList();
+		if (subProjectNameList.contains(newSubProjectName)) {
+			String errorMessage = 
+					String.format("입력한 서브 프포르젝트 이름[%s]은 기존에 입력한 서브 프로젝트 이름입니다. 다른 이름을 넣어주세요.", newSubProjectName);
+			subProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+
+		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
+		List<ConfigItem> projectPartConfigItemList = sinnoriConfigInfo.getProjectPartConfigItemList();
+		int projectPartConfigItemListSize = projectPartConfigItemList.size();
+		Object[][] values = new Object[projectPartConfigItemListSize][titlesOfConfigItemTable.length];
+		for (int i=0; i < values.length; i++) {
+			ConfigItem configItem = projectPartConfigItemList.get(i);
+			String itemID = configItem.getItemID();
+			String defaultValue = configItem.getDefaultValue();
+			
+			String targetKey = new StringBuilder("project.")
+			.append(newSubProjectName)
+			.append(".")
+			.append(itemID).toString();
+			
+			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+					targetKey, 
+					defaultValue,
+					sinnoriConfigInfo, mainFrame);
+					
+			values[i][0] = targetKey;
+			values[i][1] = configItemCellValue;
+		}
+		
+		ConfigItemTableModel subProjectPartConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
+		
+		mainProject.addSubProjectName(newSubProjectName);
+		projectName2ConfigItemTableModelHash.put(newSubProjectName, subProjectPartConfigItemTableModel);
+		subProjectNameListComboBox.addItem(newSubProjectName);
+		
+		JOptionPane.showMessageDialog(mainFrame, String.format("Adding a new sub project name[%s] is success", newSubProjectName));	
+	}
+	
 	private void subProjectEditButtonActionPerformed(ActionEvent e) {
 		int selectedInx = subProjectNameListComboBox.getSelectedIndex();
 		if (selectedInx <= 0) {
@@ -262,11 +344,25 @@ public class ProjectEditScreen extends JPanel {
 			SubProjectPartConfigPopup popup = new SubProjectPartConfigPopup(mainFrame, 
 					mainProjectName, selectedSubProjectName, subProjectPartConfigTableModel);
 			popup.setTitle("Sub Project Part Conifg");
-			// popup.setSize(740, 220);
+			popup.setSize(740, 380);
 			popup.setVisible(true);
 		}
 	}
-
+	
+	private void subProjectNameDeleteButtonActionPerformed(ActionEvent e) {
+		int selectedInx = subProjectNameListComboBox.getSelectedIndex();
+		if (selectedInx <= 0) {
+			String errorMessage = "Please, choose Sub Project Name";
+			subProjectNameListComboBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);
+		} else {
+			String selectedSubProjectName = subProjectNameListComboBox.getItemAt(selectedInx);			
+			mainProject.removeSubProjectName(selectedSubProjectName);
+			projectName2ConfigItemTableModelHash.remove(selectedSubProjectName);
+			subProjectNameListComboBox.removeItemAt(selectedInx);
+		}
+	}		
+	
 	private void dbcpConnPoolNameEditButtonActionPerformed(ActionEvent e) {
 		int selectedInx = dbcpConnPoolNameListComboBox.getSelectedIndex();
 		if (selectedInx <= 0) {
@@ -287,8 +383,7 @@ public class ProjectEditScreen extends JPanel {
 		}		
 	}
 
-	private void dbcpConnPoolNameAddButtonActionPerformed(ActionEvent e) {		
-		// TODO add your code here
+	private void dbcpConnPoolNameAddButtonActionPerformed(ActionEvent e) {
 		String newDBCPConnPoolName = dbcpConnPoolNameTextField.getText();
 		
 		List<String> dbcpConnPoolNameList = this.mainProject.getDBCPConnPoolNameList();
@@ -302,7 +397,7 @@ public class ProjectEditScreen extends JPanel {
 		
 		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
 		
-		sinnoriConfigInfo.addDBCPConnectionPoolName(newDBCPConnPoolName);		
+				
 		
 		List<ConfigItem> dbcpPartConfigItemList = sinnoriConfigInfo.getDBCPPartConfigItemList();
 		int dbcpPartConfigItemListSize = dbcpPartConfigItemList.size();
@@ -311,17 +406,22 @@ public class ProjectEditScreen extends JPanel {
 		for (int i=0; i < values.length; i++) {
 			ConfigItem configItem = dbcpPartConfigItemList.get(i);
 			String itemID = configItem.getItemID();
+			String defaultValue = configItem.getDefaultValue();
 			
 			String targetKey = new StringBuilder("dbcp.")
 			.append(newDBCPConnPoolName)
 			.append(".")
 			.append(itemID).toString();
 			
+			if (itemID.equals("confige_file.value")) {
+				defaultValue = sinnoriConfigInfo.getDefaultValueOfDBCPConnPoolConfigFile(newDBCPConnPoolName);
+			}
+			
 			log.info("dbcpConnPoolName={}, targetKey={}", newDBCPConnPoolName, targetKey);
 						
 			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
 					targetKey, 
-					sinnoriConfigInfo.getDefaultValueOfDBCPConnPoolConfigFile(newDBCPConnPoolName),
+					defaultValue,
 					sinnoriConfigInfo, mainFrame);
 					
 			values[i][0] = targetKey;
@@ -330,11 +430,11 @@ public class ProjectEditScreen extends JPanel {
 		
 		ConfigItemTableModel dbcpConfigItemTableModel = new ConfigItemTableModel(values, titlesOfConfigItemTable, columnTypesOfConfigItemTable);
 		
-		dbcpConnPoolName2ConfigItemTableModelHash.put(newDBCPConnPoolName, dbcpConfigItemTableModel);
-		
+		mainProject.addDBCPConnectionPoolName(newDBCPConnPoolName);
+		dbcpConnPoolName2ConfigItemTableModelHash.put(newDBCPConnPoolName, dbcpConfigItemTableModel);		
 		dbcpConnPoolNameListComboBox.addItem(newDBCPConnPoolName);		
 		
-		JOptionPane.showMessageDialog(mainFrame, String.format("Adding a new DBCP Connection Pool Name[{}] is success", newDBCPConnPoolName));	
+		JOptionPane.showMessageDialog(mainFrame, String.format("Adding a new DBCP Connection Pool Name[%s] is success", newDBCPConnPoolName));	
 	}
 
 	private void dbcpConnPoolNameDeleteButtonActionPerformed(ActionEvent e) {
@@ -346,14 +446,13 @@ public class ProjectEditScreen extends JPanel {
 		} else {
 			String selectedDBCPConnPoolName = dbcpConnPoolNameListComboBox.getItemAt(selectedInx);
 			
-			SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
-			sinnoriConfigInfo.removeDBCPConnectionPoolName(selectedDBCPConnPoolName);
-			
+			mainProject.removeDBCPConnectionPoolName(selectedDBCPConnPoolName);			
 			dbcpConnPoolName2ConfigItemTableModelHash.remove(selectedDBCPConnPoolName);
 			dbcpConnPoolNameListComboBox.removeItemAt(selectedInx);
 		}
 	}
 
+		
 	private void initComponents() {
 		// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
 		// Generated using JFormDesigner non-commercial license
@@ -379,7 +478,7 @@ public class ProjectEditScreen extends JPanel {
 		prevButton = new JButton();
 		subProjectNameInputLinePanel = new JPanel();
 		subProjectNameInputLabel = new JLabel();
-		subProjectNameInputTextField = new JTextField();
+		subProjectNameTextField = new JTextField();
 		subProjectNameAddButton = new JButton();
 		subProjectListLinePanel = new JPanel();
 		subProjectNameListLabel = new JLabel();
@@ -407,7 +506,7 @@ public class ProjectEditScreen extends JPanel {
 		//======== this ========
 		setLayout(new FormLayout(
 			"[443dlu,pref]:grow",
-			"11*(default, $lgap), 104dlu, $lgap, default, $lgap, 116dlu, $lgap, default"));
+			"11*(default, $lgap), 104dlu, $lgap, default, $lgap, 104dlu, $lgap, default"));
 		/** Post-initialization Code start */
 		UIManager.put("FileChooser.readOnly", Boolean.TRUE); 
 		chooser = new JFileChooser();
@@ -511,6 +610,12 @@ public class ProjectEditScreen extends JPanel {
 
 			//---- projectWorkSaveButton ----
 			projectWorkSaveButton.setText("\ubcc0\uacbd \ub0b4\uc5ed \uc800\uc7a5");
+			projectWorkSaveButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					projectWorkSaveButtonActionPerformed(e);
+				}
+			});
 			projectWorkSaveLinePanel.add(projectWorkSaveButton);
 
 			//---- prevButton ----
@@ -534,10 +639,16 @@ public class ProjectEditScreen extends JPanel {
 			//---- subProjectNameInputLabel ----
 			subProjectNameInputLabel.setText("Sub Project Name :");
 			subProjectNameInputLinePanel.add(subProjectNameInputLabel, CC.xy(1, 1));
-			subProjectNameInputLinePanel.add(subProjectNameInputTextField, CC.xy(3, 1));
+			subProjectNameInputLinePanel.add(subProjectNameTextField, CC.xy(3, 1));
 
 			//---- subProjectNameAddButton ----
 			subProjectNameAddButton.setText("add");
+			subProjectNameAddButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					subProjectNameAddButtonActionPerformed(e);
+				}
+			});
 			subProjectNameInputLinePanel.add(subProjectNameAddButton, CC.xy(5, 1));
 		}
 		add(subProjectNameInputLinePanel, CC.xy(1, 13));
@@ -576,6 +687,12 @@ public class ProjectEditScreen extends JPanel {
 
 				//---- subProjectNameDeleteButton ----
 				subProjectNameDeleteButton.setText("remove");
+				subProjectNameDeleteButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						subProjectNameDeleteButtonActionPerformed(e);
+					}
+				});
 				subProjectNameListFuncPanel.add(subProjectNameDeleteButton);
 			}
 			subProjectListLinePanel.add(subProjectNameListFuncPanel, CC.xy(5, 1));
@@ -749,7 +866,7 @@ public class ProjectEditScreen extends JPanel {
 	private JButton prevButton;
 	private JPanel subProjectNameInputLinePanel;
 	private JLabel subProjectNameInputLabel;
-	private JTextField subProjectNameInputTextField;
+	private JTextField subProjectNameTextField;
 	private JButton subProjectNameAddButton;
 	private JPanel subProjectListLinePanel;
 	private JLabel subProjectNameListLabel;

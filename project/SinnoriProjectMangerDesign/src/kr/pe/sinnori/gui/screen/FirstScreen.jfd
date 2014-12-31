@@ -94,22 +94,23 @@ new FormModel {
 			} ) {
 				name: "projectNameInputLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
-					name: "projectNameInputLabel"
-					"text": "프로젝트 이름 :"
+					name: "mainProjectNameLabel"
+					"text": "메인 프로젝트 이름 :"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
 				} )
 				add( new FormComponent( "javax.swing.JTextField" ) {
-					name: "projectNameInputTextField"
+					name: "mainProjectNameTextField"
 					"enabled": false
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "projectNameInputButton"
+					name: "projectNameAddButton"
 					"text": "추가"
 					"enabled": false
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "projectNameAddButtonActionPerformed", true ) )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 5
 					"gridY": 1
@@ -123,8 +124,8 @@ new FormModel {
 			} ) {
 				name: "projectListLinePanel"
 				add( new FormComponent( "javax.swing.JLabel" ) {
-					name: "projectListLabel"
-					"text": "생성된 프로젝트 목록"
+					name: "mainProjectListLabel"
+					"text": "생성된 메인 프로젝트 목록"
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 1
 					"gridY": 1
@@ -135,22 +136,22 @@ new FormModel {
 				} ) {
 					name: "projectListFuncPanel"
 					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "projectListComboBox"
+						name: "mainProjectNameListComboBox"
 						"model": new javax.swing.DefaultComboBoxModel {
 							selectedItem: "- project -"
 							addElement( "- project -" )
 						}
 						"enabled": false
-						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "projectListComboBoxItemStateChanged", true ) )
+						addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "mainProjectNameListComboBoxItemStateChanged", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "projectEditButton"
+						name: "mainProjectNameEditButton"
 						"text": "편집"
 						"enabled": false
-						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "projectEditButtonActionPerformed", true ) )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "mainProjectNameEditButtonActionPerformed", true ) )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "projectDeleteButton"
+						name: "mainProjectNameDeleteButton"
 						"text": "삭제"
 						"enabled": false
 					} )

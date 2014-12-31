@@ -2,8 +2,10 @@ package kr.pe.sinnori.gui.lib;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
@@ -17,7 +19,9 @@ public class MainProject {
 	
 	private String mainProjectName;
 	private String projectPathString;
-	private SequencedProperties sourceSequencedProperties;	
+	private SequencedProperties sourceSequencedProperties;
+	
+	private String projectConfigFilePathString = null;
 	
 	
 	private SinnoriConfigInfo sinnoriConfigInfo = null;
@@ -36,7 +40,8 @@ public class MainProject {
 	 * @param sourceSequencedProperties
 	 * @throws ConfigErrorException
 	 */
-	public MainProject(String mainProjectName, String projectPathString, SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
+	public MainProject(String mainProjectName, String projectPathString, 
+			SequencedProperties sourceSequencedProperties) throws ConfigErrorException {
 		this.mainProjectName = mainProjectName;
 		this.projectPathString = projectPathString;
 		this.sourceSequencedProperties = sourceSequencedProperties;		
@@ -44,11 +49,13 @@ public class MainProject {
 		
 		sinnoriConfigInfo = new SinnoriConfigInfo(mainProjectName, projectPathString);
 		
-		sinnoriConfigInfo.combind(sourceSequencedProperties);		
+		projectConfigFilePathString = sinnoriConfigInfo.getProjectConfigFilePathString();
+		
+		// sinnoriConfigInfo.combind(sourceSequencedProperties);		
 		
 		String antPropertiesFilePathString = getAntPropertiesFilePath();
 		
-		SequencedProperties antProperties = ProjectManger.getSourceSequencedProperties(antPropertiesFilePathString);
+		SequencedProperties antProperties = MainProjectManger.getSourceSequencedProperties(antPropertiesFilePathString);
 		
 		checkAntProperties(antProperties);
 		
@@ -56,23 +63,110 @@ public class MainProject {
 		
 		checkSeverBuild();		
 		checkClientBuild();
+			
 		
-		// subProjectNameList.add("- 서브 프로젝트 -");
+		makeProjectNameSetFromSourceProperties(sourceSequencedProperties);
+		makeDBCPCOnnectionPoolNameSetFromSourceProperties(sourceSequencedProperties);		
+	}
+	
+	private void makeDBCPCOnnectionPoolNameSetFromSourceProperties(Properties sourceProperties) throws ConfigErrorException {
+		String dbcpConnPoolNameListValue = sourceProperties.getProperty(SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING);
 		
-		
-		List<String> projectNameList = sinnoriConfigInfo.getProjectNameList();
-		
-		for (String projectName : projectNameList) {
-			if (!mainProjectName.equals(projectName)) {
-				subProjectNameList.add(projectName);
-			}
+		if (null == dbcpConnPoolNameListValue) {
+			/** DBCP 연결 폴 이름 목록을 지정하는 키가 없을 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)						
+			.append("] has no a dbcp connection pool name list").toString();
+			throw new ConfigErrorException(errorMessage);
 		}
 		
-		// dbcpConnPoolNameList.add("- dbcp connection pool name -");
-		List<String> dbcpConnPoolNameListOfConfig = sinnoriConfigInfo.getDBCPConnectionPoolNameList();
-		for (String dbcpConnPoolName : dbcpConnPoolNameListOfConfig) {
-			dbcpConnPoolNameList.add(dbcpConnPoolName);
+		String[] dbcpConnectionPoolNameArrray = dbcpConnPoolNameListValue.split(",");
+		
+		dbcpConnPoolNameList.clear();
+		
+		Set<String> tempNameSet = new HashSet<String>();
+		
+		for (String dbcpConnectionPoolNameOfList : dbcpConnectionPoolNameArrray) {
+			dbcpConnectionPoolNameOfList = dbcpConnectionPoolNameOfList.trim();
+			
+			if (dbcpConnectionPoolNameOfList.equals("")) continue;
+			
+			tempNameSet.add(dbcpConnectionPoolNameOfList);
+			dbcpConnPoolNameList.add(dbcpConnectionPoolNameOfList);
+		}		
+		
+		if (tempNameSet.size() != dbcpConnPoolNameList.size()) {
+			/** DBCP 연결 폴 이름 목록의 이름들중 중복된 것이 있는 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)					
+			.append("]::dbcp connection pool name list has one more same thing").toString();
+			
+			log.warn(errorMessage);
+			
+			throw new ConfigErrorException(errorMessage);
 		}
+		
+	}
+	
+	private void makeProjectNameSetFromSourceProperties(Properties sourceProperties) throws ConfigErrorException {
+		String projectNameListValue = sourceProperties.getProperty(SinnoriConfigInfo.PROJECT_NAME_LIST_KEY_STRING);
+		
+		log.info("mainProjectName={}, projectNameListValue={}", 
+				mainProjectName, projectNameListValue);		
+		
+		if (null == projectNameListValue) {
+			/** 프로젝트 목록을 지정하는 키가 없을 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)						
+			.append("] has no a project list").toString();
+			throw new ConfigErrorException(errorMessage);
+		}
+		
+		String[] projectNameArrray = projectNameListValue.split(",");
+		if (0 == projectNameArrray.length) {
+			/** 프로젝트 목록 값으로 부터 프로젝트 목록을 추출할 수 없는 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)					
+			.append("]:: the project list is empty").toString();
+			
+			log.warn(errorMessage);
+			
+			throw new ConfigErrorException(errorMessage);
+		}
+
+		subProjectNameList.clear();
+		Set<String> tempNameSet = new HashSet<String>();		
+		
+		for (String projectNameOfList : projectNameArrray) {
+			projectNameOfList = projectNameOfList.trim();
+			
+			if (projectNameOfList.equals("")) continue;			
+			
+			tempNameSet.add(projectNameOfList);
+			subProjectNameList.add(projectNameOfList);
+		}
+		
+		if (! tempNameSet.contains(mainProjectName)) {
+			/** 프로젝트 목록에 지정된 메인 프로젝트에 대한 정보가 없는 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)						
+			.append("]:: the project list has no main project").toString();
+			
+			log.warn(errorMessage);
+			throw new ConfigErrorException(errorMessage);
+		}
+		
+		if (tempNameSet.size() != subProjectNameList.size()) {
+			/** 프로젝트 목록의 이름들중 중복된 것이 있는 경우 */
+			String errorMessage = new StringBuilder("project config file[")
+			.append(projectConfigFilePathString)					
+			.append("]::project name list has one more same thing").toString();
+			
+			log.warn(errorMessage);
+			throw new ConfigErrorException(errorMessage);
+		}
+		
+		subProjectNameList.remove(mainProjectName);
 	}
 	
 	private void checkSeverBuild() throws ConfigErrorException {
@@ -307,8 +401,41 @@ public class MainProject {
 	public List<String> getSubProjectNameList() {
 		return subProjectNameList;
 	}
+	
+	public void addSubProjectName(String newSubProjectName) {
+		if (mainProjectName.equals(newSubProjectName)) {
+			String errorMessage = String.format("메인 프로젝트 이름[%s]과 같은 이름입니다.", newSubProjectName);
+			log.warn(errorMessage);
+			throw new RuntimeException(errorMessage);
+		}
+		
+		if (subProjectNameList.contains(newSubProjectName)) {
+			String errorMessage = String.format("중복된 이름[%s]을 가진 서브 프로젝트 이름이 있습니다.", newSubProjectName);
+			log.warn(errorMessage);
+			throw new RuntimeException(errorMessage);
+		}
+		
+		subProjectNameList.add(newSubProjectName);
+	}
+	public void removeSubProjectName(String selectedSubProjectName) {
+		subProjectNameList.remove(selectedSubProjectName);
+	}
+	
 	public List<String> getDBCPConnPoolNameList() {
 		return dbcpConnPoolNameList;
 	}
 	
+	public void addDBCPConnectionPoolName(String newDBCPConnPoolName) {
+		if (dbcpConnPoolNameList.contains(newDBCPConnPoolName)) {
+			String errorMessage = String.format("중복된 이름[%s]을 가진 DBCP 연결 폴 이름이 있습니다.", newDBCPConnPoolName);
+			log.warn(errorMessage);
+			throw new RuntimeException(errorMessage);
+		}
+		
+		dbcpConnPoolNameList.add(newDBCPConnPoolName);
+	}
+	
+	public void removeDBCPConnectionPoolName(String selectedDBCPConnPoolName) {
+		dbcpConnPoolNameList.remove(selectedDBCPConnPoolName);
+	}
 }
