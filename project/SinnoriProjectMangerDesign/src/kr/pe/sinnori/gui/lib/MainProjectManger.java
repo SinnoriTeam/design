@@ -149,7 +149,7 @@ public class MainProjectManger {
 		return mainProjectList;
 	}
 	
-	public void addMainProject(String newMainProjectName) {
+	public void addMainProject(String newMainProjectName) throws ConfigErrorException {
 		if (null == newMainProjectName) {
 			String errorMessage = "신규 메인 프로젝트 이름을 넣어 주세요.";
 			log.warn(errorMessage);
@@ -180,76 +180,25 @@ public class MainProjectManger {
 			if (!projectPath.exists()) {
 				String errorMessage = String.format("신규 메인 프로젝트 디렉토리[%s] 생성 실패", projectPathString);
 				log.warn(errorMessage);
-				throw new RuntimeException(errorMessage);
+				throw new ConfigErrorException(errorMessage);
 			}			
 		}
 		
 		if (!projectPath.canRead()) {
 			String errorMessage = String.format("신규 메인 프로젝트 디렉토리[%s] 읽기 권한 없음", projectPathString);
 			log.warn(errorMessage);
-			throw new RuntimeException(errorMessage);
+			throw new ConfigErrorException(errorMessage);
 		}
 		
 		if (!projectPath.canWrite()) {
 			String errorMessage = String.format("신규 메인 프로젝트 디렉토리[%s] 쓰기 권한 없음", projectPathString);
 			log.warn(errorMessage);
-			throw new RuntimeException(errorMessage);
+			throw new ConfigErrorException(errorMessage);
 		}
 		
-		/** ant.properties */
-		String antFilePathString = new StringBuilder(projectPathString)
-		.append(File.separator).append("ant.properties").toString();
-		
-		// FileUtils fileUtils = new FileUtils();
 		
 		
-		File antFile = new File(antFilePathString);
-				
-		FileOutputStream fos = null;
-		try {
-			fos = FileUtils.openOutputStream(antFile);
-			
-			SequencedProperties antPropeties = new SequencedProperties();
-			antPropeties.put("is.tomcat", "false");
-			antPropeties.put("tomcat.servletlib", "D:\\apache-tomcat-7.0.57\\lib");
-			antPropeties.put("java.debug", "true");
-			
-			antPropeties.store(fos, String.format("Project[%s]'s ant properties file", newMainProjectName));
-		} catch (Exception e) {
-			log.warn("fail to create the ant properties file[{}], errorMessage={}", antFilePathString, e.getMessage());
-		} finally {
-			if (null != fos) {
-				try {
-					fos.close();
-				} catch(Exception e) {
-					log.warn("fail to close the file output stream of the ant properties file[{}], errorMessage={}", antFilePathString, e.getMessage());
-				}
-			}
-		}
-		
-		String projectConfigFilePathString = getProjectConfigFilePathStringFromProjectPathString(projectPathString);
-		
-		//FileOutputStream fos = null;
-		try {
-			fos = FileUtils.openOutputStream(antFile);
-			
-			SequencedProperties antPropeties = new SequencedProperties();
-			antPropeties.put("is.tomcat", "false");
-			antPropeties.put("tomcat.servletlib", "D:\\apache-tomcat-7.0.57\\lib");
-			antPropeties.put("java.debug", "true");
-			
-			antPropeties.store(fos, String.format("Project[%s]'s ant properties file", newMainProjectName));
-		} catch (Exception e) {
-			log.warn("fail to create the ant properties file[{}], errorMessage={}", antFilePathString, e.getMessage());
-		} finally {
-			if (null != fos) {
-				try {
-					fos.close();
-				} catch(Exception e) {
-					log.warn("fail to close the file output stream of the ant properties file[{}], errorMessage={}", antFilePathString, e.getMessage());
-				}
-			}
-		}
+		MainProject mainProject = new MainProject(newMainProjectName, projectPathString);
 		
 	}
 }

@@ -74,9 +74,18 @@ public class ConfigItemCellValue extends JPanel {
 			targetItemValue = defaultValue;
 			log.info("targetKey[{}] is not found so change deault value[{}]", targetKey, defaultValue);
 		} else {
-			if (targetItemValue.equals("")) {
+			/**
+			 * 설정 파일의 항목 정보를 구성할때 디폴트 값 검사를 수행하는 항목만 값이 빈 문자열일 경우 디폴트 값으로 설정.
+			 * 디폴트 값 검사를 수행한다는 의미는 2가지를 내포한다.
+			 * 첫번째 항목 정보를 구성할때의 지정한 디폴트 값이 올바른지 검사를 수행할 수 있다는것이며
+			 * 마지막 두번째 의미 있는 값으로 지정하겠다는 의도를 갖는다.
+			 * 
+			 * 즉 디폴트 값 검사를 수행할 경우에는 의미있는 값 지정하기 바라기 때문에 빈문자열을 허용하지 않는다.
+			 * 반면에 디폴트 값 검사를 수행하지 않는 경우 빈문자열은 의도한건지 의도하지 않는건지 불명확하다.
+			 */
+			if (targetItemValue.equals("") && configItem.isDefaultValidation()) {
 				targetItemValue = defaultValue;
-				log.info("targetKey[{}]'s value is a empty string so change deault value[{}]", targetKey, defaultValue);
+				log.info("targetKey[{}]'s value is a empty string and the default validation is true so change deault value[{}]", targetKey, defaultValue);
 			}
 		}
 		

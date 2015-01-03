@@ -19,6 +19,7 @@ import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageInfoXML
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMessageProtocol;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxInteger;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfMinMaxLong;
+import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoCheck;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfNoNullAndEmptyString;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfPath;
 import kr.pe.sinnori.common.config.itemvalidator.ItemValueGetterOfSessionKeyRSAKeypairPath;
@@ -792,7 +793,16 @@ public class SinnoriConfigInfo {
 					"서버 동적 클래스 APP-INF 경로",
 					getDefaultValueOfAPPINFPath(), false, 
 					new ItemValueGetterOfPath());
-			addConfigItem(configItem);		
+			addConfigItem(configItem);
+			
+			targetItemID = getProjectServerPartSubKeyName("classloader.mybatis_config_file_relative_path");
+			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
+					ConfigItem.ConfigItemViewType.TEXT,
+					targetItemID,
+					"ClassLoader#getResourceAsStream 의 구현 이며 <APP-INF>/resources 경로 기준으로 읽어오며 구별자가 '/' 문자로된 상대 경로로 기술되어야 한다.",
+					"kr/pe/sinnori/impl/mybatis/mybatisConfig.xml", false, 
+					new ItemValueGetterOfNoCheck());
+			addConfigItem(configItem);
 			/*
 			breakCheckerHash.put(targetItemID, 
 					new  ClassLoaderResourceFileBreakChecker(targetItemID, 

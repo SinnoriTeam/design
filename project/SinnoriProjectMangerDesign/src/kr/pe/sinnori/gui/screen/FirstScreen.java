@@ -211,7 +211,16 @@ public class FirstScreen extends JPanel {
 			return;
 		}
 
-		mainProjectManger.addMainProject(newMainProjectName);		
+		try {
+			mainProjectManger.addMainProject(newMainProjectName);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = new StringBuilder("메인 프로젝트[")
+			.append(newMainProjectName).append("] 신규 추가 실패::").append(e1.getMessage()).toString();
+			log.warn(errorMessage);
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}		
 	}
 
 	

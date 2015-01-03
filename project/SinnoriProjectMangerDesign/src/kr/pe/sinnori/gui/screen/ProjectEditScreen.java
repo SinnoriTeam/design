@@ -271,6 +271,12 @@ public class ProjectEditScreen extends JPanel {
 	
 	private void projectWorkSaveButtonActionPerformed(ActionEvent e) {
 		// TODO add your code here
+		boolean isAppClient = appClientCheckBox.isSelected();
+		boolean isWebClient = webClientCheckBox.isSelected();
+		// servletEnginLibinaryPathTextField
+		if (isAppClient) {
+			
+		}
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
