@@ -220,7 +220,34 @@ public class FirstScreen extends JPanel {
 			mainProjectNameTextField.requestFocusInWindow();
 			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
 			return;
-		}		
+		}
+		
+		mainProjectNameListComboBox.addItem(newMainProjectName);
+	}
+
+	private void mainProjectNameDeleteButtonActionPerformed(ActionEvent e) {
+		// TODO add your code here
+		int selectedIndex = mainProjectNameListComboBox.getSelectedIndex();
+		if (0 == selectedIndex) {
+			String errorMessage = String.format("메인 프로젝트를 선택해 주세요.");
+			log.warn(errorMessage);
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		String selectedProjectName = (String)mainProjectNameListComboBox.getSelectedItem();
+		try {
+			mainProjectManger.removeMainProject(selectedProjectName);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = new StringBuilder("선택한 메인 프로젝트[")
+			.append(selectedProjectName).append("] 삭제 실패::").append(e1.getMessage()).toString();
+			log.warn(errorMessage);
+			mainProjectNameTextField.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		
+		mainProjectNameListComboBox.removeItem(selectedProjectName);
 	}
 
 	
@@ -411,6 +438,12 @@ public class FirstScreen extends JPanel {
 				//---- mainProjectNameDeleteButton ----
 				mainProjectNameDeleteButton.setText("\uc0ad\uc81c");
 				mainProjectNameDeleteButton.setEnabled(false);
+				mainProjectNameDeleteButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						mainProjectNameDeleteButtonActionPerformed(e);
+					}
+				});
 				projectListFuncPanel.add(mainProjectNameDeleteButton);
 			}
 			projectListLinePanel.add(projectListFuncPanel, CC.xy(3, 1));

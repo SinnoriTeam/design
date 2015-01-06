@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
 
 
 @SuppressWarnings("serial")
-public class ConfigItemCellRenderer extends JPanel implements TableCellRenderer {
-	private Logger log = LoggerFactory.getLogger(ConfigItemCellRenderer.class);
+public class ConfigItemValueRenderer extends JPanel implements TableCellRenderer {
+	private Logger log = LoggerFactory.getLogger(ConfigItemValueRenderer.class);
 	
-	public ConfigItemCellRenderer() {
+	public ConfigItemValueRenderer() {
 		setOpaque(true);
 		init();
 	}
@@ -35,7 +35,7 @@ public class ConfigItemCellRenderer extends JPanel implements TableCellRenderer 
 		log.info("current layout manger class name={}", layoutManager.getClass().getName());*/
 		
 		
-		ConfigItemCellValue configItemCellValue = (ConfigItemCellValue)value;
+		ConfigItemValue configItemCellValue = (ConfigItemValue)value;
 				
 		if (isSelected) {
 			configItemCellValue.setForeground(table.getSelectionForeground());

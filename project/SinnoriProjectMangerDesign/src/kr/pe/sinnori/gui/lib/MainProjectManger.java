@@ -3,7 +3,6 @@ package kr.pe.sinnori.gui.lib;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -12,7 +11,6 @@ import java.util.List;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.util.SequencedProperties;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,11 +192,23 @@ public class MainProjectManger {
 			String errorMessage = String.format("신규 메인 프로젝트 디렉토리[%s] 쓰기 권한 없음", projectPathString);
 			log.warn(errorMessage);
 			throw new ConfigErrorException(errorMessage);
-		}
-		
-		
+		}		
 		
 		MainProject mainProject = new MainProject(newMainProjectName, projectPathString);
+		mainProjectList.add(mainProject);
+		mainProjectHash.put(newMainProjectName, mainProject);		
+	}
+	
+	public void removeMainProject(String selectedMainProjectName) throws ConfigErrorException {
+		MainProject selectedMainProject = mainProjectHash.get(selectedMainProjectName);
 		
+		if (null == selectedMainProject) {
+			String errorMessage = String.format("삭제할 메인 프로젝트[%s]가 존재하지 않습니다.", selectedMainProjectName);
+			log.warn(errorMessage);
+			throw new ConfigErrorException(errorMessage);
+		}
+		selectedMainProject.removeProjectDirectory();
+		mainProjectList.remove(selectedMainProjectName);
+		mainProjectHash.remove(selectedMainProjectName);
 	}
 }

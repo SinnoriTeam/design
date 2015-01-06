@@ -20,8 +20,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-import kr.pe.sinnori.gui.table.ConfigItemCellEditor;
-import kr.pe.sinnori.gui.table.ConfigItemCellRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
+import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
 import kr.pe.sinnori.gui.table.ConfigItemTableModel;
 
 import com.jgoodies.forms.factories.Borders;
@@ -66,8 +66,8 @@ public class DBCPConnPoolNamePopup extends JDialog {
 		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setResizable(false);
 		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setPreferredWidth(250);
 				
-		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
-		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemValueRenderer());
+		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 		dbcpConnPoolNamePartTable.setRowHeight(38);
 		dbcpConnPoolNamePartScrollPane.repaint();
 		/** Post-Creation Code End */

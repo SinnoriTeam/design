@@ -14,9 +14,10 @@ import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class SequencedProperties extends Properties {
+	// private Logger log = LoggerFactory.getLogger(SequencedProperties.class);
 
-    @SuppressWarnings("rawtypes")
-	private List keyList = new ArrayList();
+    
+	private List<String> keyList = new ArrayList<String>();
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -24,11 +25,10 @@ public class SequencedProperties extends Properties {
         return Collections.enumeration(keyList);
     }
 
-    @SuppressWarnings("unchecked")
 	@Override
-    public synchronized Object put(Object key, Object value) {
+    public synchronized Object put(Object key, Object value) {		
         if (! containsKey(key)) {
-            keyList.add(key);
+            keyList.add((String)key);
         }
 
         return super.put(key, value);
@@ -46,10 +46,37 @@ public class SequencedProperties extends Properties {
     public synchronized void putAll(@SuppressWarnings("rawtypes") Map values) {
         for (Object key : values.keySet()) {
             if (! containsKey(key)) {
-                keyList.add(key);
+                keyList.add((String)key);
             }
         }
 
         super.putAll(values);
     }
+    
+    /*@Override
+    public void store(OutputStream os, String title) throws IOException {
+    	String NEWLINE = System.getProperty("line.separator");
+    	
+    	
+    	Charset charset = Charset.forName("UTF-8");
+    	byte[] newLineBytes = NEWLINE.getBytes(charset);    	
+    	
+    	os.write(title.getBytes(charset));
+    	os.write(newLineBytes);
+    	
+    	byte[] equalsBytes = "=".getBytes(charset); 
+    	
+    	for (String key : keyList) {
+    		String value = this.getProperty(key);
+    		String escapeKey = StringEscapeUtils.escapeCsv(key);
+    		String escapeValue = StringEscapeUtils.escapeCsv(value);
+    		
+    		log.info("[{}]=[{}]", key, value);
+    		os.write(escapeKey.getBytes(charset));
+    		os.write(equalsBytes);
+    		
+    		os.write(escapeValue.getBytes(charset));
+    		os.write(newLineBytes);
+    	}
+    }*/
 }

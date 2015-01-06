@@ -1,7 +1,6 @@
 package kr.pe.sinnori.gui.table;
 
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -25,8 +24,8 @@ import org.slf4j.LoggerFactory;
 
 
 @SuppressWarnings("serial")
-public class ConfigItemCellValue extends JPanel {
-	private Logger log = LoggerFactory.getLogger(ConfigItemCellValue.class);
+public class ConfigItemValue extends JPanel {
+	private Logger log = LoggerFactory.getLogger(ConfigItemValue.class);
 	
 	private String targetKey;
 	private ConfigItem.ConfigItemViewType configItemViewType=null;
@@ -40,14 +39,14 @@ public class ConfigItemCellValue extends JPanel {
 	
 	//private Object result=null;
 	
-	public ConfigItemCellValue() {
+	/*public ConfigItemCellValue() {
 		super();
 		// this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		//this.getParent().setLayout(arg0);
 		LayoutManager parentLayoutManger = this.getParent().getLayout();
 		log.info("parnet layout manger class name={}", parentLayoutManger.getClass().getName());
 	}
-		
+		*/
 	/*public ConfigItemCellValue(String targetKey, 
 			Properties sourceProperties, 
 			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {		
@@ -55,7 +54,7 @@ public class ConfigItemCellValue extends JPanel {
 				sinnoriConfigInfo, mainFrame);
 	}*/
 	
-	public ConfigItemCellValue(String targetKey, 
+	public ConfigItemValue(String targetKey, 
 			String targetItemValue, 
 			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {		
 		this.targetKey = targetKey;

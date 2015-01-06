@@ -35,10 +35,12 @@ import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.util.SequencedProperties;
 import kr.pe.sinnori.gui.lib.MainProject;
 import kr.pe.sinnori.gui.lib.WindowManger;
-import kr.pe.sinnori.gui.table.ConfigItemCellEditor;
-import kr.pe.sinnori.gui.table.ConfigItemCellRenderer;
-import kr.pe.sinnori.gui.table.ConfigItemCellValue;
+import kr.pe.sinnori.gui.table.ConfigItemKey;
+import kr.pe.sinnori.gui.table.ConfigItemKeyRenderer;
 import kr.pe.sinnori.gui.table.ConfigItemTableModel;
+import kr.pe.sinnori.gui.table.ConfigItemValue;
+import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
+import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
 import kr.pe.sinnori.gui.util.PathSwingAction;
 
 import org.slf4j.Logger;
@@ -63,7 +65,7 @@ public class ProjectEditScreen extends JPanel {
 		};
 	
 	private Class<?>[] columnTypesOfConfigItemTable = new Class[] {
-		String.class, ConfigItemCellValue.class
+			ConfigItemKey.class, ConfigItemValue.class
 	};
 	
 	private ConfigItemTableModel commonConfigItemTableModel = null;
@@ -116,7 +118,7 @@ public class ProjectEditScreen extends JPanel {
 		dbcpConnPoolNameListComboBox.setModel(dbcpConnPoolNameComboBoxModel);
 				
 		SequencedProperties sourceSequencedProperties = 
-				mainProject.getSourceSequencedProperties();
+				mainProject.getNewSinnoriConfig();
 		
 		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
 		
@@ -132,12 +134,15 @@ public class ProjectEditScreen extends JPanel {
 				ConfigItem configItem = commonPartConfigItemList.get(i);
 				String itemID = configItem.getItemID();
 				String targetKey = itemID;
-				ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+				
+				ConfigItemKey configItemKey = new ConfigItemKey(targetKey, configItem.toDescription());
+				
+				ConfigItemValue configItemCellValue = new ConfigItemValue(
 						targetKey, 
 						sourceSequencedProperties.getProperty(targetKey),
 						sinnoriConfigInfo, mainFrame);
 						
-				valuesOfCommonConfigItemTable[i][0] = targetKey;
+				valuesOfCommonConfigItemTable[i][0] = configItemKey;
 				valuesOfCommonConfigItemTable[i][1] = configItemCellValue;
 				
 				//saveSequencedProperties.put(targetKey, configItemCellValue.getValueOfComponent());
@@ -147,12 +152,13 @@ public class ProjectEditScreen extends JPanel {
 			commonConfigTable.setModel(commonConfigItemTableModel);
 			
 			// commonConfigTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+			commonConfigTable.getColumnModel().getColumn(0).setCellRenderer(new ConfigItemKeyRenderer());
+			
 					
 			commonConfigTable.getColumnModel().getColumn(1).setResizable(false);
-			commonConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);
-					
-			commonConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
-			commonConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+			commonConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);					
+			commonConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemValueRenderer());
+			commonConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 			commonConfigTable.setRowHeight(38);
 			commonConfigScrollPane.repaint();
 		}
@@ -175,12 +181,13 @@ public class ProjectEditScreen extends JPanel {
 					
 					log.info("dbcpConnPoolName={}, targetKey={}", dbcpConnPoolName, targetKey);
 					
-					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+					ConfigItemKey configItemKey = new ConfigItemKey(targetKey, configItem.toDescription());
+					ConfigItemValue configItemCellValue = new ConfigItemValue(
 							targetKey, 
 							sourceSequencedProperties.getProperty(targetKey),
 							sinnoriConfigInfo, mainFrame);
 							
-					values[i][0] = targetKey;
+					values[i][0] = configItemKey;
 					values[i][1] = configItemCellValue;
 				}
 				
@@ -213,12 +220,13 @@ public class ProjectEditScreen extends JPanel {
 					.append(".")
 					.append(itemID).toString();
 					
-					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+					ConfigItemKey configItemKey = new ConfigItemKey(targetKey, configItem.toDescription());					
+					ConfigItemValue configItemCellValue = new ConfigItemValue(
 							targetKey, 
 							sourceSequencedProperties.getProperty(targetKey),
 							sinnoriConfigInfo, mainFrame);
 							
-					values[i][0] = targetKey;
+					values[i][0] = configItemKey;
 					values[i][1] = configItemCellValue;
 				}
 				
@@ -231,19 +239,20 @@ public class ProjectEditScreen extends JPanel {
 				Object[][] values = new Object[projectPartConfigItemListSize][titlesOfConfigItemTable.length];
 				for (int i=0; i < values.length; i++) {
 					ConfigItem configItem = projectPartConfigItemList.get(i);
-					String itemID = configItem.getItemID();
+					String itemID = configItem.getItemID();					
 					
 					String targetKey = new StringBuilder("project.")
 					.append(subProjectName)
 					.append(".")
 					.append(itemID).toString();
 					
-					ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+					ConfigItemKey configItemKey = new ConfigItemKey(targetKey, configItem.toDescription());					
+					ConfigItemValue configItemCellValue = new ConfigItemValue(
 							targetKey, 
 							sourceSequencedProperties.getProperty(targetKey),
 							sinnoriConfigInfo, mainFrame);
 							
-					values[i][0] = targetKey;
+					values[i][0] = configItemKey;
 					values[i][1] = configItemCellValue;
 				}
 				
@@ -258,12 +267,14 @@ public class ProjectEditScreen extends JPanel {
 			mainProjectConfigTable.setModel(projectName2ConfigItemTableModelHash.get(mainProjectName));
 			
 			// commonConfigTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+			mainProjectConfigTable.getColumnModel().getColumn(0).setCellRenderer(new ConfigItemKeyRenderer());
+			
 					
 			mainProjectConfigTable.getColumnModel().getColumn(1).setResizable(false);
 			mainProjectConfigTable.getColumnModel().getColumn(1).setPreferredWidth(180);
 					
-			mainProjectConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
-			mainProjectConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+			mainProjectConfigTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemValueRenderer());
+			mainProjectConfigTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 			mainProjectConfigTable.setRowHeight(38);
 			mainProjectConfigScrollPane.repaint();
 		}
@@ -274,9 +285,10 @@ public class ProjectEditScreen extends JPanel {
 		boolean isAppClient = appClientCheckBox.isSelected();
 		boolean isWebClient = webClientCheckBox.isSelected();
 		// servletEnginLibinaryPathTextField
-		if (isAppClient) {
-			
-		}
+		
+		mainProject.setAppClient(isAppClient);
+		mainProject.setWebClient(isWebClient);
+		// FIXME!
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
@@ -317,7 +329,7 @@ public class ProjectEditScreen extends JPanel {
 			.append(".")
 			.append(itemID).toString();
 			
-			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+			ConfigItemValue configItemCellValue = new ConfigItemValue(
 					targetKey, 
 					defaultValue,
 					sinnoriConfigInfo, mainFrame);
@@ -425,7 +437,7 @@ public class ProjectEditScreen extends JPanel {
 			
 			log.info("dbcpConnPoolName={}, targetKey={}", newDBCPConnPoolName, targetKey);
 						
-			ConfigItemCellValue configItemCellValue = new ConfigItemCellValue(
+			ConfigItemValue configItemCellValue = new ConfigItemValue(
 					targetKey, 
 					defaultValue,
 					sinnoriConfigInfo, mainFrame);

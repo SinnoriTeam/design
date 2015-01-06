@@ -9,8 +9,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import kr.pe.sinnori.gui.table.ConfigItemCellEditor;
-import kr.pe.sinnori.gui.table.ConfigItemCellRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemKeyRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
+import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
 import kr.pe.sinnori.gui.table.ConfigItemTableModel;
 
 import com.jgoodies.forms.factories.*;
@@ -42,11 +43,13 @@ public class SubProjectPartConfigPopup extends JDialog {
 		subProjectPartTable.setModel(this.subProjectPartTableModel);
 				
 		// commonConfigTable.setModel(commonConfigItemTableModel);
+		subProjectPartTable.getColumnModel().getColumn(0).setCellRenderer(new ConfigItemKeyRenderer());
+		
 		subProjectPartTable.getColumnModel().getColumn(1).setResizable(false);
 		subProjectPartTable.getColumnModel().getColumn(1).setPreferredWidth(250);
 				
-		subProjectPartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemCellRenderer());
-		subProjectPartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemCellEditor(new JCheckBox()));
+		subProjectPartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemValueRenderer());
+		subProjectPartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 		subProjectPartTable.setRowHeight(38);
 		subProjectPartScrollPane.repaint();
 		/** Post-Creation Code End */

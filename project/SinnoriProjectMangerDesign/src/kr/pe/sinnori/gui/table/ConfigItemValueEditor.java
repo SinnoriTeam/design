@@ -9,14 +9,14 @@ import javax.swing.JTable;
 
 
 @SuppressWarnings("serial")
-public class ConfigItemCellEditor extends DefaultCellEditor {
-	public ConfigItemCellEditor(JCheckBox checkBox) {
+public class ConfigItemValueEditor extends DefaultCellEditor {
+	public ConfigItemValueEditor(JCheckBox checkBox) {
 		super(checkBox);
 	}
 
 	public Component getTableCellEditorComponent(JTable table,
 			Object value, boolean isSelected, int row, int column) {		
-		ConfigItemCellValue configItemCellValue = (ConfigItemCellValue)value;
+		ConfigItemValue configItemCellValue = (ConfigItemValue)value;
 			
 		
 		if (isSelected) {

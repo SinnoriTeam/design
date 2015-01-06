@@ -154,6 +154,7 @@ new FormModel {
 						name: "mainProjectNameDeleteButton"
 						"text": "삭제"
 						"enabled": false
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "mainProjectNameDeleteButtonActionPerformed", true ) )
 					} )
 				}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 					"gridX": 3
