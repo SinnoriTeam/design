@@ -123,14 +123,29 @@ public class ClassLoaderResourceFileBreakChecker extends AbstractBreakChecker {
 		String classloaderResourceFileRealPathString = null;
 		
 		if (classloaderResourceFileRelativePathString.startsWith("/")) {
-			classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
-			.append(classloaderResourceFileRelativePathString.replaceAll("/", File.separator))
-			.toString();
+			if (File.separator.equals("/")) {
+				classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
+				.append(classloaderResourceFileRelativePathString)
+				.toString();
+			} else {
+				classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
+				.append(classloaderResourceFileRelativePathString.replaceAll("/", "\\\\"))
+				.toString();
+			}
+			
+			
 		} else {
-			classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
-			.append(File.separator)
-			.append(classloaderResourceFileRelativePathString.replaceAll("/", File.separator))
-			.toString();
+			if (File.separator.equals("/")) {
+				classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
+				.append(File.separator)
+				.append(classloaderResourceFileRelativePathString)
+				.toString();
+			} else {
+				classloaderResourceFileRealPathString = new StringBuilder(classloaderAPPINFPathString)
+				.append(File.separator)
+				.append(classloaderResourceFileRelativePathString.replaceAll("/", "\\\\"))
+				.toString();
+			}			
 		}		
 		
 		File realFile = new File(classloaderResourceFileRealPathString);

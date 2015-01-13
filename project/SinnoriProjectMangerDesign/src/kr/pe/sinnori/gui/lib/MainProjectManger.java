@@ -1,8 +1,6 @@
 package kr.pe.sinnori.gui.lib;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -11,6 +9,7 @@ import java.util.List;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.util.SequencedProperties;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,11 +76,11 @@ public class MainProjectManger {
 			String projectPathString = new StringBuilder(projectBasePathString)
 			.append(File.separator).append(mainProjectName).toString();
 			
-			String projectConfigFilePathString = getProjectConfigFilePathStringFromProjectPathString(projectPathString);
+			String projectConfigFilePathString = getProjectConfigFilePathStringFromProjectPath(projectPathString);
 			
 			SequencedProperties sourceProperties = null;
 			try {
-				sourceProperties = getSourceSequencedProperties(projectConfigFilePathString);
+				sourceProperties = MainProject.getSequencedPropertiesFromFile(projectConfigFilePathString);
 			} catch (ConfigErrorException e1) {
 				String errorMessage = String.format("project[%s][%s] errormessage=%s", projectBasePathString, mainProjectName, e1.getMessage());
 				log.warn(errorMessage);
@@ -98,41 +97,15 @@ public class MainProjectManger {
 		
 	}	
 	
-	private String getProjectConfigFilePathStringFromProjectPathString(String projectPathString) {
-		StringBuilder configBuilder = new StringBuilder(projectPathString);		
-		configBuilder.append(File.separator);
-		configBuilder.append("config");
-		configBuilder.append(File.separator);
-		configBuilder.append("sinnori.properties");
-		
-		return configBuilder.toString();
-	}
 	
-	public static  SequencedProperties getSourceSequencedProperties(String properteisFilePathString) throws ConfigErrorException {
-		SequencedProperties sourceSequencedProperties = new SequencedProperties();
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(properteisFilePathString);
-			sourceSequencedProperties.load(fis);
-		} catch (FileNotFoundException e) {
-			String errorMessage = String.format("prop file[%s] not found", properteisFilePathString); 
-			// log.info(errorMessage);
-			throw new ConfigErrorException(errorMessage);
-		} catch (IOException e) {
-			String errorMessage = String.format("prop file[%s] IOException[%s]", 
-					properteisFilePathString, e.getMessage());
-			// log.info(errorMessage);
-			throw new ConfigErrorException(errorMessage);
-		} finally {
-			if (null != fis) {
-				try {
-					fis.close();
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return sourceSequencedProperties;
+	public static String getProjectConfigFilePathStringFromProjectPath(String projectPathString) {
+		StringBuilder strBuilder = new StringBuilder(projectPathString);		
+		strBuilder.append(File.separator);
+		strBuilder.append("config");
+		strBuilder.append(File.separator);
+		strBuilder.append(MainProject.SINNORI_CONFIG_FILE_NAME);
+		
+		return strBuilder.toString();
 	}
 
 	public String getMainProjectBasePathString() {
@@ -153,7 +126,7 @@ public class MainProjectManger {
 			log.warn(errorMessage);
 			throw new IllegalArgumentException(errorMessage);
 		}
-		
+				
 		if (newMainProjectName.equals("")) {
 			String errorMessage = "신규 메인 프로젝트 이름을 다시 넣어 주세요.";
 			log.warn(errorMessage);
@@ -166,6 +139,14 @@ public class MainProjectManger {
 			String errorMessage = "신규 메인 프로젝트 이름에 앞뒤로 공백을 넣을 수 없습니다.";
 			log.warn(errorMessage);
 			throw new IllegalArgumentException(errorMessage);
+		}
+		
+		// FIXME!
+		boolean isOver = mainProjectHash.containsKey(newMainProjectName);	
+		if (isOver) {
+			String errorMessage = String.format("프록제트[%s] 중복 에러", newMainProjectName);
+			log.warn(errorMessage);
+			throw new ConfigErrorException(errorMessage);
 		}
 		
 		
@@ -192,9 +173,21 @@ public class MainProjectManger {
 			String errorMessage = String.format("신규 메인 프로젝트 디렉토리[%s] 쓰기 권한 없음", projectPathString);
 			log.warn(errorMessage);
 			throw new ConfigErrorException(errorMessage);
-		}		
+		}
 		
-		MainProject mainProject = new MainProject(newMainProjectName, projectPathString);
+		MainProject mainProject = null;
+		try {
+			mainProject = new MainProject(newMainProjectName, projectPathString);
+		} catch(ConfigErrorException e) {
+			log.info("ConfigErrorException", e);
+			try {
+				FileUtils.forceDelete(projectPath);
+			} catch (IOException e1) {
+				String errorMessage = String.format("프로젝트 신규 생성시 에러 발생으로 신규 프로젝 디렉토리 삭제 실패, errormessage=%s", e1.getMessage());
+				log.warn(errorMessage);
+			}
+			throw e;
+		}
 		mainProjectList.add(mainProject);
 		mainProjectHash.put(newMainProjectName, mainProject);		
 	}

@@ -8,6 +8,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
+
+import kr.pe.sinnori.gui.table.ConfigItemKeyRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemTableModel;
+import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
+import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
+
 import com.jgoodies.forms.factories.*;
 import com.jgoodies.forms.layout.*;
 
@@ -16,15 +22,43 @@ import com.jgoodies.forms.layout.*;
  */
 @SuppressWarnings("serial")
 public class DBCPPartConfigPopup extends JDialog {
-	public DBCPPartConfigPopup(Frame owner) {
+	private String mainProjectName;
+	private String selectedDBCPConnPoolName;
+	private ConfigItemTableModel dbcpPartTableModel;
+	
+	public DBCPPartConfigPopup(Frame owner,
+			String mainProjectName, 
+			String selectedDBCPConnPoolName,
+			ConfigItemTableModel dbcpPartTableModel) {
 		super(owner);
 		initComponents();
+		
+		this.mainProjectName = mainProjectName;
+		this.selectedDBCPConnPoolName = selectedDBCPConnPoolName;
+		this.dbcpPartTableModel = dbcpPartTableModel;
+		
+		
+		mainProjectNameValueLabel.setText(this.mainProjectName);
+		dbcpConnPoolNameValueLabel.setText(this.selectedDBCPConnPoolName);
+		dbcpPartTable.setModel(this.dbcpPartTableModel);
+		
+		dbcpPartTable.getColumnModel().getColumn(0).setCellRenderer(new ConfigItemKeyRenderer());
+		
+		dbcpPartTable.getColumnModel().getColumn(1).setResizable(false);
+		dbcpPartTable.getColumnModel().getColumn(1).setPreferredWidth(250);
+				
+		dbcpPartTable.getColumnModel().getColumn(1).setCellRenderer(new ConfigItemValueRenderer());
+		dbcpPartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
+		dbcpPartTable.setRowHeight(38);
+		dbcpPartScrollPane.repaint();
 	}
-
+/*
 	public DBCPPartConfigPopup(Dialog owner) {
 		super(owner);
 		initComponents();
-	}
+		
+		// dbcpPartTable
+	}*/
 
 	private void okButtonActionPerformed(ActionEvent e) {
 		// TODO add your code here

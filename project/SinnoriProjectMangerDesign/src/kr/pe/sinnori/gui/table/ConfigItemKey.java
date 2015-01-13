@@ -6,6 +6,6 @@ import javax.swing.JLabel;
 public class ConfigItemKey extends JLabel {
 	public ConfigItemKey(String text, String tooltipText) {
 		this.setText(text);
-		this.setToolTipText(tooltipText);
+		this.setToolTipText("<html>"+tooltipText.replaceAll("\n", "<br/>")+"</html>");
 	}
 }

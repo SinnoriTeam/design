@@ -30,12 +30,13 @@ public class SubProjectPartConfigPopup extends JDialog {
 			String mainProjectName, 
 			String selectedSubProjectName,
 			ConfigItemTableModel subProjectPartTableModel) {
-		super(owner, true);
+		super(owner, true);		
+		
+		initComponents();
+		
 		this.mainProjectName = mainProjectName;
 		this.selectedSubProjectName = selectedSubProjectName;
 		this.subProjectPartTableModel = subProjectPartTableModel;
-		
-		initComponents();
 		
 		/** Post-Creation Code Start */
 		mainProjectNameValueLabel.setText(this.mainProjectName);

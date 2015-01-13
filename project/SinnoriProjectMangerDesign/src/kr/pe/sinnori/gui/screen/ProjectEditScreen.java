@@ -32,6 +32,7 @@ import javax.swing.table.TableColumnModel;
 
 import kr.pe.sinnori.common.config.ConfigItem;
 import kr.pe.sinnori.common.config.SinnoriConfigInfo;
+import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.util.SequencedProperties;
 import kr.pe.sinnori.gui.lib.MainProject;
 import kr.pe.sinnori.gui.lib.WindowManger;
@@ -72,8 +73,6 @@ public class ProjectEditScreen extends JPanel {
 	private HashMap<String, ConfigItemTableModel> dbcpConnPoolName2ConfigItemTableModelHash = null;
 	private HashMap<String, ConfigItemTableModel> projectName2ConfigItemTableModelHash = null;
 	
-	//private Object valuesOfCommonConfigItemTable[][] = null;
-	// private SequencedProperties saveSequencedProperties = new SequencedProperties();
 	
 	public ProjectEditScreen(JFrame mainFrame) {
 		this.mainFrame = mainFrame;
@@ -118,7 +117,7 @@ public class ProjectEditScreen extends JPanel {
 		dbcpConnPoolNameListComboBox.setModel(dbcpConnPoolNameComboBoxModel);
 				
 		SequencedProperties sourceSequencedProperties = 
-				mainProject.getNewSinnoriConfig();
+				mainProject.getNewSinnoriConfigFromSinnoriConfigInfo();
 		
 		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
 		
@@ -281,14 +280,150 @@ public class ProjectEditScreen extends JPanel {
 	}
 	
 	private void projectWorkSaveButtonActionPerformed(ActionEvent e) {
-		// TODO add your code here
 		boolean isAppClient = appClientCheckBox.isSelected();
 		boolean isWebClient = webClientCheckBox.isSelected();
 		// servletEnginLibinaryPathTextField
 		
-		mainProject.setAppClient(isAppClient);
-		mainProject.setWebClient(isWebClient);
+		try {
+			mainProject.setAppClient(isAppClient);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = String.format("setting app build choose[%s] fail, errormessage=%s", isAppClient, e1.getMessage());
+			log.warn(errorMessage);
+			
+			appClientCheckBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		try {
+			mainProject.setWebClient(isWebClient);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = String.format("setting web build choose[%s] fail, errormessage=%s", isWebClient, e1.getMessage());
+			log.warn(errorMessage);
+			
+			webClientCheckBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
 		// FIXME!
+		// commonConfigItemTableModel, dbcpConnPoolName2ConfigItemTableModelHash, projectName2ConfigItemTableModelHash
+		
+		SequencedProperties newSinnoriConfig = new SequencedProperties();
+		
+		List<String> dbcpConnPoolNameList = mainProject.getDBCPConnPoolNameList();
+		for (String dbcpConnPoolName : dbcpConnPoolNameList) {
+			ConfigItemTableModel configItemTableModel = dbcpConnPoolName2ConfigItemTableModelHash.get(dbcpConnPoolName);
+			int row = configItemTableModel.getRowCount();
+			log.info("dbcpConnPoolName={}, row={}", dbcpConnPoolName, row);
+			
+			for (int i=0; i < row; i++) {
+				Object tableModelValue = configItemTableModel.getValueAt(i, 1);
+				
+				if (!(tableModelValue instanceof ConfigItemValue)) {
+					log.error("dbcpConnPoolName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+							dbcpConnPoolName, i, 1);
+					System.exit(1);
+				}
+				 
+				ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+				String targetKey = configItemCellValue.getTargetKey();
+				String targetValue = configItemCellValue.getValueOfComponent();
+				
+				log.info("dbcpConnPoolName={}, row index={}, targetKey={}, targetValue={}", 
+						dbcpConnPoolName, i, targetKey, targetValue);
+				
+				newSinnoriConfig.put(targetKey, targetValue);
+			}
+			
+		}
+		
+		{
+			int row = commonConfigItemTableModel.getRowCount();
+			log.info("commonConfigItemTableModel row={}", row);
+			
+			for (int i=0; i < row; i++) {
+				Object tableModelValue = commonConfigItemTableModel.getValueAt(i, 1);
+				
+				if (!(tableModelValue instanceof ConfigItemValue)) {
+					log.error("commonConfigItemTableModel[{}][{}]'s value is not a ConfigItemValue class object",
+							i, 1);
+					System.exit(1);
+				}
+				 
+				ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+				String targetKey = configItemCellValue.getTargetKey();
+				String targetValue = configItemCellValue.getValueOfComponent();
+				
+				log.info("commonConfigItemTableModel row index={}, targetKey={}, targetValue={}", 
+						i, targetKey, targetValue);
+				
+				newSinnoriConfig.put(targetKey, targetValue);
+			}
+		}
+		
+		{
+			String mainProjetName = mainProject.getMainProjectName();
+			ConfigItemTableModel mainProjectConfigItemTableModel = 
+					projectName2ConfigItemTableModelHash.get(mainProjetName);
+			
+			int row = mainProjectConfigItemTableModel.getRowCount();
+			log.info("mainProjetName={}, row={}", mainProjetName, row);
+			
+			for (int i=0; i < row; i++) {
+				Object tableModelValue = mainProjectConfigItemTableModel.getValueAt(i, 1);
+				
+				if (!(tableModelValue instanceof ConfigItemValue)) {
+					log.error("mainProjetName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+							mainProjetName, i, 1);
+					System.exit(1);
+				}
+				 
+				ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+				String targetKey = configItemCellValue.getTargetKey();
+				String targetValue = configItemCellValue.getValueOfComponent();
+				
+				log.info("mainProjetName={}, row index={}, targetKey={}, targetValue={}", 
+						mainProjetName, i, targetKey, targetValue);
+				
+				newSinnoriConfig.put(targetKey, targetValue);
+			}
+			
+		}
+		List<String> subPorjectNameList = mainProject.getSubProjectNameList();
+		for (String subPorjectName : subPorjectNameList) {
+			ConfigItemTableModel configItemTableModel = projectName2ConfigItemTableModelHash.get(subPorjectName);
+			int row = configItemTableModel.getRowCount();
+			log.info("subPorjectName={}, row={}", subPorjectName, row);
+			
+			for (int i=0; i < row; i++) {
+				Object tableModelValue = configItemTableModel.getValueAt(i, 1);
+				
+				if (!(tableModelValue instanceof ConfigItemValue)) {
+					log.error("subPorjectName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+							subPorjectName, i, 1);
+					System.exit(1);
+				}
+				 
+				ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+				String targetKey = configItemCellValue.getTargetKey();
+				String targetValue = configItemCellValue.getValueOfComponent();
+				
+				log.info("subPorjectName={}, row index={}, targetKey={}, targetValue={}", 
+						subPorjectName, i, targetKey, targetValue);
+				
+				newSinnoriConfig.put(targetKey, targetValue);
+			}
+		}
+		
+		try {
+			mainProject.saveConfigFile(newSinnoriConfig);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = String.format("fail to save the config file, errormessage=%s", isWebClient, e1.getMessage());
+			log.warn(errorMessage);
+			
+			webClientCheckBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}		
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {

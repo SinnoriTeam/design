@@ -31,6 +31,7 @@ import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.common.exception.ConfigKeyNotFoundException;
 import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.util.SequencedProperties;
+import kr.pe.sinnori.gui.lib.MainProject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class SinnoriConfigInfo {
 		// this.sourceSequencedProperties = sourceSequencedProperties;		
 		// this.projectConfigFilePathString = getProjectConfigFilePathString();
 		
-		projectConfigFilePathString = getProjectConfigFilePathString();
+		projectConfigFilePathString = MainProject.getProjectConfigFilePathStringFromProjectPath(projectPathString);
 		
 		//projectNameList.add(mainProjectName);
 		
@@ -799,8 +800,8 @@ public class SinnoriConfigInfo {
 			configItem = new ConfigItem(ConfigItem.ConfigPart.PROJECT_SERVER,
 					ConfigItem.ConfigItemViewType.TEXT,
 					targetItemID,
-					"ClassLoader#getResourceAsStream 의 구현 이며 <APP-INF>/resources 경로 기준으로 읽어오며 구별자가 '/' 문자로된 상대 경로로 기술되어야 한다.",
-					"kr/pe/sinnori/impl/mybatis/mybatisConfig.xml", false, 
+					"ClassLoader#getResourceAsStream 의 구현 이며 \n<APP-INF>/resources 경로 기준으로 읽어오며 구별자가 '/' 문자로된 상대 경로로 기술되어야 한다. \nex) kr/pe/sinnori/impl/mybatis/mybatisConfig.xml",
+					"", false, 
 					new ItemValueGetterOfNoCheck());
 			addConfigItem(configItem);
 			/*
@@ -821,15 +822,9 @@ public class SinnoriConfigInfo {
 			throw new ConfigErrorException(errorMessage);
 		}
 	}
-	public String getProjectConfigFilePathString() {
-		StringBuilder strBuilder = new StringBuilder(projectPathString);		
-		strBuilder.append(File.separator);
-		strBuilder.append("config");
-		strBuilder.append(File.separator);
-		strBuilder.append("sinnori.properties");
-		
-		return strBuilder.toString();
-	}
+	
+	
+	
 	
 	private String getDefaultValueOfDBCPConnPoolConfigFile() {
 		return getDefaultValueOfDBCPConnPoolConfigFile("tw_sinnoridb");
