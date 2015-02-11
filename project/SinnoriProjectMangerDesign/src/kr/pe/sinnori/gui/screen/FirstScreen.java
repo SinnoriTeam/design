@@ -53,6 +53,9 @@ public class FirstScreen extends JPanel {
 	public FirstScreen(JFrame mainFrame) {
 		this.mainFrame =mainFrame;
 		initComponents();
+		
+		allProjectInstalledPathDevEnvUpdateButton.setToolTipText(
+				"<html>update config and overwrite shells based on installed path</html>");
 	}
 
 	private void mainProjectNameEditButtonActionPerformed(ActionEvent e) {
@@ -70,7 +73,17 @@ public class FirstScreen extends JPanel {
 			appClientCheckBox.setSelected(selectedProject.isAppClient());
 			webClientCheckBox.setSelected(selectedProject.isWebClient());
 			
-			WindowManger.getInstance().changeFirstScreenToProjectEditScreen(selectedProject);
+			try {
+				WindowManger.getInstance().changeFirstScreenToProjectEditScreen(selectedProject);
+			} catch (ConfigErrorException e1) {
+				String errorMessage = String.format("fail to change the edit screen of project[%s],\nerrormessage=%s", 
+						selectedProject.getMainProjectName(), e1.getMessage());
+				log.warn(errorMessage);
+				
+				mainProjectNameListComboBox.requestFocusInWindow();
+				JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+				return;
+			}
 		}
 	}
 
@@ -150,7 +163,7 @@ public class FirstScreen extends JPanel {
 		
 		
 		sinnoriInstalledPathInfoValueLabel.setText(sinnoriInstalledPathString);
-		allProjectWorkSaveButton.setEnabled(true);
+		allProjectInstalledPathDevEnvUpdateButton.setEnabled(true);
 		mainProjectNameTextField.setEnabled(true);
 		projectNameAddButton.setEnabled(true);
 		
@@ -174,7 +187,11 @@ public class FirstScreen extends JPanel {
 				projectNameValueLabel.setText(selectedProject.getMainProjectName());
 				appClientCheckBox.setSelected(selectedProject.isAppClient());
 				webClientCheckBox.setSelected(selectedProject.isWebClient());
-				servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
+				try {
+					servletEnginLibinaryPathTextField.setText(selectedProject.getServletEnginLibPathString());
+				} catch (ConfigErrorException e1) {
+					log.warn("fail to get the value of 'tomcat.servletlib' in ant.properties", e1);
+				}
 			} else {
 				projectNameValueLabel.setText("");
 				servletEnginLibinaryPathTextField.setText("");
@@ -223,6 +240,8 @@ public class FirstScreen extends JPanel {
 		}
 		
 		mainProjectNameListComboBox.addItem(newMainProjectName);
+		
+		JOptionPane.showMessageDialog(mainFrame, "프로젝트 이름 추가 성공");
 	}
 
 	private void mainProjectNameDeleteButtonActionPerformed(ActionEvent e) {
@@ -250,6 +269,28 @@ public class FirstScreen extends JPanel {
 		mainProjectNameListComboBox.removeItem(selectedProjectName);
 	}
 
+	/**
+	 * 신놀이 전체 프로젝트들의 개발 환경을 설치 경로 기준으로 재 구축한다.
+	 * @param e
+	 */
+	private void allProjectDevEnvRenewButtonActionPerformed(ActionEvent e) {
+		List<MainProject> mainProjectList = mainProjectManger.getMainProjectList();
+		for (MainProject mainProject : mainProjectList) {
+			try {
+				mainProject.renewDevEnvBasedOnInstalledPath();
+			} catch (ConfigErrorException e1) {
+				String errorMessage = new StringBuilder("fail to update project[")
+				.append(mainProject.getMainProjectName()).append("]'s configuration file based on installed path::").append(e1.getMessage()).toString();
+				log.warn(errorMessage);
+				allProjectInstalledPathDevEnvUpdateButton.requestFocusInWindow();
+				JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+				return;
+			}
+		}
+		
+		JOptionPane.showMessageDialog(mainFrame, "신놀이 설치 경로 기준으로 전체 프로젝트 개발환경 보정하기 완료");
+	}
+
 	
 
 	private void initComponents() {
@@ -266,7 +307,7 @@ public class FirstScreen extends JPanel {
 		sinnoriInstalledPathInfoTitleLabel = new JLabel();
 		sinnoriInstalledPathInfoValueLabel = new JLabel();
 		allProjectWorkSaveLinePanel = new JPanel();
-		allProjectWorkSaveButton = new JButton();
+		allProjectInstalledPathDevEnvUpdateButton = new JButton();
 		projectNameInputLinePanel = new JPanel();
 		mainProjectNameLabel = new JLabel();
 		mainProjectNameTextField = new JTextField();
@@ -363,10 +404,16 @@ public class FirstScreen extends JPanel {
 		{
 			allProjectWorkSaveLinePanel.setLayout(new BoxLayout(allProjectWorkSaveLinePanel, BoxLayout.X_AXIS));
 
-			//---- allProjectWorkSaveButton ----
-			allProjectWorkSaveButton.setText("\uc804\uccb4 \ud504\ub85c\uc81d\ud2b8 \ubcc0\uacbd \ub0b4\uc5ed \uc800\uc7a5");
-			allProjectWorkSaveButton.setEnabled(false);
-			allProjectWorkSaveLinePanel.add(allProjectWorkSaveButton);
+			//---- allProjectInstalledPathDevEnvUpdateButton ----
+			allProjectInstalledPathDevEnvUpdateButton.setText("\uc2e0\ub180\uc774 \uc124\uce58 \uacbd\ub85c \uae30\uc900\uc73c\ub85c \uc804\uccb4 \ud504\ub85c\uc81d\ud2b8 \uac1c\ubc1c\ud658\uacbd \ubcf4\uc815\ud558\uae30");
+			allProjectInstalledPathDevEnvUpdateButton.setEnabled(false);
+			allProjectInstalledPathDevEnvUpdateButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					allProjectDevEnvRenewButtonActionPerformed(e);
+				}
+			});
+			allProjectWorkSaveLinePanel.add(allProjectInstalledPathDevEnvUpdateButton);
 		}
 		add(allProjectWorkSaveLinePanel, CC.xy(1, 9));
 
@@ -549,7 +596,7 @@ public class FirstScreen extends JPanel {
 	private JLabel sinnoriInstalledPathInfoTitleLabel;
 	private JLabel sinnoriInstalledPathInfoValueLabel;
 	private JPanel allProjectWorkSaveLinePanel;
-	private JButton allProjectWorkSaveButton;
+	private JButton allProjectInstalledPathDevEnvUpdateButton;
 	private JPanel projectNameInputLinePanel;
 	private JLabel mainProjectNameLabel;
 	private JTextField mainProjectNameTextField;

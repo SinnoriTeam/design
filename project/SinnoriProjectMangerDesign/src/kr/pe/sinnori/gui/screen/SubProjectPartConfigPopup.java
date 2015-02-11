@@ -9,7 +9,14 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
+import kr.pe.sinnori.common.util.SequencedProperties;
+import kr.pe.sinnori.gui.config.SinnoriConfigInfo;
 import kr.pe.sinnori.gui.table.ConfigItemKeyRenderer;
+import kr.pe.sinnori.gui.table.ConfigItemValue;
 import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
 import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
 import kr.pe.sinnori.gui.table.ConfigItemTableModel;
@@ -22,19 +29,31 @@ import com.jgoodies.forms.layout.*;
  */
 @SuppressWarnings("serial")
 public class SubProjectPartConfigPopup extends JDialog {
+	private Logger log = LoggerFactory.getLogger(SubProjectPartConfigPopup.class);
+	
 	private String mainProjectName;
-	private String selectedSubProjectName;
+	private SinnoriConfigInfo sinnoriConfigInfo;
+	private String selectedSubProjectName;	
 	private ConfigItemTableModel subProjectPartTableModel;
 	
 	public SubProjectPartConfigPopup(Frame owner,
 			String mainProjectName, 
+			SinnoriConfigInfo sinnoriConfigInfo,
 			String selectedSubProjectName,
-			ConfigItemTableModel subProjectPartTableModel) {
-		super(owner, true);		
+			ConfigItemTableModel subProjectPartTableModel, int rowHavingBadValue, String targetKeyHavingBadValue) {
+		super(owner, true);
+		
+		int maxRow = subProjectPartTableModel.getRowCount();
+		if (rowHavingBadValue >= maxRow) {			
+			log.warn("parameter rowHavingBadValue[{}] is greater than maxRow[{}]", rowHavingBadValue, maxRow);
+			JOptionPane.showMessageDialog(this, "parameter focusRow is greater than maxRow");	
+			this.dispose();
+		}
 		
 		initComponents();
 		
 		this.mainProjectName = mainProjectName;
+		this.sinnoriConfigInfo = sinnoriConfigInfo;
 		this.selectedSubProjectName = selectedSubProjectName;
 		this.subProjectPartTableModel = subProjectPartTableModel;
 		
@@ -53,11 +72,62 @@ public class SubProjectPartConfigPopup extends JDialog {
 		subProjectPartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 		subProjectPartTable.setRowHeight(38);
 		subProjectPartScrollPane.repaint();
+		
+		if (rowHavingBadValue >= 0) {			
+			subProjectPartTable.changeSelection(rowHavingBadValue, 1, false, false);
+			subProjectPartTable.editCellAt(rowHavingBadValue, 1);
+			JOptionPane.showMessageDialog(this, new StringBuilder("Please check the value of key[")
+			.append(targetKeyHavingBadValue).append("]").toString());
+		}
 		/** Post-Creation Code End */
 	}
 
 
 	private void okButtonActionPerformed(ActionEvent e) {
+		SequencedProperties newSinnoriConfig = new SequencedProperties();
+		int maxRow = subProjectPartTableModel.getRowCount();
+		log.info("dbcpConnPoolName={}, maxRow={}", selectedSubProjectName, maxRow);
+						
+		for (int i=0; i < maxRow; i++) {
+			Object tableModelValue = subProjectPartTableModel.getValueAt(i, 1);
+			
+			if (!(tableModelValue instanceof ConfigItemValue)) {
+				log.error("subProjectName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+						selectedSubProjectName, i, 1);
+				System.exit(1);
+			}
+			 
+			ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+			String targetKey = configItemCellValue.getTargetKey();
+			String targetValue = configItemCellValue.getValueOfComponent();
+			
+			log.info("dbcpConnPoolName={}, row index={}, targetKey={}, targetValue={}", 
+					selectedSubProjectName, i, targetKey, targetValue);
+			
+			newSinnoriConfig.put(targetKey, targetValue);
+			
+			boolean isValidation = true;
+			try {
+				isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+				
+				if (isValidation) {
+					sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+				}
+				
+			} catch (ConfigValueInvalidException e1) {
+				String errorMessage = e1.getMessage();
+				log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);
+				
+				subProjectPartTable.changeSelection(i, 1, false, false);
+				subProjectPartTable.editCellAt(i, 1);
+				
+				JOptionPane.showMessageDialog(this, 
+						new StringBuilder("Please check the value of key[")
+				.append(targetKey).append("]").toString());
+				return;
+			}
+		}
+		
 		this.dispose();
 	}
 

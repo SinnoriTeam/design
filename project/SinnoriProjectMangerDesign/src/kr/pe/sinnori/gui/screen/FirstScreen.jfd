@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "5.2.0.3.124" Java: "1.7.0_71" encoding: "UTF-8"
+JFDML JFormDesigner: "5.2.0.3.124" Java: "1.8.0_31" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -81,9 +81,10 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
 				name: "allProjectWorkSaveLinePanel"
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "allProjectWorkSaveButton"
-					"text": "전체 프로젝트 변경 내역 저장"
+					name: "allProjectInstalledPathDevEnvUpdateButton"
+					"text": "신놀이 설치 경로 기준으로 전체 프로젝트 개발환경 보정하기"
 					"enabled": false
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "allProjectDevEnvRenewButtonActionPerformed", true ) )
 				} )
 			}, new FormLayoutConstraints( class com.jgoodies.forms.layout.CellConstraints ) {
 				"gridY": 9

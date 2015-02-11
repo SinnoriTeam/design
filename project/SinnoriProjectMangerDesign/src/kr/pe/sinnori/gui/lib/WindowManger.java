@@ -2,6 +2,7 @@ package kr.pe.sinnori.gui.lib;
 
 import javax.swing.JFrame;
 
+import kr.pe.sinnori.common.exception.ConfigErrorException;
 import kr.pe.sinnori.gui.screen.FirstScreen;
 import kr.pe.sinnori.gui.screen.MainWindow;
 import kr.pe.sinnori.gui.screen.ProjectEditScreen;
@@ -48,11 +49,17 @@ public class WindowManger {
 		}
 	}
 
-	public void changeFirstScreenToProjectEditScreen(MainProject project) {
+	public void changeFirstScreenToProjectEditScreen(MainProject project) throws ConfigErrorException {
 		firstScreenPanel.setVisible(false);
-		projectEditScreenPanel.setProject(project);
-		projectEditScreenPanel.setVisible(true);
-		mainWindow.pack();
+		try {
+			projectEditScreenPanel.setProject(project);
+			projectEditScreenPanel.setVisible(true);
+			mainWindow.pack();
+		} catch (ConfigErrorException e) {
+			firstScreenPanel.setVisible(true);
+			throw e;
+		}
+		
 	}
 	
 	public void changeProjectEditScreenToFirstScreen() {

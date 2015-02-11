@@ -2,20 +2,16 @@ package kr.pe.sinnori.gui.table;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.LayoutManager;
 
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 
 @SuppressWarnings("serial")
 public class ConfigItemValueRenderer extends JPanel implements TableCellRenderer {
-	private Logger log = LoggerFactory.getLogger(ConfigItemValueRenderer.class);
+	//private Logger log = LoggerFactory.getLogger(ConfigItemValueRenderer.class);
 	
 	public ConfigItemValueRenderer() {
 		setOpaque(true);
@@ -23,8 +19,8 @@ public class ConfigItemValueRenderer extends JPanel implements TableCellRenderer
 	}
 
 	private void init() {
-		LayoutManager layoutManager = this.getLayout();
-		log.info("current layout manger class name={}", layoutManager.getClass().getName());
+		//LayoutManager layoutManager = this.getLayout();
+		//log.info("current layout manger class name={}", layoutManager.getClass().getName());
 		
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 	}

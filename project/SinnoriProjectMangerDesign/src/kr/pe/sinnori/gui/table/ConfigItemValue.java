@@ -11,11 +11,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
-import kr.pe.sinnori.common.config.AbstractItemValueGetter;
-import kr.pe.sinnori.common.config.ConfigItem;
-import kr.pe.sinnori.common.config.ConfigItem.ConfigItemViewType;
-import kr.pe.sinnori.common.config.SingleSetValueGetterIF;
-import kr.pe.sinnori.common.config.SinnoriConfigInfo;
+import kr.pe.sinnori.gui.config.AbstractItemValueGetter;
+import kr.pe.sinnori.gui.config.ConfigItem;
+import kr.pe.sinnori.gui.config.SingleSetValueGetterIF;
+import kr.pe.sinnori.gui.config.SinnoriConfigInfo;
+import kr.pe.sinnori.gui.config.ConfigItem.ConfigItemViewType;
 import kr.pe.sinnori.gui.util.PathSwingAction;
 
 import org.slf4j.Logger;
@@ -29,30 +29,11 @@ public class ConfigItemValue extends JPanel {
 	
 	private String targetKey;
 	private ConfigItem.ConfigItemViewType configItemViewType=null;
-	// private Properties sourceProperties = null;
-	// private SinnoriConfigInfo sinnoriConfigInfo = null;
 	private JFrame mainFrame = null;
 	
 	private JComboBox<String> valueComboBox = null;
 	private JTextField valueTextField = null;
 	private JButton pathButton = null;
-	
-	//private Object result=null;
-	
-	/*public ConfigItemCellValue() {
-		super();
-		// this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		//this.getParent().setLayout(arg0);
-		LayoutManager parentLayoutManger = this.getParent().getLayout();
-		log.info("parnet layout manger class name={}", parentLayoutManger.getClass().getName());
-	}
-		*/
-	/*public ConfigItemCellValue(String targetKey, 
-			Properties sourceProperties, 
-			SinnoriConfigInfo sinnoriConfigInfo, JFrame mainFrame) {		
-		this(targetKey, sourceProperties.getProperty(targetKey),
-				sinnoriConfigInfo, mainFrame);
-	}*/
 	
 	public ConfigItemValue(String targetKey, 
 			String targetItemValue, 

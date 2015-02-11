@@ -7,12 +7,14 @@ package kr.pe.sinnori.gui.screen;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Frame;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -20,9 +22,16 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
+import kr.pe.sinnori.common.util.SequencedProperties;
+import kr.pe.sinnori.gui.config.SinnoriConfigInfo;
+import kr.pe.sinnori.gui.table.ConfigItemTableModel;
+import kr.pe.sinnori.gui.table.ConfigItemValue;
 import kr.pe.sinnori.gui.table.ConfigItemValueEditor;
 import kr.pe.sinnori.gui.table.ConfigItemValueRenderer;
-import kr.pe.sinnori.gui.table.ConfigItemTableModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.CC;
@@ -33,7 +42,10 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 @SuppressWarnings("serial")
 public class DBCPConnPoolNamePopup extends JDialog {
+	private Logger log = LoggerFactory.getLogger(DBCPConnPoolNamePopup.class);
+	
 	private String mainProjectName;
+	private SinnoriConfigInfo sinnoriConfigInfo = null;
 	private String selectedDBCPConnPoolName;
 	private ConfigItemTableModel dbcpPartConfigTableModel;
 	
@@ -47,13 +59,22 @@ public class DBCPConnPoolNamePopup extends JDialog {
 	
 	public DBCPConnPoolNamePopup(Frame owner, 
 			String mainProjectName, 
+			SinnoriConfigInfo sinnoriConfigInfo,
 			String selectedDBCPConnPoolName,
-			ConfigItemTableModel dbcpPartConfigTableModel) {
+			ConfigItemTableModel dbcpPartConfigTableModel, int rowHavingBadValue, String targetKeyHavingBadValue) {
 		super(owner);
 		
 		this.mainProjectName = mainProjectName;
+		this.sinnoriConfigInfo = sinnoriConfigInfo;
 		this.selectedDBCPConnPoolName = selectedDBCPConnPoolName;
 		this.dbcpPartConfigTableModel = dbcpPartConfigTableModel;
+		
+		int maxRow = dbcpPartConfigTableModel.getRowCount();
+		if (rowHavingBadValue >= maxRow) {			
+			log.warn("parameter rowHavingBadValue[{}] is greater than maxRow[{}]", rowHavingBadValue, maxRow);
+			JOptionPane.showMessageDialog(this, "parameter focusRow is greater than maxRow");	
+			this.dispose();
+		}
 		
 		initComponents();
 		
@@ -70,10 +91,60 @@ public class DBCPConnPoolNamePopup extends JDialog {
 		dbcpConnPoolNamePartTable.getColumnModel().getColumn(1).setCellEditor(new ConfigItemValueEditor(new JCheckBox()));
 		dbcpConnPoolNamePartTable.setRowHeight(38);
 		dbcpConnPoolNamePartScrollPane.repaint();
+		if (rowHavingBadValue >= 0) {			
+			dbcpConnPoolNamePartTable.changeSelection(rowHavingBadValue, 1, false, false);
+			dbcpConnPoolNamePartTable.editCellAt(rowHavingBadValue, 1);
+			JOptionPane.showMessageDialog(this, new StringBuilder("Please check the value of key[")
+			.append(targetKeyHavingBadValue).append("]").toString());
+		}		
 		/** Post-Creation Code End */
 	}
 
 	private void okButtonActionPerformed(ActionEvent e) {
+		SequencedProperties newSinnoriConfig = new SequencedProperties();
+		int maxRow = dbcpPartConfigTableModel.getRowCount();
+		log.info("dbcpConnPoolName={}, maxRow={}", selectedDBCPConnPoolName, maxRow);
+						
+		for (int i=0; i < maxRow; i++) {
+			Object tableModelValue = dbcpPartConfigTableModel.getValueAt(i, 1);
+			
+			if (!(tableModelValue instanceof ConfigItemValue)) {
+				log.error("dbcpConnPoolName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+						selectedDBCPConnPoolName, i, 1);
+				System.exit(1);
+			}
+			 
+			ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+			String targetKey = configItemCellValue.getTargetKey();
+			String targetValue = configItemCellValue.getValueOfComponent();
+			
+			log.info("dbcpConnPoolName={}, row index={}, targetKey={}, targetValue={}", 
+					selectedDBCPConnPoolName, i, targetKey, targetValue);
+			
+			newSinnoriConfig.put(targetKey, targetValue);
+			
+			boolean isValidation = true;
+			try {
+				isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+				
+				if (isValidation) {
+					sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+				}
+				
+			} catch (ConfigValueInvalidException e1) {
+				String errorMessage = e1.getMessage();
+				log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);
+				
+				dbcpConnPoolNamePartTable.changeSelection(i, 1, false, false);
+				dbcpConnPoolNamePartTable.editCellAt(i, 1);
+				
+				JOptionPane.showMessageDialog(this, 
+						new StringBuilder("Please check the value of key[")
+				.append(targetKey).append("]").toString());
+				return;
+			}
+		}
+		
 		this.dispose();
 	}
 /*

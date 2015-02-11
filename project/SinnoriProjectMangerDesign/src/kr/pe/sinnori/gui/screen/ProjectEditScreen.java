@@ -7,6 +7,7 @@ package kr.pe.sinnori.gui.screen;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,13 +28,15 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
-import kr.pe.sinnori.common.config.ConfigItem;
-import kr.pe.sinnori.common.config.SinnoriConfigInfo;
 import kr.pe.sinnori.common.exception.ConfigErrorException;
+import kr.pe.sinnori.common.exception.ConfigValueInvalidException;
 import kr.pe.sinnori.common.util.SequencedProperties;
+import kr.pe.sinnori.gui.config.ConfigItem;
+import kr.pe.sinnori.gui.config.SinnoriConfigInfo;
 import kr.pe.sinnori.gui.lib.MainProject;
 import kr.pe.sinnori.gui.lib.WindowManger;
 import kr.pe.sinnori.gui.table.ConfigItemKey;
@@ -79,12 +82,13 @@ public class ProjectEditScreen extends JPanel {
 		initComponents();
 	}
 	
-	public void setProject(MainProject mainProject) {
+	public void setProject(MainProject mainProject) throws ConfigErrorException {
 		this.mainProject = mainProject;
 		
+		SequencedProperties sourceSequencedProperties = mainProject.loadConfigFile();
+				
 		sinnoriInstalledPathValueLabel.setText(mainProject.getProjectPathString());
 		mainProjectNameValueLabel.setText(mainProject.getMainProjectName());
-		// serverCheckBox.setSelected(selectedProject.get);
 		appClientCheckBox.setSelected(mainProject.isAppClient());
 		webClientCheckBox.setSelected(mainProject.isWebClient());
 		servletEnginLibinaryPathTextField.setEditable(mainProject.isWebClient());
@@ -115,9 +119,6 @@ public class ProjectEditScreen extends JPanel {
 		ComboBoxModel<String> dbcpConnPoolNameComboBoxModel = new DefaultComboBoxModel<String>(dbcpConnPoolNameArray);
 		
 		dbcpConnPoolNameListComboBox.setModel(dbcpConnPoolNameComboBoxModel);
-				
-		SequencedProperties sourceSequencedProperties = 
-				mainProject.getNewSinnoriConfigFromSinnoriConfigInfo();
 		
 		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();
 		
@@ -279,68 +280,95 @@ public class ProjectEditScreen extends JPanel {
 		}
 	}
 	
+	// FIXME!
 	private void projectWorkSaveButtonActionPerformed(ActionEvent e) {
-		boolean isAppClient = appClientCheckBox.isSelected();
-		boolean isWebClient = webClientCheckBox.isSelected();
-		// servletEnginLibinaryPathTextField
-		
-		try {
-			mainProject.setAppClient(isAppClient);
-		} catch (ConfigErrorException e1) {
-			String errorMessage = String.format("setting app build choose[%s] fail, errormessage=%s", isAppClient, e1.getMessage());
-			log.warn(errorMessage);
-			
-			appClientCheckBox.requestFocusInWindow();
-			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
-			return;
-		}
-		try {
-			mainProject.setWebClient(isWebClient);
-		} catch (ConfigErrorException e1) {
-			String errorMessage = String.format("setting web build choose[%s] fail, errormessage=%s", isWebClient, e1.getMessage());
-			log.warn(errorMessage);
-			
-			webClientCheckBox.requestFocusInWindow();
-			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
-			return;
-		}
-		// FIXME!
-		// commonConfigItemTableModel, dbcpConnPoolName2ConfigItemTableModelHash, projectName2ConfigItemTableModelHash
-		
 		SequencedProperties newSinnoriConfig = new SequencedProperties();
-		
 		List<String> dbcpConnPoolNameList = mainProject.getDBCPConnPoolNameList();
-		for (String dbcpConnPoolName : dbcpConnPoolNameList) {
-			ConfigItemTableModel configItemTableModel = dbcpConnPoolName2ConfigItemTableModelHash.get(dbcpConnPoolName);
-			int row = configItemTableModel.getRowCount();
-			log.info("dbcpConnPoolName={}, row={}", dbcpConnPoolName, row);
+		List<String> subProjectNameList = mainProject.getSubProjectNameList();
+		String mainProjectName = mainProject.getMainProjectName();
+		SinnoriConfigInfo sinnoriConfigInfo = mainProject.getSinnoriConfigInfo();		
+				
+		int dbcpConnPoolNameListSize = dbcpConnPoolNameList.size();
+		
+		if (dbcpConnPoolNameListSize > 0) {
+			StringBuilder dbcpConnPoolNameListValueBuilder = new StringBuilder();
+			String firstDBCPConnPoolName = dbcpConnPoolNameList.get(0);
+			dbcpConnPoolNameListValueBuilder.append(firstDBCPConnPoolName);
 			
-			for (int i=0; i < row; i++) {
-				Object tableModelValue = configItemTableModel.getValueAt(i, 1);
-				
-				if (!(tableModelValue instanceof ConfigItemValue)) {
-					log.error("dbcpConnPoolName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
-							dbcpConnPoolName, i, 1);
-					System.exit(1);
-				}
-				 
-				ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
-				String targetKey = configItemCellValue.getTargetKey();
-				String targetValue = configItemCellValue.getValueOfComponent();
-				
-				log.info("dbcpConnPoolName={}, row index={}, targetKey={}, targetValue={}", 
-						dbcpConnPoolName, i, targetKey, targetValue);
-				
-				newSinnoriConfig.put(targetKey, targetValue);
+			for (int i=1; i < dbcpConnPoolNameListSize; i++) {
+				String dbcpConnPoolName = dbcpConnPoolNameList.get(i);
+				dbcpConnPoolNameListValueBuilder.append(", ");
+				dbcpConnPoolNameListValueBuilder.append(dbcpConnPoolName);
 			}
 			
+			int inx = SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING.lastIndexOf("value");
+			String descKey = new StringBuilder(SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING.substring(0, inx))
+			.append("desc").toString();
+			
+			newSinnoriConfig.setProperty(descKey, "dbcp 연결 폴 이름 목록, 구분자 콤마");
+			newSinnoriConfig.setProperty(SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING, dbcpConnPoolNameListValueBuilder.toString());
+			
+			for (String dbcpConnPoolName : dbcpConnPoolNameList) {
+				ConfigItemTableModel configItemTableModel = dbcpConnPoolName2ConfigItemTableModelHash.get(dbcpConnPoolName);
+				int maxRow = configItemTableModel.getRowCount();
+				log.info("dbcpConnPoolName={}, maxRow={}", dbcpConnPoolName, maxRow);
+								
+				for (int i=0; i < maxRow; i++) {
+					Object tableModelValue = configItemTableModel.getValueAt(i, 1);
+					
+					if (!(tableModelValue instanceof ConfigItemValue)) {
+						log.error("dbcpConnPoolName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+								dbcpConnPoolName, i, 1);
+						System.exit(1);
+					}
+					 
+					ConfigItemValue configItemCellValue = (ConfigItemValue)tableModelValue;
+					String targetKey = configItemCellValue.getTargetKey();
+					String targetValue = configItemCellValue.getValueOfComponent();
+					
+					log.info("dbcpConnPoolName={}, row index={}, targetKey={}, targetValue={}", 
+							dbcpConnPoolName, i, targetKey, targetValue);
+					
+					newSinnoriConfig.put(targetKey, targetValue);
+					
+					boolean isValidation = true;
+					try {
+						isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+						
+						if (isValidation) {
+							sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+						}
+						
+					} catch (ConfigValueInvalidException e1) {
+						String errorMessage = e1.getMessage();
+						log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);
+												
+						DBCPConnPoolNamePopup popup = new DBCPConnPoolNamePopup(mainFrame, 
+								mainProjectName, mainProject.getSinnoriConfigInfo(),
+								dbcpConnPoolName, configItemTableModel, i, targetKey);
+						popup.setTitle("DBCP Connection Pool Name Conifg");
+						popup.setSize(740, 220);
+						popup.setVisible(true);
+						return;
+					}
+				}
+				
+			}
+		} else {
+			int inx = SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING.lastIndexOf("value");
+			String descKey = new StringBuilder(SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING.substring(0, inx))
+			.append("desc").toString();
+			
+			newSinnoriConfig.setProperty(descKey, "dbcp 연결 폴 이름 목록, 구분자 콤마");
+			newSinnoriConfig.setProperty(SinnoriConfigInfo.DBCP_CONNECTION_POOL_NAME_LIST_KEY_STRING, "");			
 		}
+				
 		
 		{
-			int row = commonConfigItemTableModel.getRowCount();
-			log.info("commonConfigItemTableModel row={}", row);
+			int maxRow = commonConfigItemTableModel.getRowCount();
+			log.info("commonConfigItemTableModel row={}", maxRow);
 			
-			for (int i=0; i < row; i++) {
+			for (int i=0; i < maxRow; i++) {
 				Object tableModelValue = commonConfigItemTableModel.getValueAt(i, 1);
 				
 				if (!(tableModelValue instanceof ConfigItemValue)) {
@@ -357,23 +385,51 @@ public class ProjectEditScreen extends JPanel {
 						i, targetKey, targetValue);
 				
 				newSinnoriConfig.put(targetKey, targetValue);
+				
+				boolean isValidation = true;
+				try {
+					isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+					
+					if (isValidation) {
+						sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+					}
+					
+				} catch (ConfigValueInvalidException e1) {
+					String errorMessage = e1.getMessage();
+					log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);					
+					
+					commonConfigTable.changeSelection(i, 1, false, false);
+					commonConfigTable.editCellAt(i, 1);
+					
+					JOptionPane.showMessageDialog(this, 
+							new StringBuilder("Please check the value of key[")
+					.append(targetKey).append("]").toString());
+					return;
+				}
 			}
 		}
 		
-		{
-			String mainProjetName = mainProject.getMainProjectName();
+		StringBuilder projectNameListValueBuilder = new StringBuilder();		
+		projectNameListValueBuilder.append(mainProjectName);		
+		for (String subProjectName : subProjectNameList) {
+			projectNameListValueBuilder.append(", ");
+			projectNameListValueBuilder.append(subProjectName);
+		}
+		newSinnoriConfig.setProperty(SinnoriConfigInfo.PROJECT_NAME_LIST_KEY_STRING, projectNameListValueBuilder.toString());
+		
+		{			
 			ConfigItemTableModel mainProjectConfigItemTableModel = 
-					projectName2ConfigItemTableModelHash.get(mainProjetName);
+					projectName2ConfigItemTableModelHash.get(mainProjectName);
 			
 			int row = mainProjectConfigItemTableModel.getRowCount();
-			log.info("mainProjetName={}, row={}", mainProjetName, row);
+			log.info("mainProjectName={}, row={}", mainProjectName, row);
 			
 			for (int i=0; i < row; i++) {
 				Object tableModelValue = mainProjectConfigItemTableModel.getValueAt(i, 1);
 				
 				if (!(tableModelValue instanceof ConfigItemValue)) {
-					log.error("mainProjetName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
-							mainProjetName, i, 1);
+					log.error("mainProjectName[{}] ConfigItemTableModel[{}][{}]'s value is not instanc of ConfigItemValue class",
+							mainProjectName, i, 1);
 					System.exit(1);
 				}
 				 
@@ -381,15 +437,37 @@ public class ProjectEditScreen extends JPanel {
 				String targetKey = configItemCellValue.getTargetKey();
 				String targetValue = configItemCellValue.getValueOfComponent();
 				
-				log.info("mainProjetName={}, row index={}, targetKey={}, targetValue={}", 
-						mainProjetName, i, targetKey, targetValue);
+				log.info("mainProjectName={}, row index={}, targetKey={}, targetValue={}", 
+						mainProjectName, i, targetKey, targetValue);
 				
 				newSinnoriConfig.put(targetKey, targetValue);
+				
+				
+				boolean isValidation = true;
+				try {
+					isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+					
+					if (isValidation) {
+						sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+					}
+					
+				} catch (ConfigValueInvalidException e1) {
+					String errorMessage = e1.getMessage();
+					log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);					
+					
+					mainProjectConfigTable.changeSelection(i, 1, false, false);
+					mainProjectConfigTable.editCellAt(i, 1);
+					
+					JOptionPane.showMessageDialog(this, 
+							new StringBuilder("Please check the value of key[")
+					.append(targetKey).append("]").toString());
+					return;
+				}
 			}
 			
 		}
-		List<String> subPorjectNameList = mainProject.getSubProjectNameList();
-		for (String subPorjectName : subPorjectNameList) {
+		
+		for (String subPorjectName : subProjectNameList) {
 			ConfigItemTableModel configItemTableModel = projectName2ConfigItemTableModelHash.get(subPorjectName);
 			int row = configItemTableModel.getRowCount();
 			log.info("subPorjectName={}, row={}", subPorjectName, row);
@@ -411,19 +489,102 @@ public class ProjectEditScreen extends JPanel {
 						subPorjectName, i, targetKey, targetValue);
 				
 				newSinnoriConfig.put(targetKey, targetValue);
+				
+				boolean isValidation = true;
+				try {
+					isValidation = sinnoriConfigInfo.isValidation(targetKey, newSinnoriConfig);
+					
+					if (isValidation) {
+						sinnoriConfigInfo.getNativeValueAfterBreakChecker(targetKey, newSinnoriConfig);
+					}
+					
+				} catch (ConfigValueInvalidException e1) {
+					// FIXME!
+					String errorMessage = e1.getMessage();
+					log.warn("targetKey={}, errormessage={}", targetKey, errorMessage);
+											
+					SubProjectPartConfigPopup popup = new SubProjectPartConfigPopup(mainFrame, 
+							mainProjectName, mainProject.getSinnoriConfigInfo(), 
+							subPorjectName, configItemTableModel, i, targetKey);
+					popup.setTitle("Sub Project Part Conifg");
+					popup.setSize(740, 380);
+					popup.setVisible(true);
+					return;
+				}
 			}
 		}
+		
+		
 		
 		try {
 			mainProject.saveConfigFile(newSinnoriConfig);
 		} catch (ConfigErrorException e1) {
-			String errorMessage = String.format("fail to save the config file, errormessage=%s", isWebClient, e1.getMessage());
+			String errorMessage = String.format("fail to save the config file, errormessage=%s", e1.getMessage());
 			log.warn(errorMessage);
 			
 			webClientCheckBox.requestFocusInWindow();
 			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
 			return;
-		}		
+		}
+		
+		boolean isAppClient = appClientCheckBox.isSelected();
+		boolean isWebClient = webClientCheckBox.isSelected();
+		String servletEnginLibPathString = servletEnginLibinaryPathTextField.getText();
+		if (isWebClient) {
+			File servletEnginLibPath = new File(servletEnginLibPathString);
+			if (!servletEnginLibPath.exists()) {
+				String errorMessage = String.format("the servlet engine lib path[%s] does not exist", 
+						servletEnginLibPathString);
+				log.warn(errorMessage);
+				
+				servletEnginLibinaryPathTextField.requestFocusInWindow();
+				JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+				return;
+			}
+			
+			if (!servletEnginLibPath.isDirectory()) {
+				String errorMessage = String.format("the servlet engine lib path[%s] is not direcotry", 
+						servletEnginLibPathString);
+				log.warn(errorMessage);
+				
+				servletEnginLibinaryPathTextField.requestFocusInWindow();
+				JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+				return;
+			}
+			
+			if (!servletEnginLibPath.canRead()) {
+				String errorMessage = String.format("the servlet engine lib path[%s] can not be read", 
+						servletEnginLibPathString);
+				log.warn(errorMessage);
+				
+				servletEnginLibinaryPathTextField.requestFocusInWindow();
+				JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+				return;
+			}
+		}
+		
+		try {
+			mainProject.setAppClient(isAppClient);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = String.format("setting app build choose[%s] fail, errormessage=%s", isAppClient, e1.getMessage());
+			log.warn(errorMessage);
+			
+			appClientCheckBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		try {
+			mainProject.setWebClient(isWebClient, servletEnginLibPathString);
+		} catch (ConfigErrorException e1) {
+			String errorMessage = String.format("setting web build choose[%s] fail, errormessage=%s", isWebClient, e1.getMessage());
+			log.warn(errorMessage);
+			
+			webClientCheckBox.requestFocusInWindow();
+			JOptionPane.showMessageDialog(mainFrame, errorMessage);			
+			return;
+		}
+		
+		JOptionPane.showMessageDialog(mainFrame, "저장 성공");	
 	}
 
 	private void prevButtonActionPerformed(ActionEvent e) {
@@ -464,12 +625,14 @@ public class ProjectEditScreen extends JPanel {
 			.append(".")
 			.append(itemID).toString();
 			
+			
+			ConfigItemKey configItemKey = new ConfigItemKey(targetKey, configItem.toDescription());
 			ConfigItemValue configItemCellValue = new ConfigItemValue(
 					targetKey, 
 					defaultValue,
-					sinnoriConfigInfo, mainFrame);
+					sinnoriConfigInfo, mainFrame);		
 					
-			values[i][0] = targetKey;
+			values[i][0] = configItemKey;
 			values[i][1] = configItemCellValue;
 		}
 		
@@ -495,7 +658,8 @@ public class ProjectEditScreen extends JPanel {
 					projectName2ConfigItemTableModelHash.get(selectedSubProjectName);
 			
 			SubProjectPartConfigPopup popup = new SubProjectPartConfigPopup(mainFrame, 
-					mainProjectName, selectedSubProjectName, subProjectPartConfigTableModel);
+					mainProjectName, mainProject.getSinnoriConfigInfo(),
+					selectedSubProjectName, subProjectPartConfigTableModel, -1, null);
 			popup.setTitle("Sub Project Part Conifg");
 			popup.setSize(740, 380);
 			popup.setVisible(true);
@@ -529,10 +693,12 @@ public class ProjectEditScreen extends JPanel {
 					dbcpConnPoolName2ConfigItemTableModelHash.get(selectedDBCPConnPoolName);
 			
 			DBCPConnPoolNamePopup popup = new DBCPConnPoolNamePopup(mainFrame, 
-					mainProjectName, selectedDBCPConnPoolName, dbcpConfigItemTableModel);
+					mainProjectName, mainProject.getSinnoriConfigInfo(),
+					selectedDBCPConnPoolName, dbcpConfigItemTableModel, -1, null);
 			popup.setTitle("DBCP Connection Pool Name Conifg");
 			popup.setSize(740, 220);
 			popup.setVisible(true);
+			return;
 		}		
 	}
 
@@ -603,6 +769,12 @@ public class ProjectEditScreen extends JPanel {
 			dbcpConnPoolName2ConfigItemTableModelHash.remove(selectedDBCPConnPoolName);
 			dbcpConnPoolNameListComboBox.removeItemAt(selectedInx);
 		}
+	}
+
+	private void webClientCheckBoxStateChanged(ChangeEvent e) {
+		boolean isWebClient = webClientCheckBox.isSelected();
+		servletEnginLibinaryPathTextField.setEditable(isWebClient);
+		servletEnginLibinaryPathButton.setEnabled(isWebClient);
 	}
 
 		
@@ -729,6 +901,12 @@ public class ProjectEditScreen extends JPanel {
 				//---- webClientCheckBox ----
 				webClientCheckBox.setText("\uc6f9 \ud074\ub77c\uc774\uc5b8\ud2b8");
 				webClientCheckBox.setSelected(true);
+				webClientCheckBox.addChangeListener(new ChangeListener() {
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						webClientCheckBoxStateChanged(e);
+					}
+				});
 				projectStructFuncPanel.add(webClientCheckBox);
 			}
 			projectStructLinePanel.add(projectStructFuncPanel, CC.xy(3, 1));
@@ -907,7 +1085,7 @@ public class ProjectEditScreen extends JPanel {
 				dbcpConnNameListFuncPanel.add(dbcpConnPoolNameEditButton);
 
 				//---- dbcpConnPoolNameDeleteButton ----
-				dbcpConnPoolNameDeleteButton.setText("remote");
+				dbcpConnPoolNameDeleteButton.setText("remove");
 				dbcpConnPoolNameDeleteButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
